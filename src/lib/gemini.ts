@@ -1,95 +1,137 @@
-// src/lib/gemini.ts
-const MODELOS = [
-  'gemini-2.0-flash',
-  'gemini-2.5-flash',
-  'gemini-2.0-flash-lite',
-  'gemini-1.5-flash',
-]
+// ─── Modelos en orden de prioridad ───────────────────────────────────────────
+// Si uno falla por cuota, se prueba el siguiente automáticamente.
+const MODELS_FALLBACK = [
+  "gemini-2.5-flash-preview-05-20", // Nuevo, más generoso en free tier
+  "gemini-2.0-flash-lite",          // Más liviano, cuota separada
+  "gemini-1.5-flash",               // Cuota independiente de 2.0
+  "gemini-1.5-flash-8b",            // El más liviano, cuota propia
+  "gemini-2.0-flash",               // Tu modelo original (último recurso)
+];
 
-export async function llamarGemini(
+const GEMINI_API_BASE = "https://generativelanguage.googleapis.com/v1beta/models";
+
+// ─── Tipos ───────────────────────────────────────────────────────────────────
+export interface GeminiResponse {
+  text: string;
+  modelUsed: string;
+}
+
+interface GeminiCandidate {
+  content: { parts: { text: string }[] };
+}
+
+interface GeminiAPIResponse {
+  candidates?: GeminiCandidate[];
+  error?: { code: number; message: string; status: string };
+}
+
+// ─── Función principal con fallback automático ────────────────────────────────
+export async function generateContent(
   apiKey: string,
   prompt: string,
-  maxTokens = 8192
-): Promise<string> {
-  for (const modelo of MODELOS) {
-    for (let intento = 0; intento < 3; intento++) {
-      try {
-        const res = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent?key=${apiKey}`,
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              contents: [{ parts: [{ text: prompt }] }],
-              generationConfig: { maxOutputTokens: maxTokens },
-            }),
-          }
-        )
-        if (!res.ok) {
-          const err = await res.json()
-          const code = err?.error?.code || res.status
-          if (code === 429) break // cuota agotada, siguiente modelo
-          if (code === 503) {
-            await sleep(15000 * (intento + 1))
-            continue
-          }
-          break
-        }
-        const data = await res.json()
-        const texto = data?.candidates?.[0]?.content?.parts?.[0]?.text
-        if (texto) return texto
-      } catch {
-        if (intento === 2) break
-        await sleep(5000)
+  systemInstruction?: string
+): Promise<GeminiResponse> {
+  const lastError: Error[] = [];
+
+  for (const model of MODELS_FALLBACK) {
+    try {
+      const result = await callGeminiAPI(apiKey, model, prompt, systemInstruction);
+      return { text: result, modelUsed: model };
+    } catch (err) {
+      const error = err as Error;
+      const isQuotaError =
+        error.message.includes("429") ||
+        error.message.includes("quota") ||
+        error.message.includes("RESOURCE_EXHAUSTED") ||
+        error.message.includes("limit: 0");
+
+      lastError.push(error);
+
+      if (isQuotaError) {
+        // Cuota agotada en este modelo → intentar el siguiente
+        console.warn(`[Gemini] Cuota agotada en "${model}", probando siguiente...`);
+        continue;
       }
+
+      // Otro error (clave inválida, red, etc.) → no seguir intentando
+      throw error;
     }
   }
-  throw new Error('Todos los modelos están saturados o sin cuota. Intenta en unos minutos.')
+
+  // Todos los modelos fallaron
+  throw new Error(
+    `Cuota agotada en todos los modelos disponibles. ` +
+    `Espera unas horas o revisa tu plan en https://ai.dev/rate-limit.\n\n` +
+    `Último error: ${lastError[lastError.length - 1]?.message}`
+  );
 }
 
-export async function obtenerExegesis(apiKey: string, cita: string): Promise<string> {
-  const prompt = `Realiza una exégesis académica y teológica profunda del pasaje: ${cita}.
-ES OBLIGATORIO utilizar exactamente esta numeración:
-1. Texto (Reina Valera 1960).
-2. Referencias Cruzadas.
-3. Análisis Lingüístico.
-4. Contexto histórico-Cultural.
-5. Exégesis Versículo por Versículo.
-6. Relación con el Reino de Dios.
-7. Aplicación Práctica.
-8. Comparación de Versiones.
-9. Línea de Tiempo.
-10. Mapa Geográfico: [Identifica el lugar geográfico principal de este pasaje y pon el nombre de la ciudad o región entre corchetes, por ejemplo: [[Jerusalén]]].
-11. Conclusión.
-12. Preguntas para Reflexión.
-13. Recursos Adicionales.
-Responde directamente con los puntos numerados.`
-  return llamarGemini(apiKey, prompt)
-}
-
-export async function obtenerComparado(
+// ─── Llamada HTTP directa a la API de Gemini ─────────────────────────────────
+async function callGeminiAPI(
   apiKey: string,
-  cita1: string,
-  cita2: string
+  model: string,
+  prompt: string,
+  systemInstruction?: string
 ): Promise<string> {
-  const prompt = `Realiza un estudio comparativo teológico y exegético profundo entre estos dos pasajes bíblicos:
-- Pasaje A: ${cita1}
-- Pasaje B: ${cita2}
+  const body: Record<string, unknown> = {
+    contents: [{ role: "user", parts: [{ text: prompt }] }],
+    generationConfig: {
+      temperature: 0.7,
+      topK: 40,
+      topP: 0.95,
+      maxOutputTokens: 8192,
+    },
+  };
 
-ES OBLIGATORIO usar exactamente esta estructura numerada:
-1. Textos (Reina Valera 1960). Presenta el texto completo de ambos pasajes.
-2. Similitudes Teológicas. ¿Qué temas, conceptos o verdades comparten ambos pasajes?
-3. Diferencias y Contrastes. ¿En qué difieren en énfasis, contexto, audiencia o mensaje?
-4. Contexto Histórico Comparado. ¿En qué épocas y circunstancias fueron escritos?
-5. Análisis Lingüístico Comparado. Palabras clave en hebreo/griego que iluminan la comparación.
-6. Progresión Reveladora. ¿Uno anticipa o completa al otro?
-7. Puntos de Tensión o Aparente Contradicción. ¿Cómo se resuelve?
-8. Síntesis Teológica. ¿Qué verdad unificadora emerge al leerlos juntos?
-9. Aplicación Práctica Combinada.
-10. Conclusión Comparativa.
+  if (systemInstruction) {
+    body.systemInstruction = { parts: [{ text: systemInstruction }] };
+  }
 
-Responde directamente con los puntos numerados.`
-  return llamarGemini(apiKey, prompt, 6000)
+  const url = `${GEMINI_API_BASE}/${model}:generateContent?key=${apiKey}`;
+
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+
+  const data: GeminiAPIResponse = await res.json();
+
+  if (!res.ok || data.error) {
+    const msg = data.error?.message ?? `HTTP ${res.status}`;
+    throw new Error(`[${res.status}] ${msg}`);
+  }
+
+  const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+  if (!text) throw new Error("Respuesta vacía de la API.");
+
+  return text;
 }
 
-const sleep = (ms: number) => new Promise(r => setTimeout(r, ms))
+// ─── Utilidad: verificar que una API Key funciona ─────────────────────────────
+export async function testApiKey(apiKey: string): Promise<{ ok: boolean; model: string; error?: string }> {
+  for (const model of MODELS_FALLBACK) {
+    try {
+      await callGeminiAPI(apiKey, model, "Di hola en una palabra.");
+      return { ok: true, model };
+    } catch (err) {
+      const error = err as Error;
+      const isQuota =
+        error.message.includes("429") ||
+        error.message.includes("quota") ||
+        error.message.includes("RESOURCE_EXHAUSTED");
+      if (isQuota) continue;
+      return { ok: false, model, error: error.message };
+    }
+  }
+  return { ok: false, model: "", error: "Cuota agotada en todos los modelos." };
+}
+
+// ─── Lista de modelos disponibles (para mostrar en UI) ────────────────────────
+export const AVAILABLE_MODELS = MODELS_FALLBACK.map((id) => ({
+  id,
+  label: id
+    .replace("gemini-", "Gemini ")
+    .replace(/-/g, " ")
+    .replace(/\b\w/g, (c) => c.toUpperCase()),
+}));
