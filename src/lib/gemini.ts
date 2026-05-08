@@ -1,10 +1,10 @@
 // ─── Modelos en orden de prioridad (fallback automático) ─────────────────────
 const MODELS_FALLBACK = [
-  "gemini-2.5-flash-preview-05-20",
+  "gemini-2.5-flash",        // ← era: gemini-2.5-flash-preview-05-20
+  "gemini-2.0-flash",
   "gemini-2.0-flash-lite",
   "gemini-1.5-flash",
   "gemini-1.5-flash-8b",
-  "gemini-2.0-flash",
 ];
 
 const GEMINI_API_BASE = "https://generativelanguage.googleapis.com/v1beta/models";
