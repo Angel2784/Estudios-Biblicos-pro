@@ -1,11 +1,10 @@
-// ─── Modelos en orden de prioridad ───────────────────────────────────────────
-// Si uno falla por cuota, se prueba el siguiente automáticamente.
+// ─── Modelos en orden de prioridad (fallback automático) ─────────────────────
 const MODELS_FALLBACK = [
-  "gemini-2.5-flash-preview-05-20", // Nuevo, más generoso en free tier
-  "gemini-2.0-flash-lite",          // Más liviano, cuota separada
-  "gemini-1.5-flash",               // Cuota independiente de 2.0
-  "gemini-1.5-flash-8b",            // El más liviano, cuota propia
-  "gemini-2.0-flash",               // Tu modelo original (último recurso)
+  "gemini-2.5-flash-preview-05-20",
+  "gemini-2.0-flash-lite",
+  "gemini-1.5-flash",
+  "gemini-1.5-flash-8b",
+  "gemini-2.0-flash",
 ];
 
 const GEMINI_API_BASE = "https://generativelanguage.googleapis.com/v1beta/models";
@@ -31,12 +30,12 @@ export async function generateContent(
   prompt: string,
   systemInstruction?: string
 ): Promise<GeminiResponse> {
-  const lastError: Error[] = [];
+  const lastErrors: Error[] = [];
 
   for (const model of MODELS_FALLBACK) {
     try {
-      const result = await callGeminiAPI(apiKey, model, prompt, systemInstruction);
-      return { text: result, modelUsed: model };
+      const text = await callGeminiAPI(apiKey, model, prompt, systemInstruction);
+      return { text, modelUsed: model };
     } catch (err) {
       const error = err as Error;
       const isQuotaError =
@@ -45,28 +44,22 @@ export async function generateContent(
         error.message.includes("RESOURCE_EXHAUSTED") ||
         error.message.includes("limit: 0");
 
-      lastError.push(error);
-
+      lastErrors.push(error);
       if (isQuotaError) {
-        // Cuota agotada en este modelo → intentar el siguiente
         console.warn(`[Gemini] Cuota agotada en "${model}", probando siguiente...`);
         continue;
       }
-
-      // Otro error (clave inválida, red, etc.) → no seguir intentando
       throw error;
     }
   }
 
-  // Todos los modelos fallaron
   throw new Error(
-    `Cuota agotada en todos los modelos disponibles. ` +
-    `Espera unas horas o revisa tu plan en https://ai.dev/rate-limit.\n\n` +
-    `Último error: ${lastError[lastError.length - 1]?.message}`
+    `Cuota agotada en todos los modelos. Espera unas horas o revisa https://ai.dev/rate-limit.\n` +
+    `Último error: ${lastErrors[lastErrors.length - 1]?.message}`
   );
 }
 
-// ─── Llamada HTTP directa a la API de Gemini ─────────────────────────────────
+// ─── Llamada HTTP a la API ────────────────────────────────────────────────────
 async function callGeminiAPI(
   apiKey: string,
   model: string,
@@ -87,29 +80,84 @@ async function callGeminiAPI(
     body.systemInstruction = { parts: [{ text: systemInstruction }] };
   }
 
-  const url = `${GEMINI_API_BASE}/${model}:generateContent?key=${apiKey}`;
-
-  const res = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
+  const res = await fetch(
+    `${GEMINI_API_BASE}/${model}:generateContent?key=${apiKey}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    }
+  );
 
   const data: GeminiAPIResponse = await res.json();
 
   if (!res.ok || data.error) {
-    const msg = data.error?.message ?? `HTTP ${res.status}`;
-    throw new Error(`[${res.status}] ${msg}`);
+    throw new Error(`[${res.status}] ${data.error?.message ?? `HTTP ${res.status}`}`);
   }
 
   const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
   if (!text) throw new Error("Respuesta vacía de la API.");
-
   return text;
 }
 
-// ─── Utilidad: verificar que una API Key funciona ─────────────────────────────
-export async function testApiKey(apiKey: string): Promise<{ ok: boolean; model: string; error?: string }> {
+// ─── obtenerExegesis (función original restaurada) ────────────────────────────
+export async function obtenerExegesis(
+  apiKey: string,
+  pasaje: string
+): Promise<string> {
+  const prompt = `Realiza una exégesis académica completa y detallada del siguiente pasaje bíblico: "${pasaje}"
+
+Incluye las siguientes secciones:
+1. **Contexto histórico-cultural**: época, lugar, audiencia original
+2. **Análisis literario**: género literario, estructura, recursos estilísticos
+3. **Análisis lingüístico**: palabras clave en hebreo/griego, etimología, significado original
+4. **Contexto canónico**: relación con otros textos bíblicos, cumplimiento profético
+5. **Teología del pasaje**: doctrinas principales que se enseñan
+6. **Interpretación histórica**: cómo han interpretado este pasaje los principales comentaristas
+7. **Aplicación hermenéutica**: principios de interpretación aplicados
+8. **Relevancia contemporánea**: aplicación práctica para hoy
+9. **Preguntas de reflexión**: 3-5 preguntas para estudio profundo
+10. **Bibliografía recomendada**: comentaristas y obras académicas relevantes
+
+Usa un tono académico pero accesible. Cita referencias cruzadas bíblicas.`;
+
+  const { text } = await generateContent(apiKey, prompt);
+  return text;
+}
+
+// ─── obtenerComparado (función original restaurada) ───────────────────────────
+export async function obtenerComparado(
+  apiKey: string,
+  pasaje1: string,
+  pasaje2: string
+): Promise<string> {
+  const prompt = `Realiza un estudio comparativo académico entre estos dos pasajes bíblicos:
+
+**Pasaje 1:** "${pasaje1}"
+**Pasaje 2:** "${pasaje2}"
+
+Incluye las siguientes secciones:
+1. **Resumen de cada pasaje**: contexto y mensaje central de cada uno
+2. **Similitudes temáticas**: temas, conceptos y mensajes que comparten
+3. **Diferencias significativas**: en contexto, audiencia, énfasis teológico
+4. **Análisis lingüístico comparado**: palabras clave en ambos pasajes
+5. **Progresión teológica**: ¿cómo se complementan o desarrollan mutuamente?
+6. **Tensiones aparentes**: contradicciones superficiales y su resolución
+7. **Síntesis doctrinal**: enseñanza unificada que emerge de ambos
+8. **Aplicación integrada**: lección práctica que surge de la comparación
+9. **Referencias cruzadas adicionales**: otros pasajes que iluminan la comparación
+10. **Conclusión hermenéutica**: principio de interpretación que se desprende
+
+Mantén rigor académico y equilibrio entre ambos textos.`;
+
+  const { text } = await generateContent(apiKey, prompt);
+  return text;
+}
+
+// ─── Verificar API Key ────────────────────────────────────────────────────────
+export async function testApiKey(
+  apiKey: string
+): Promise<{ ok: boolean; model: string; error?: string }> {
   for (const model of MODELS_FALLBACK) {
     try {
       await callGeminiAPI(apiKey, model, "Di hola en una palabra.");
@@ -127,7 +175,7 @@ export async function testApiKey(apiKey: string): Promise<{ ok: boolean; model: 
   return { ok: false, model: "", error: "Cuota agotada en todos los modelos." };
 }
 
-// ─── Lista de modelos disponibles (para mostrar en UI) ────────────────────────
+// ─── Lista de modelos (para UI) ───────────────────────────────────────────────
 export const AVAILABLE_MODELS = MODELS_FALLBACK.map((id) => ({
   id,
   label: id
