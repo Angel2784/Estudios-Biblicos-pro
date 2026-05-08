@@ -1,129 +1,116 @@
-'use client'
-import { useState } from 'react'
-import { Key, ExternalLink, Eye, EyeOff, Zap } from 'lucide-react'
-import { setApiKey } from '@/lib/storage'
+"use client";
+import { useState } from "react";
+import { testApiKey } from "@/lib/gemini";
 
-interface Props { onSave: (key: string) => void }
+interface Props {
+  onKeyConfirmed: (key: string) => void;
+}
 
-export default function ApiKeySetup({ onSave }: Props) {
-  const [key, setKey] = useState('')
-  const [show, setShow] = useState(false)
-  const [testing, setTesting] = useState(false)
-  const [error, setError] = useState('')
+export default function ApiKeySetup({ onKeyConfirmed }: Props) {
+  const [key, setKey] = useState("");
+  const [show, setShow] = useState(false);
+  const [status, setStatus] = useState<"idle" | "testing" | "ok" | "error">("idle");
+  const [statusMsg, setStatusMsg] = useState("");
 
-  const testKey = async () => {
-    if (!key.trim()) return
-    setTesting(true); setError('')
-    try {
-      const res = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key.trim()}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{ parts: [{ text: 'Hola' }] }],
-            generationConfig: { maxOutputTokens: 5 },
-          }),
-        }
-      )
-      if (res.ok) {
-        setApiKey(key.trim())
-        onSave(key.trim())
-      } else {
-        const d = await res.json()
-        setError(d?.error?.message || 'API Key inválida. Verifica que sea correcta.')
-      }
-    } catch {
-      setError('Error de conexión. Verifica tu internet.')
-    } finally {
-      setTesting(false)
+  const handleTest = async () => {
+    if (!key.trim()) return;
+    setStatus("testing");
+    setStatusMsg("Probando modelos disponibles...");
+
+    const result = await testApiKey(key.trim());
+
+    if (result.ok) {
+      setStatus("ok");
+      setStatusMsg(`✅ Conectado con "${result.model}"`);
+      // Guardar en localStorage y continuar
+      localStorage.setItem("gemini_api_key", key.trim());
+      localStorage.setItem("gemini_active_model", result.model);
+      setTimeout(() => onKeyConfirmed(key.trim()), 800);
+    } else {
+      setStatus("error");
+      setStatusMsg(
+        result.error?.includes("Cuota agotada")
+          ? "⚠️ Cuota agotada en todos los modelos. Espera unas horas o genera una nueva API Key."
+          : `❌ Error: ${result.error}`
+      );
     }
-  }
+  };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
-      <div style={{ animation: 'slideUp 0.5s ease-out' }} className="w-full max-w-md">
-
-        <div className="text-center mb-8">
-          <div className="text-6xl mb-4">📜</div>
-          <h1 className="text-3xl font-bold" style={{ fontFamily: 'Crimson Pro, serif', color: 'var(--gold)' }}>
-            Estudio Bíblico Pro
-          </h1>
-          <p className="text-sm mt-2" style={{ color: 'var(--text-secondary)' }}>
-            Exégesis académica con inteligencia artificial
-          </p>
+    <div className="min-h-screen bg-gray-950 flex items-center justify-center p-4">
+      <div className="bg-gray-900 rounded-2xl p-8 w-full max-w-md shadow-xl">
+        {/* Ícono */}
+        <div className="text-center mb-6">
+          <div className="text-6xl mb-3">📜</div>
+          <h1 className="text-2xl font-bold text-yellow-400">Estudio Bíblico Pro</h1>
+          <p className="text-gray-400 text-sm mt-1">Exégesis académica con inteligencia artificial</p>
         </div>
 
-        <div className="card">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="p-2 rounded-lg" style={{ background: 'var(--gold-dim)' }}>
-              <Key size={20} style={{ color: 'var(--gold)' }} />
-            </div>
+        {/* Card API Key */}
+        <div className="bg-gray-800 rounded-xl p-5">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="bg-gray-700 p-2 rounded-lg text-xl">🔑</div>
             <div>
-              <h2 className="font-semibold text-base">Conecta tu API Key de Gemini</h2>
-              <p className="text-xs" style={{ color: 'var(--text-dim)' }}>Gratis · Se guarda solo en tu dispositivo</p>
+              <p className="font-semibold text-white">Conecta tu API Key de Gemini</p>
+              <p className="text-xs text-gray-400">Gratis · Se guarda solo en tu dispositivo</p>
             </div>
           </div>
 
-          <div className="space-y-4">
-            <div className="relative">
-              <input
-                type={show ? 'text' : 'password'}
-                className="input-field pr-12"
-                placeholder="AIza..."
-                value={key}
-                onChange={e => setKey(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && testKey()}
-              />
-              <button onClick={() => setShow(!show)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded"
-                style={{ color: 'var(--text-dim)', background: 'none', border: 'none', cursor: 'pointer' }}>
-                {show ? <EyeOff size={16} /> : <Eye size={16} />}
-              </button>
-            </div>
-
-            {error && (
-              <div className="text-xs p-3 rounded-lg" style={{ background: '#7f1d1d33', color: '#ef4444', border: '1px solid #7f1d1d' }}>
-                ⚠️ {error}
-              </div>
-            )}
-
-            <button onClick={testKey} disabled={!key.trim() || testing} className="btn-primary w-full justify-center">
-              {testing
-                ? <><span style={{ display: 'inline-block', animation: 'spin 1s linear infinite' }}>⟳</span> Verificando...</>
-                : <><Zap size={16} /> Conectar y comenzar</>}
+          {/* Input */}
+          <div className="relative mb-3">
+            <input
+              type={show ? "text" : "password"}
+              value={key}
+              onChange={(e) => { setKey(e.target.value); setStatus("idle"); }}
+              onKeyDown={(e) => e.key === "Enter" && handleTest()}
+              placeholder="AIza..."
+              className="w-full bg-gray-700 text-white rounded-lg px-4 py-3 pr-10 outline-none focus:ring-2 focus:ring-yellow-400 text-sm"
+            />
+            <button
+              onClick={() => setShow(!show)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
+            >
+              {show ? "🙈" : "👁️"}
             </button>
           </div>
 
-          <div className="mt-6 pt-5" style={{ borderTop: '1px solid var(--navy-border)' }}>
-            <p className="text-xs font-semibold mb-3" style={{ color: 'var(--text-secondary)' }}>
-              ¿Cómo obtener tu API Key gratis?
-            </p>
-            <ol className="space-y-2">
-              {[
-                'Ve a aistudio.google.com con tu cuenta Google',
-                'Haz clic en "Get API Key" → "Create API key"',
-                'Copia la key y pégala arriba',
-              ].map((step, i) => (
-                <li key={i} className="flex gap-2 text-xs" style={{ color: 'var(--text-dim)' }}>
-                  <span className="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold"
-                    style={{ background: 'var(--gold-dim)', color: 'var(--gold)' }}>{i + 1}</span>
-                  {step}
-                </li>
-              ))}
-            </ol>
-            <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener"
-              className="mt-4 flex items-center gap-2 text-xs btn-secondary w-full justify-center">
-              <ExternalLink size={13} /> Ir a Google AI Studio
-            </a>
-          </div>
+          {/* Status */}
+          {status !== "idle" && (
+            <div className={`text-xs rounded-lg px-3 py-2 mb-3 ${
+              status === "ok"      ? "bg-green-900 text-green-300" :
+              status === "error"   ? "bg-red-900 text-red-300" :
+                                     "bg-blue-900 text-blue-300"
+            }`}>
+              {statusMsg}
+            </div>
+          )}
 
-          <p className="text-center text-xs mt-4" style={{ color: 'var(--text-dim)' }}>
-            🔒 Tu API Key nunca sale de tu dispositivo
+          {/* Botón */}
+          <button
+            onClick={handleTest}
+            disabled={!key.trim() || status === "testing"}
+            className="w-full bg-yellow-500 hover:bg-yellow-400 disabled:bg-gray-600 disabled:cursor-not-allowed text-black font-semibold rounded-lg py-3 text-sm transition-colors"
+          >
+            {status === "testing" ? "Probando modelos..." : "Conectar"}
+          </button>
+        </div>
+
+        {/* Info modelos */}
+        <div className="mt-4 bg-gray-800 rounded-xl p-4 text-xs text-gray-400">
+          <p className="font-semibold text-gray-300 mb-2">🤖 Modelos disponibles (auto-fallback):</p>
+          <ul className="space-y-1">
+            <li>• Gemini 2.5 Flash <span className="text-green-400">← prioridad 1</span></li>
+            <li>• Gemini 2.0 Flash Lite</li>
+            <li>• Gemini 1.5 Flash</li>
+            <li>• Gemini 1.5 Flash 8B <span className="text-yellow-400">← más requests gratis</span></li>
+            <li>• Gemini 2.0 Flash</li>
+          </ul>
+          <p className="mt-2">Obtén tu key gratis en{" "}
+            <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener"
+               className="text-yellow-400 underline">aistudio.google.com/apikey</a>
           </p>
         </div>
       </div>
-      <style>{`@keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }`}</style>
     </div>
-  )
+  );
 }
