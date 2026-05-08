@@ -1,6 +1,6 @@
 // ─── Modelos en orden de prioridad (fallback automático) ─────────────────────
 const MODELS_FALLBACK = [
-  "gemini-2.5-flash",       
+  "gemini-2.5-flash",
   "gemini-2.0-flash",
   "gemini-2.0-flash-lite",
   "gemini-1.5-flash",
@@ -100,32 +100,63 @@ async function callGeminiAPI(
   return text;
 }
 
-// ─── obtenerExegesis (función original restaurada) ────────────────────────────
+// ─── obtenerExegesis ──────────────────────────────────────────────────────────
+// Genera exactamente 13 secciones numeradas para coincidir con TABS_EXEGESIS
 export async function obtenerExegesis(
   apiKey: string,
   pasaje: string
 ): Promise<string> {
-  const prompt = `Realiza una exégesis académica completa y detallada del siguiente pasaje bíblico: "${pasaje}"
+  const prompt = `Realiza una exégesis académica completa del siguiente pasaje bíblico: "${pasaje}"
 
-Incluye las siguientes secciones:
-1. **Contexto histórico-cultural**: época, lugar, audiencia original
-2. **Análisis literario**: género literario, estructura, recursos estilísticos
-3. **Análisis lingüístico**: palabras clave en hebreo/griego, etimología, significado original
-4. **Contexto canónico**: relación con otros textos bíblicos, cumplimiento profético
-5. **Teología del pasaje**: doctrinas principales que se enseñan
-6. **Interpretación histórica**: cómo han interpretado este pasaje los principales comentaristas
-7. **Aplicación hermenéutica**: principios de interpretación aplicados
-8. **Relevancia contemporánea**: aplicación práctica para hoy
-9. **Preguntas de reflexión**: 3-5 preguntas para estudio profundo
-10. **Bibliografía recomendada**: comentaristas y obras académicas relevantes
+Responde EXACTAMENTE con estas 13 secciones numeradas. Usa el formato: "1. Título\nContenido..."
 
-Usa un tono académico pero accesible. Cita referencias cruzadas bíblicas.`;
+1. Texto Bíblico
+Presenta el texto completo del pasaje en español (RVR60 o NVI), con notas sobre variantes textuales importantes.
+
+2. Referencias Cruzadas
+Lista de pasajes relacionados con breve explicación de cada conexión temática o teológica.
+
+3. Análisis Lingüístico
+Palabras clave en hebreo o griego con transliteración, etimología y significado original.
+
+4. Contexto Histórico-Cultural
+Época, lugar, audiencia original, situación política y social del momento.
+
+5. Exégesis Detallada
+Interpretación versículo por versículo con análisis gramatical y hermenéutico.
+
+6. Teología del Reino
+Doctrinas principales: ¿qué enseña sobre Dios, Cristo, el Espíritu Santo y la salvación?
+
+7. Aplicación Práctica
+Principios concretos para la vida cristiana actual derivados del texto.
+
+8. Versiones Comparadas
+Compara 3-4 traducciones (RVR60, NVI, LBLA, NTV) destacando diferencias significativas.
+
+9. Cronología
+Línea de tiempo del pasaje: fecha aproximada, eventos históricos relacionados, secuencia narrativa.
+
+10. Geografía
+Lugares mencionados o implicados, su importancia histórica y significado teológico.
+
+11. Conclusión Hermenéutica
+Síntesis del mensaje central y principio de interpretación que emerge del pasaje.
+
+12. Preguntas de Reflexión
+5 preguntas profundas para estudio personal o en grupo.
+
+13. Recursos Bibliográficos
+Comentaristas y obras académicas recomendadas para profundizar en este pasaje.
+
+Usa tono académico pero accesible. Sé exhaustivo en cada sección.`;
 
   const { text } = await generateContent(apiKey, prompt);
   return text;
 }
 
-// ─── obtenerComparado (función original restaurada) ───────────────────────────
+// ─── obtenerComparado ─────────────────────────────────────────────────────────
+// Genera exactamente 10 secciones numeradas para coincidir con TABS_COMP
 export async function obtenerComparado(
   apiKey: string,
   pasaje1: string,
@@ -133,20 +164,40 @@ export async function obtenerComparado(
 ): Promise<string> {
   const prompt = `Realiza un estudio comparativo académico entre estos dos pasajes bíblicos:
 
-**Pasaje 1:** "${pasaje1}"
-**Pasaje 2:** "${pasaje2}"
+**Pasaje A:** "${pasaje1}"
+**Pasaje B:** "${pasaje2}"
 
-Incluye las siguientes secciones:
-1. **Resumen de cada pasaje**: contexto y mensaje central de cada uno
-2. **Similitudes temáticas**: temas, conceptos y mensajes que comparten
-3. **Diferencias significativas**: en contexto, audiencia, énfasis teológico
-4. **Análisis lingüístico comparado**: palabras clave en ambos pasajes
-5. **Progresión teológica**: ¿cómo se complementan o desarrollan mutuamente?
-6. **Tensiones aparentes**: contradicciones superficiales y su resolución
-7. **Síntesis doctrinal**: enseñanza unificada que emerge de ambos
-8. **Aplicación integrada**: lección práctica que surge de la comparación
-9. **Referencias cruzadas adicionales**: otros pasajes que iluminan la comparación
-10. **Conclusión hermenéutica**: principio de interpretación que se desprende
+Responde EXACTAMENTE con estas 10 secciones numeradas. Usa el formato: "1. Título\nContenido..."
+
+1. Textos Bíblicos
+Presenta ambos pasajes completos en español con su contexto inmediato.
+
+2. Similitudes Temáticas
+Temas, conceptos, vocabulario y mensajes que comparten ambos pasajes.
+
+3. Diferencias Significativas
+Contraste en contexto, audiencia, énfasis teológico, género literario y propósito.
+
+4. Contexto Histórico Comparado
+Época, autor, destinatarios y situación histórica de cada pasaje.
+
+5. Análisis Lingüístico Comparado
+Palabras clave en hebreo/griego de ambos pasajes y cómo se relacionan o contrastan.
+
+6. Progresión Teológica
+¿Cómo se complementan o desarrollan mutuamente? ¿Hay avance en la revelación?
+
+7. Tensiones Aparentes
+Posibles contradicciones superficiales y su resolución hermenéutica.
+
+8. Síntesis Doctrinal
+Enseñanza unificada que emerge de estudiar ambos pasajes juntos.
+
+9. Aplicación Integrada
+Lección práctica concreta que surge específicamente de la comparación de ambos textos.
+
+10. Conclusión Hermenéutica
+Principio de interpretación y referencias cruzadas adicionales que iluminan la comparación.
 
 Mantén rigor académico y equilibrio entre ambos textos.`;
 
