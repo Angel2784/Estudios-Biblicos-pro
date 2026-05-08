@@ -22,7 +22,6 @@ export default function ApiKeySetup({ onSave }: Props) {
     if (result.ok) {
       setStatus("ok");
       setStatusMsg(`✅ Conectado con "${result.model}"`);
-      // Guardar en localStorage y continuar
       localStorage.setItem("gemini_api_key", key.trim());
       localStorage.setItem("gemini_active_model", result.model);
       setTimeout(() => onSave(key.trim()), 800);
@@ -37,8 +36,19 @@ export default function ApiKeySetup({ onSave }: Props) {
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 flex items-center justify-center p-4">
-      <div className="bg-gray-900 rounded-2xl p-8 w-full max-w-md shadow-xl">
+    // ✅ CAMBIO 1: fondo azul oscuro + dorado en degradado
+    <div
+      className="min-h-screen flex items-center justify-center p-4"
+      style={{
+        background:
+          "linear-gradient(135deg, #0a1628 0%, #0f2347 35%, #1a3a6b 55%, #2c1f06 80%, #3d2a08 100%)",
+      }}
+    >
+      {/* ✅ CAMBIO 2: card con fondo semitransparente azul oscuro */}
+      <div
+        className="rounded-2xl p-8 w-full max-w-md shadow-2xl border border-yellow-900/30"
+        style={{ background: "rgba(10, 22, 50, 0.85)", backdropFilter: "blur(10px)" }}
+      >
         {/* Ícono */}
         <div className="text-center mb-6">
           <div className="text-6xl mb-3">📜</div>
@@ -47,9 +57,9 @@ export default function ApiKeySetup({ onSave }: Props) {
         </div>
 
         {/* Card API Key */}
-        <div className="bg-gray-800 rounded-xl p-5">
+        <div className="bg-white/5 border border-white/10 rounded-xl p-5">
           <div className="flex items-center gap-3 mb-4">
-            <div className="bg-gray-700 p-2 rounded-lg text-xl">🔑</div>
+            <div className="bg-yellow-900/40 p-2 rounded-lg text-xl">🔑</div>
             <div>
               <p className="font-semibold text-white">Conecta tu API Key de Gemini</p>
               <p className="text-xs text-gray-400">Gratis · Se guarda solo en tu dispositivo</p>
@@ -64,7 +74,7 @@ export default function ApiKeySetup({ onSave }: Props) {
               onChange={(e) => { setKey(e.target.value); setStatus("idle"); }}
               onKeyDown={(e) => e.key === "Enter" && handleTest()}
               placeholder="AIza..."
-              className="w-full bg-gray-700 text-white rounded-lg px-4 py-3 pr-10 outline-none focus:ring-2 focus:ring-yellow-400 text-sm"
+              className="w-full bg-white/10 text-white rounded-lg px-4 py-3 pr-10 outline-none focus:ring-2 focus:ring-yellow-400 text-sm placeholder-gray-500"
             />
             <button
               onClick={() => setShow(!show)}
@@ -77,9 +87,9 @@ export default function ApiKeySetup({ onSave }: Props) {
           {/* Status */}
           {status !== "idle" && (
             <div className={`text-xs rounded-lg px-3 py-2 mb-3 ${
-              status === "ok"      ? "bg-green-900 text-green-300" :
-              status === "error"   ? "bg-red-900 text-red-300" :
-                                     "bg-blue-900 text-blue-300"
+              status === "ok"    ? "bg-green-900 text-green-300" :
+              status === "error" ? "bg-red-900 text-red-300" :
+                                   "bg-blue-900 text-blue-300"
             }`}>
               {statusMsg}
             </div>
@@ -95,21 +105,19 @@ export default function ApiKeySetup({ onSave }: Props) {
           </button>
         </div>
 
-        {/* Info modelos */}
-        <div className="mt-4 bg-gray-800 rounded-xl p-4 text-xs text-gray-400">
-          <p className="font-semibold text-gray-300 mb-2">🤖 Modelos disponibles (auto-fallback):</p>
-          <ul className="space-y-1">
-            <li>• Gemini 2.5 Flash <span className="text-green-400">← prioridad 1</span></li>
-            <li>• Gemini 2.0 Flash Lite</li>
-            <li>• Gemini 1.5 Flash</li>
-            <li>• Gemini 1.5 Flash 8B <span className="text-yellow-400">← más requests gratis</span></li>
-            <li>• Gemini 2.0 Flash</li>
-          </ul>
-          <p className="mt-2">Obtén tu key gratis en{" "}
-            <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener"
-               className="text-yellow-400 underline">aistudio.google.com/apikey</a>
-          </p>
-        </div>
+        {/* ✅ CAMBIO 3: sección de modelos eliminada */}
+        {/* Solo dejamos el link a la API Key como texto sutil */}
+        <p className="text-center text-xs text-gray-500 mt-4">
+          Obtén tu key gratis en{" "}
+          <a
+            href="https://aistudio.google.com/apikey"
+            target="_blank"
+            rel="noopener"
+            className="text-yellow-400 underline hover:text-yellow-300"
+          >
+            aistudio.google.com/apikey
+          </a>
+        </p>
       </div>
     </div>
   );
