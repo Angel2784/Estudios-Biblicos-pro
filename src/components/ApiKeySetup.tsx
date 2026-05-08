@@ -25,7 +25,7 @@ export default function ApiKeySetup({ onSave }: Props) {
       // Guardar en localStorage y continuar
       localStorage.setItem("gemini_api_key", key.trim());
       localStorage.setItem("gemini_active_model", result.model);
-      setTimeout(() => onKeyConfirmed(key.trim()), 800);
+      setTimeout(() => onSave(key.trim()), 800);
     } else {
       setStatus("error");
       setStatusMsg(
