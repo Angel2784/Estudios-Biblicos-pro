@@ -3,10 +3,10 @@ import { useState } from "react";
 import { testApiKey } from "@/lib/gemini";
 
 interface Props {
-  onKeyConfirmed: (key: string) => void;
+  onSave: (key: string) => void;
 }
 
-export default function ApiKeySetup({ onKeyConfirmed }: Props) {
+export default function ApiKeySetup({ onSave }: Props) {
   const [key, setKey] = useState("");
   const [show, setShow] = useState(false);
   const [status, setStatus] = useState<"idle" | "testing" | "ok" | "error">("idle");
