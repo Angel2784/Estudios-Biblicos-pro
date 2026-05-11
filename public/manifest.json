@@ -1,7 +1,7 @@
 {
   "name": "Estudio Bíblico Pro",
   "short_name": "Biblia Pro",
-  "description": "Exégesis académica con IA — gratis para todos",
+  "description": "Exégesis académica",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0d1117",
