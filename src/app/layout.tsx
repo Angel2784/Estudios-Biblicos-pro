@@ -3,7 +3,7 @@ import './globals.css'
 
 export const metadata: Metadata = {
   title: 'Estudio Bíblico Pro',
-  description: 'Exégesis académica y teológica profunda con inteligencia artificial. Gratuito para todos.',
+  description: 'Exégesis académica y teológica profunda.',
   manifest: '/manifest.json',
   appleWebApp: { capable: true, statusBarStyle: 'black-translucent', title: 'Estudio Bíblico Pro' },
   openGraph: {
