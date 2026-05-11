@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   appleWebApp: { capable: true, statusBarStyle: 'black-translucent', title: 'Estudio Bíblico Pro' },
   openGraph: {
     title: 'Estudio Bíblico Pro',
-    description: 'Exégesis académica con IA — gratis para todos',
+    description: 'Exégesis académica',
     type: 'website',
   },
 }
