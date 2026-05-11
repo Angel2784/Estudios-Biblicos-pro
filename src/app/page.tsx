@@ -97,7 +97,7 @@ export default function HomePage() {
               <h1 className="font-bold text-base leading-tight" style={{ color: 'var(--gold)', fontFamily: 'Crimson Pro, serif' }}>
                 Estudio Bíblico Pro
               </h1>
-              <p className="text-xs hidden sm:block" style={{ color: 'var(--text-dim)' }}>Exégesis académica con IA</p>
+              <p className="text-xs hidden sm:block" style={{ color: 'var(--text-dim)' }}>Exégesis académica </p>
             </div>
           </div>
           <div className="flex items-center gap-2">
