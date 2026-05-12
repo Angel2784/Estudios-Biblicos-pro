@@ -78,7 +78,7 @@ function HowToGetKey() {
 
           {/* Nota final */}
           <div className="mt-2 bg-yellow-900/20 border border-yellow-800/30 rounded-lg px-3 py-2 text-yellow-300/80">
-            💡 <strong>Totalmente gratuito.</strong> Google ofrece 1,500 requests/día sin costo ni tarjeta de crédito.
+            💡 <strong> Google ofrece 1,500 requests/día sin costo ni tarjeta de crédito. </strong> 
           </div>
         </div>
       )}
