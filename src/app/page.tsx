@@ -242,7 +242,7 @@ export default function HomePage() {
       )}
 
       <footer className="text-center py-8 mt-8" style={{ borderTop: '1px solid var(--navy-border)', color: 'var(--text-dim)', fontSize: 12 }}>
-        <p>📜 Estudio Bíblico Pro · Gratuito para todos</p>
+        <p>📜 Estudio Bíblico Pro </p>
         <p className="mt-1">Powered by Google Gemini · Tu API Key nunca sale de tu dispositivo</p>
       </footer>
 
