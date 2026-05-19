@@ -146,7 +146,7 @@ export default function HomePage() {
 
         {/* ── SECCIÓN 1: EXÉGESIS ── */}
         <section>
-          <h2 className="font-bold text-lg mb-4" style={{ fontFamily: 'Crimson Pro, serif' }}>📖 Estudio Bíblico Pro</h2>
+          <h2 className="font-bold text-lg mb-4" style={{ fontFamily: 'Crimson Pro, serif', color: 'var(--gold)' }}>📖 Estudio Bíblico Pro</h2>
           <div className="card">
             <div className="flex gap-3 flex-col sm:flex-row">
               <input className="input-field flex-1" placeholder="Referencia bíblica (ej: Juan 3:16)"
@@ -172,7 +172,7 @@ export default function HomePage() {
         {/* ── SECCIÓN 2: COMPARADO ── */}
         <section>
           <div className="flex items-center gap-2 mb-4">
-            <h2 className="font-bold text-lg" style={{ fontFamily: 'Crimson Pro, serif' }}>⚖️ Estudio Comparado</h2>
+            <h2 className="font-bold text-lg" style={{ fontFamily: 'Crimson Pro, serif', color: 'var(--gold)' }}>⚖️ Estudio Comparado</h2>
             <span style={{ background: 'var(--gold)', color: 'var(--navy-card)', fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 20 }}></span>
           </div>
           <div className="card">
@@ -200,7 +200,7 @@ export default function HomePage() {
         {/* ── SECCIÓN 3: SERMÓN / DEVOCIONAL ── */}
         <section>
           <div className="flex items-center gap-2 mb-4">
-            <h2 className="font-bold text-lg" style={{ fontFamily: 'Crimson Pro, serif' }}>📝 Sermón / Devocional</h2>
+            <h2 className="font-bold text-lg" style={{ fontFamily: 'Crimson Pro, serif', color: 'var(--gold)' }}>📝 Sermón / Devocional</h2>
             <span style={{ background: '#7c3aed', color: '#fff', fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 20 }}></span>
           </div>
           <div className="card">
