@@ -2,6 +2,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { MessageCircle, Send, X, ChevronDown, ChevronUp, Bot, User } from 'lucide-react'
 import { obtenerRespuestaChat, type MensajeChat } from '@/lib/gemini'
+import { convertirEnlacesBiblicos } from '@/lib/parser'
 
 interface Props {
   cita:       string
@@ -48,6 +49,7 @@ export default function ChatPanel({ cita, textoPasaje, apiKey }: Props) {
 
   return (
     <div className="card mt-3 overflow-hidden" style={{ padding: 0 }}>
+
       {/* Toggle header */}
       <button
         onClick={() => setOpen(o => !o)}
@@ -104,7 +106,11 @@ export default function ChatPanel({ cita, textoPasaje, apiKey }: Props) {
             {mensajes.map((m, i) => (
               <div key={i} className={`flex gap-2 mb-3 ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                 {m.role === 'assistant' && (
-                  <div style={{ flexShrink: 0, width: 26, height: 26, borderRadius: '50%', background: '#1e3a5f', display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: 2 }}>
+                  <div style={{
+                    flexShrink: 0, width: 26, height: 26, borderRadius: '50%',
+                    background: '#1e3a5f', display: 'flex', alignItems: 'center',
+                    justifyContent: 'center', marginTop: 2,
+                  }}>
                     <Bot size={13} style={{ color: '#60a5fa' }} />
                   </div>
                 )}
@@ -112,16 +118,29 @@ export default function ChatPanel({ cita, textoPasaje, apiKey }: Props) {
                   maxWidth: '80%',
                   padding: '8px 12px',
                   borderRadius: m.role === 'user' ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
-                  background: m.role === 'user' ? 'var(--gold-dim)' : 'var(--navy)',
+                  background: m.role === 'user' ? 'var(--gold-dim)' : 'var(--navy-mid)',
                   color: m.role === 'user' ? 'var(--gold)' : 'var(--text-primary)',
                   fontSize: 13,
-                  lineHeight: 1.55,
-                  whiteSpace: 'pre-wrap',
+                  lineHeight: 1.6,
                 }}>
-                  {m.content}
+                  {m.role === 'assistant' ? (
+                    <div
+                      className="prose-biblical"
+                      style={{ fontSize: 13, lineHeight: 1.6 }}
+                      dangerouslySetInnerHTML={{
+                        __html: convertirEnlacesBiblicos(m.content).replace(/\n/g, '<br/>')
+                      }}
+                    />
+                  ) : (
+                    <span style={{ whiteSpace: 'pre-wrap' }}>{m.content}</span>
+                  )}
                 </div>
                 {m.role === 'user' && (
-                  <div style={{ flexShrink: 0, width: 26, height: 26, borderRadius: '50%', background: 'var(--gold-dim)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: 2 }}>
+                  <div style={{
+                    flexShrink: 0, width: 26, height: 26, borderRadius: '50%',
+                    background: 'var(--gold-dim)', display: 'flex', alignItems: 'center',
+                    justifyContent: 'center', marginTop: 2,
+                  }}>
                     <User size={13} style={{ color: 'var(--gold)' }} />
                   </div>
                 )}
@@ -130,10 +149,13 @@ export default function ChatPanel({ cita, textoPasaje, apiKey }: Props) {
 
             {cargando && (
               <div className="flex gap-2 mb-3">
-                <div style={{ flexShrink: 0, width: 26, height: 26, borderRadius: '50%', background: '#1e3a5f', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{
+                  flexShrink: 0, width: 26, height: 26, borderRadius: '50%',
+                  background: '#1e3a5f', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}>
                   <Bot size={13} style={{ color: '#60a5fa' }} />
                 </div>
-                <div style={{ padding: '10px 14px', borderRadius: '16px 16px 16px 4px', background: 'var(--navy)' }}>
+                <div style={{ padding: '10px 14px', borderRadius: '16px 16px 16px 4px', background: 'var(--navy-mid)' }}>
                   <div className="flex gap-1">
                     {[0, 1, 2].map(i => (
                       <div key={i} style={{
