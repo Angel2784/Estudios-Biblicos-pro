@@ -146,7 +146,7 @@ export default function HomePage() {
 
         {/* ── SECCIÓN 1: EXÉGESIS ── */}
         <section>
-          <h2 className="font-bold text-lg mb-4" style={{ fontFamily: 'Crimson Pro, serif', color: 'var(--gold)' }}>📖 Estudio Bíblico Pro</h2>
+          <h2 className="font-bold text-lg mb-4" style={{ fontFamily: 'Crimson Pro, serif', color: 'var(--gold)' }}>📖 Estudio Bíblico</h2>
           <div className="card">
             <div className="flex gap-3 flex-col sm:flex-row">
               <input className="input-field flex-1" placeholder="Referencia bíblica (ej: Juan 3:16)"
