@@ -47,10 +47,7 @@ export default function ChatPanel({ cita, textoPasaje, apiKey }: Props) {
   ]
 
   return (
-    <div className="mt-3 rounded-xl overflow-hidden" style={{
-      border: '1px solid var(--navy-border)',
-      background: 'var(--navy-card)',
-    }}>
+    <div className="card mt-3 overflow-hidden" style={{ padding: 0 }}>
       {/* Toggle header */}
       <button
         onClick={() => setOpen(o => !o)}
