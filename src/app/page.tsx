@@ -201,7 +201,7 @@ export default function HomePage() {
         <section>
           <div className="flex items-center gap-2 mb-4">
             <h2 className="font-bold text-lg" style={{ fontFamily: 'Crimson Pro, serif' }}>📝 Sermón / Devocional</h2>
-            <span style={{ background: '#7c3aed', color: '#fff', fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 20 }}>IA</span>
+            <span style={{ background: '#7c3aed', color: '#fff', fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 20 }}></span>
           </div>
           <div className="card">
             <p className="text-sm mb-4" style={{ color: 'var(--text-secondary)' }}>Genera un sermón expositivo, devocional basado en un pasaje</p>
