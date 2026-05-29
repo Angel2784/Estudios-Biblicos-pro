@@ -16,8 +16,15 @@ export function extraerSeccion(texto: string, numInicio: number, numFin?: number
   const lineas = texto.split('\n')
   let inicioIdx: number | null = null
   let finIdx = lineas.length
-  const patronInicio = new RegExp(`^[\\s#*]*${numInicio}[.)\\s]`)
-  const patronFin = numFin ? new RegExp(`^[\\s#*]*${numFin}[.)\\s]`) : null
+
+  // Cubre todos los formatos que genera Gemini:
+  //   "## 1. Título"   "**1. Título**"   "1. Título"   "1) Título"   "# 1 Título"
+  const makePatron = (n: number) =>
+    new RegExp(`^\\s*(?:#{1,6}\\s*)?(?:\\*{1,2})?\\s*${n}[.)\\s]`)
+
+  const patronInicio = makePatron(numInicio)
+  const patronFin    = numFin ? makePatron(numFin) : null
+
   for (let i = 0; i < lineas.length; i++) {
     if (inicioIdx === null && patronInicio.test(lineas[i])) {
       inicioIdx = i
@@ -28,9 +35,6 @@ export function extraerSeccion(texto: string, numInicio: number, numFin?: number
       break
     }
   }
-  if (inicioIdx !== null) return lineas.slice(inicioIdx, finIdx).join('\n').trim()
-  return '⚠️ Sección no disponible.'
-}
 
 // ─── Lista de lugares bíblicos conocidos (orden: más específico primero) ──────
 const LUGARES_BIBLICOS: string[] = [
