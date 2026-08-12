@@ -1,6 +1,6 @@
 'use client'
 import { useState } from 'react'
-import { BookOpen, Download, Library, ChevronDown, ChevronUp, MapPin, ExternalLink, X } from 'lucide-react'
+import { BookOpen, Download, Library, ChevronDown, ChevronUp, MapPin, ExternalLink, X, Copy, Check } from 'lucide-react'
 import AnnotationReader from './AnnotationReader'
 import { extraerSeccion, extraerLugarGeografico } from '@/lib/parser'
 import { guardarEstudio } from '@/lib/storage'
@@ -491,6 +491,7 @@ function TimelineView({ cita, apiKey }: { cita: string; apiKey: string }) {
 export default function StudySection({ cita, texto, onClear, apiKey }: Props) {
   const [expanded, setExpanded]           = useState(true)
   const [saved, setSaved]                 = useState(false)
+  const [copied, setCopied]               = useState(false)
   const [downloading, setDownloading]     = useState(false)
   const [mapError, setMapError]           = useState(false)
   const [tabOrder, setTabOrder]           = useState(() => TABS_EXEGESIS.map((_, i) => i))
@@ -519,6 +520,15 @@ export default function StudySection({ cita, texto, onClear, apiKey }: Props) {
   const handleSave = () => {
     guardarEstudio({ cita, texto, fecha: new Date().toISOString(), anotaciones: [] })
     setSaved(true); setTimeout(() => setSaved(false), 2500)
+  }
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(texto)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch (e) {
+      console.error('Error al copiar:', e)
+    }
   }
   const handleDownload = async () => {
     setDownloading(true)
@@ -590,6 +600,10 @@ export default function StudySection({ cita, texto, onClear, apiKey }: Props) {
           </div>
         </div>
         <div className="flex items-center gap-2">
+          <button className="btn-secondary" style={{ fontSize:12, padding:'7px 12px' }} onClick={handleCopy}>
+            {copied ? <Check size={13} /> : <Copy size={13} />}
+            {copied ? 'Copiado' : 'Copiar todo'}
+          </button>
           <button className="btn-secondary" style={{ fontSize:12, padding:'7px 12px' }} onClick={handleSave}>
             <Library size={13} />{saved ? '✅ Guardado' : 'Guardar'}
           </button>
