@@ -1,6 +1,6 @@
 'use client'
 import { useState, useEffect, useRef } from 'react'
-import { Library, Settings, Flame, Search, X, BookMarked } from 'lucide-react'
+import { Library, Settings, Flame, Search, X, BookMarked, Key } from 'lucide-react'
 import ApiKeySetup from '@/components/ApiKeySetup'
 import StudySection from '@/components/StudySection'
 import ComparativeSection from '@/components/ComparativeSection'
@@ -25,8 +25,10 @@ function reorder<T>(arr: T[], from: number, to: number): T[] {
 }
 
 export default function HomePage() {
-  const [apiKey, setApiKeyState]     = useState<string | null>(null)
+  // '' = usa la key compartida del servidor (gratis, con límite diario)
+  const [apiKey, setApiKeyState]     = useState<string>('')
   const [loading, setLoading]        = useState(true)
+  const [showApiKeySetup, setShowApiKeySetup] = useState(false)
 
   // Exégesis
   const [citaInput, setCitaInput]    = useState('')
@@ -58,10 +60,11 @@ export default function HomePage() {
 
   useEffect(() => { const key = getApiKey(); if (key) setApiKeyState(key); setLoading(false) }, [])
 
-  const handleSaveKey = (key: string) => { setApiKey(key); setApiKeyState(key) }
+  const handleSaveKey = (key: string) => { setApiKey(key); setApiKeyState(key); setShowApiKeySetup(false) }
+  const handleRemoveKey = () => { setApiKey(''); setApiKeyState('') }
 
   const handleStudy = async () => {
-    if (!citaInput.trim() || !apiKey) return
+    if (!citaInput.trim()) return
     setEstudiando(true); setErrorExeg('')
     try {
       const texto = await obtenerExegesis(apiKey, citaInput.trim())
@@ -71,7 +74,7 @@ export default function HomePage() {
   }
 
   const handleCompare = async () => {
-    if (!cita1.trim() || !cita2.trim() || !apiKey) return
+    if (!cita1.trim() || !cita2.trim()) return
     setComparando(true); setErrorComp('')
     try {
       const texto = await obtenerComparado(apiKey, cita1.trim(), cita2.trim())
@@ -82,7 +85,7 @@ export default function HomePage() {
   }
 
   const handleSermon = async () => {
-    if (!citaSermon.trim() || !apiKey) return
+    if (!citaSermon.trim()) return
     setGenerando(true); setErrorSermon('')
     try {
       const texto = await obtenerSermon(apiKey, citaSermon.trim(), estiloSermon)
@@ -102,7 +105,8 @@ export default function HomePage() {
   }
 
   if (loading) return <div className="min-h-screen flex items-center justify-center"><div className="text-4xl" style={{ animation: 'spin 1s linear infinite' }}>⟳</div></div>
-  if (!apiKey) return <ApiKeySetup onSave={handleSaveKey} />
+
+  if (showApiKeySetup) return <ApiKeySetup onSave={handleSaveKey} />
 
   return (
     <div className="min-h-screen" style={{ background: 'var(--navy)' }}>
@@ -131,13 +135,27 @@ export default function HomePage() {
       {showSettings && (
         <div className="max-w-4xl mx-auto px-4 py-4">
           <div className="card flex items-center justify-between gap-4 flex-wrap" style={{ animation: 'slideUp 0.3s ease-out' }}>
-            <div>
-              <p className="text-sm font-semibold" style={{ color: 'var(--gold)' }}>🔑 API Key activa</p>
-              <p className="text-xs mt-1" style={{ color: 'var(--text-dim)' }}>{apiKey.substring(0, 8)}{'•'.repeat(20)}</p>
-            </div>
-            <button className="btn-secondary" style={{ fontSize: 12 }} onClick={() => { setApiKey(''); setApiKeyState(null) }}>
-              <X size={13} /> Cambiar API Key
-            </button>
+            {apiKey ? (
+              <>
+                <div>
+                  <p className="text-sm font-semibold" style={{ color: 'var(--gold)' }}>🔑 Usando tu propia API Key</p>
+                  <p className="text-xs mt-1" style={{ color: 'var(--text-dim)' }}>{apiKey.substring(0, 8)}{'•'.repeat(20)} · Uso ilimitado</p>
+                </div>
+                <button className="btn-secondary" style={{ fontSize: 12 }} onClick={handleRemoveKey}>
+                  <X size={13} /> Quitar API Key
+                </button>
+              </>
+            ) : (
+              <>
+                <div>
+                  <p className="text-sm font-semibold" style={{ color: 'var(--gold)' }}>✨ Usando el servicio gratuito</p>
+                  <p className="text-xs mt-1" style={{ color: 'var(--text-dim)' }}>Tienes un límite de consultas diarias. Conecta tu propia API Key gratis para uso ilimitado.</p>
+                </div>
+                <button className="btn-secondary" style={{ fontSize: 12 }} onClick={() => setShowApiKeySetup(true)}>
+                  <Key size={13} /> Conectar mi API Key
+                </button>
+              </>
+            )}
           </div>
         </div>
       )}
@@ -164,7 +182,7 @@ export default function HomePage() {
           </div>
           {estudios.map((e, i) => (
             <div key={e.id} draggable onDragStart={() => { dragEstudio.current = i }} onDragOver={ev => ev.preventDefault()} onDrop={() => { if (dragEstudio.current !== null) { setEstudios(p => reorder(p, dragEstudio.current!, i)); dragEstudio.current = null } }} style={{ cursor: 'grab' }}>
-              <StudySection cita={e.cita} texto={e.texto} apiKey={apiKey!} onClear={() => setEstudios(prev => prev.filter(x => x.id !== e.id))} />
+              <StudySection cita={e.cita} texto={e.texto} apiKey={apiKey} onClear={() => setEstudios(prev => prev.filter(x => x.id !== e.id))} />
             </div>
           ))}
         </section>
@@ -191,7 +209,7 @@ export default function HomePage() {
           </div>
           {comparados.map((c, i) => (
             <div key={c.id} draggable onDragStart={() => { dragComparado.current = i }} onDragOver={ev => ev.preventDefault()} onDrop={() => { if (dragComparado.current !== null) { setComparados(p => reorder(p, dragComparado.current!, i)); dragComparado.current = null } }} style={{ cursor: 'grab' }}>
-              <ComparativeSection cita1={c.cita1} cita2={c.cita2} texto={c.texto} apiKey={apiKey!} onRemove={() => setComparados(prev => prev.filter(x => x.id !== c.id))} />
+              <ComparativeSection cita1={c.cita1} cita2={c.cita2} texto={c.texto} apiKey={apiKey} onRemove={() => setComparados(prev => prev.filter(x => x.id !== c.id))} />
             </div>
           ))}
         </section>
@@ -248,7 +266,7 @@ export default function HomePage() {
 
       <footer className="text-center py-8 mt-8" style={{ borderTop: '1px solid var(--navy-border)', color: 'var(--text-dim)', fontSize: 12 }}>
         <p>📜 Estudio Bíblico Pro</p>
-        <p className="mt-1">Powered by Google Gemini · Tu API Key nunca sale de tu dispositivo</p>
+        <p className="mt-1">Powered by Google Gemini</p>
       </footer>
 
       <style>{`@keyframes spin { from { transform: rotate(0deg) } to { transform: rotate(360deg) } }`}</style>
