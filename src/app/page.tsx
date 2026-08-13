@@ -8,6 +8,7 @@ import SermonSection from '@/components/SermonSection'
 import LibrarySidebar from '@/components/LibrarySidebar'
 import { obtenerExegesis, obtenerComparado, obtenerSermon, type EstiloSermon } from '@/lib/gemini'
 import { getApiKey, setApiKey, type EstudioGuardado } from '@/lib/storage'
+import { obtenerExegesis, obtenerComparado, obtenerSermon, type EstiloSermon, consultarLimite, onRestantesChange, PRECIO_PREMIUM } from '@/lib/gemini'
 
 interface StudyResult  { id: string; cita: string; texto: string }
 interface CompResult   { id: string; cita1: string; cita2: string; texto: string }
