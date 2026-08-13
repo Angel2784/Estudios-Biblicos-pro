@@ -1,4 +1,4 @@
-// src/lib/gemini.ts (cliente — sustituye al archivo original)
+// src/lib/gemini.ts (cliente)
 export type EstiloSermon = 'expositivo' | 'devocional'
 export interface MensajeChat { role: 'user' | 'assistant'; content: string }
 export interface PersonajeBiblico {
@@ -17,7 +17,13 @@ export interface EventoTimeline {
 }
 export interface Timeline { periodos: PeriodoBiblico[]; eventos: EventoTimeline[]; periodoGeneral: string; contextoHistorico: string }
 
-async function llamarAPI<T>(action: string, params: Record<string, unknown>, userApiKey?: string): Promise<T> {
+export const PRECIO_PREMIUM = '$14.900 COP/mes'
+
+let restantesCallback: ((restantes: number) => void) | null = null
+// El componente de UI se suscribe aquí para enterarse cuando cambia el contador
+export function onRestantesChange(cb: (restantes: number) => void) { restantesCallback = cb }
+
+async function llamarAPI<T extends { restantes?: number }>(action: string, params: Record<string, unknown>, userApiKey?: string): Promise<T> {
   const res = await fetch('/api/gemini', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -25,31 +31,33 @@ async function llamarAPI<T>(action: string, params: Record<string, unknown>, use
   })
   const data = await res.json()
   if (!res.ok) throw new Error(data.error || `Error ${res.status}`)
+  if (typeof data.restantes === 'number' && restantesCallback) restantesCallback(data.restantes)
   return data as T
 }
 
-// apiKey aquí es OPCIONAL: solo se usa si el usuario conectó su propia key en Ajustes.
-// Si va vacío (''), el backend usa la key compartida del servidor.
+export async function consultarLimite(): Promise<{ restantes: number; limite: number }> {
+  const res = await fetch('/api/gemini')
+  return res.json()
+}
+
 export const obtenerExegesis = async (apiKey: string, pasaje: string) =>
-  (await llamarAPI<{ texto: string }>('exegesis', { pasaje }, apiKey)).texto
+  (await llamarAPI<{ texto: string; restantes?: number }>('exegesis', { pasaje }, apiKey)).texto
 
 export const obtenerComparado = async (apiKey: string, pasaje1: string, pasaje2: string) =>
-  (await llamarAPI<{ texto: string }>('comparado', { pasaje1, pasaje2 }, apiKey)).texto
+  (await llamarAPI<{ texto: string; restantes?: number }>('comparado', { pasaje1, pasaje2 }, apiKey)).texto
 
 export const obtenerSermon = async (apiKey: string, pasaje: string, estilo: EstiloSermon) =>
-  (await llamarAPI<{ texto: string }>('sermon', { pasaje, estilo }, apiKey)).texto
+  (await llamarAPI<{ texto: string; restantes?: number }>('sermon', { pasaje, estilo }, apiKey)).texto
 
 export const obtenerRespuestaChat = async (apiKey: string, pasaje: string, textoPasaje: string, historial: MensajeChat[]) =>
-  (await llamarAPI<{ texto: string }>('chat', { pasaje, textoPasaje, historial }, apiKey)).texto
+  (await llamarAPI<{ texto: string; restantes?: number }>('chat', { pasaje, textoPasaje, historial }, apiKey)).texto
 
 export const obtenerArbolPersonajes = async (apiKey: string, pasaje: string) =>
-  llamarAPI<ArbolPersonajes>('personajes', { pasaje }, apiKey)
+  llamarAPI<ArbolPersonajes & { restantes?: number }>('personajes', { pasaje }, apiKey)
 
 export const obtenerTimeline = async (apiKey: string, pasaje: string) =>
-  llamarAPI<Timeline>('timeline', { pasaje }, apiKey)
+  llamarAPI<Timeline & { restantes?: number }>('timeline', { pasaje }, apiKey)
 
-// testApiKey ya no es necesario para el flujo principal, pero lo dejamos
-// para el botón de "probar mi propia key" en Ajustes.
 export async function testApiKey(apiKey: string): Promise<{ ok: boolean; model: string; error?: string }> {
   try {
     await obtenerExegesis(apiKey, 'Juan 3:16')
