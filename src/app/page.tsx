@@ -129,7 +129,7 @@ export default function HomePage() {
           </div>
           <div className="flex items-center gap-2">
             {!apiKey && restantes !== null && (
-              <span className="text-xs px-2 py-1 rounded-full" style={{ background: restantes > 0 ? 'var(--navy-border)' : '#7f1d1d33', color: restantes > 0 ? 'var(--text-dim)' : '#ef4444' }}>
+              <span className="text-xs px-2 py-1 rounded-full" style={{ background: 'var(--navy-border)', color: 'var(--gold)' }}>
                 {restantes > 0 ? `${restantes} consultas gratis hoy` : `Límite alcanzado · ${PRECIO_PREMIUM}`}
               </span>
             )}
@@ -160,7 +160,7 @@ export default function HomePage() {
               <>
                 <div>
                   <p className="text-sm font-semibold" style={{ color: 'var(--gold)' }}>✨ Usando el servicio gratuito</p>
-                  <p className="text-xs mt-1" style={{ color: 'var(--text-dim)' }}>
+                  <p className="text-xs mt-1" style={{ color: 'var(--gold)' }}>
                     {restantes !== null ? `Te quedan ${restantes} consultas gratis hoy. ` : ''}
                     Conecta tu propia API Key gratis para uso ilimitado, o hazte premium por {PRECIO_PREMIUM}.
                   </p>
