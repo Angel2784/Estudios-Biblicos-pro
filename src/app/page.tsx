@@ -6,9 +6,8 @@ import StudySection from '@/components/StudySection'
 import ComparativeSection from '@/components/ComparativeSection'
 import SermonSection from '@/components/SermonSection'
 import LibrarySidebar from '@/components/LibrarySidebar'
-import { obtenerExegesis, obtenerComparado, obtenerSermon, type EstiloSermon } from '@/lib/gemini'
-import { getApiKey, setApiKey, type EstudioGuardado } from '@/lib/storage'
 import { obtenerExegesis, obtenerComparado, obtenerSermon, type EstiloSermon, consultarLimite, onRestantesChange, PRECIO_PREMIUM } from '@/lib/gemini'
+import { getApiKey, setApiKey, type EstudioGuardado } from '@/lib/storage'
 
 interface StudyResult  { id: string; cita: string; texto: string }
 interface CompResult   { id: string; cita1: string; cita2: string; texto: string }
@@ -30,6 +29,7 @@ export default function HomePage() {
   const [apiKey, setApiKeyState]     = useState<string>('')
   const [loading, setLoading]        = useState(true)
   const [showApiKeySetup, setShowApiKeySetup] = useState(false)
+  const [restantes, setRestantes]    = useState<number | null>(null)
 
   // Exégesis
   const [citaInput, setCitaInput]    = useState('')
@@ -60,6 +60,11 @@ export default function HomePage() {
   const dragSermon    = useRef<number | null>(null)
 
   useEffect(() => { const key = getApiKey(); if (key) setApiKeyState(key); setLoading(false) }, [])
+
+  useEffect(() => {
+    onRestantesChange(setRestantes)
+    if (!apiKey) consultarLimite().then(d => setRestantes(d.restantes))
+  }, [apiKey])
 
   const handleSaveKey = (key: string) => { setApiKey(key); setApiKeyState(key); setShowApiKeySetup(false) }
   const handleRemoveKey = () => { setApiKey(''); setApiKeyState('') }
@@ -123,6 +128,11 @@ export default function HomePage() {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            {!apiKey && restantes !== null && (
+              <span className="text-xs px-2 py-1 rounded-full" style={{ background: restantes > 0 ? 'var(--navy-border)' : '#7f1d1d33', color: restantes > 0 ? 'var(--text-dim)' : '#ef4444' }}>
+                {restantes > 0 ? `${restantes} consultas gratis hoy` : `Límite alcanzado · ${PRECIO_PREMIUM}`}
+              </span>
+            )}
             <button className="btn-secondary" style={{ padding: '7px 10px' }} onClick={() => setShowLibrary(!showLibrary)}>
               <Library size={16} /><span className="hidden sm:inline text-xs">Biblioteca</span>
             </button>
@@ -150,7 +160,10 @@ export default function HomePage() {
               <>
                 <div>
                   <p className="text-sm font-semibold" style={{ color: 'var(--gold)' }}>✨ Usando el servicio gratuito</p>
-                  <p className="text-xs mt-1" style={{ color: 'var(--text-dim)' }}>Tienes un límite de consultas diarias. Conecta tu propia API Key gratis para uso ilimitado.</p>
+                  <p className="text-xs mt-1" style={{ color: 'var(--text-dim)' }}>
+                    {restantes !== null ? `Te quedan ${restantes} consultas gratis hoy. ` : ''}
+                    Conecta tu propia API Key gratis para uso ilimitado, o hazte premium por {PRECIO_PREMIUM}.
+                  </p>
                 </div>
                 <button className="btn-secondary" style={{ fontSize: 12 }} onClick={() => setShowApiKeySetup(true)}>
                   <Key size={13} /> Conectar mi API Key
