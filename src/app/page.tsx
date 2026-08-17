@@ -1,12 +1,13 @@
 'use client'
 import { useState, useEffect, useRef } from 'react'
-import { Library, Settings, Flame, Search, X, BookMarked, Key } from 'lucide-react'
+import { Library, Settings, Flame, Search, X, BookMarked, Key, UserPlus } from 'lucide-react'
+import { useUser, UserButton, SignInButton } from '@clerk/nextjs'
 import ApiKeySetup from '@/components/ApiKeySetup'
 import StudySection from '@/components/StudySection'
 import ComparativeSection from '@/components/ComparativeSection'
 import SermonSection from '@/components/SermonSection'
 import LibrarySidebar from '@/components/LibrarySidebar'
-import { obtenerExegesis, obtenerComparado, obtenerSermon, type EstiloSermon, consultarLimite, onRestantesChange, PRECIO_PREMIUM } from '@/lib/gemini'
+import { obtenerExegesis, obtenerComparado, obtenerSermon, type EstiloSermon, consultarLimite, onRestantesChange, onRequiereCuenta, PRECIO_MENSUAL, PRECIO_ANUAL } from '@/lib/gemini'
 import { getApiKey, setApiKey, type EstudioGuardado } from '@/lib/storage'
 
 interface StudyResult  { id: string; cita: string; texto: string }
@@ -25,11 +26,15 @@ function reorder<T>(arr: T[], from: number, to: number): T[] {
 }
 
 export default function HomePage() {
-  // '' = usa la key compartida del servidor (gratis, con límite diario)
+  const { isSignedIn, isLoaded } = useUser()
+
   const [apiKey, setApiKeyState]     = useState<string>('')
   const [loading, setLoading]        = useState(true)
   const [showApiKeySetup, setShowApiKeySetup] = useState(false)
   const [restantes, setRestantes]    = useState<number | null>(null)
+  const [esAdmin, setEsAdmin]        = useState(false)
+  const [esPremium, setEsPremium]    = useState(false)
+  const [mostrarCTA, setMostrarCTA]  = useState(false)
 
   // Exégesis
   const [citaInput, setCitaInput]    = useState('')
@@ -54,7 +59,6 @@ export default function HomePage() {
   const [showLibrary, setShowLibrary]    = useState(false)
   const [showSettings, setShowSettings]  = useState(false)
 
-  // Drag refs
   const dragEstudio   = useRef<number | null>(null)
   const dragComparado = useRef<number | null>(null)
   const dragSermon    = useRef<number | null>(null)
@@ -63,8 +67,17 @@ export default function HomePage() {
 
   useEffect(() => {
     onRestantesChange(setRestantes)
-    if (!apiKey) consultarLimite().then(d => setRestantes(d.restantes))
-  }, [apiKey])
+    onRequiereCuenta(() => setMostrarCTA(true))
+  }, [])
+
+  useEffect(() => {
+    if (!isLoaded) return
+    consultarLimite().then(d => {
+      setRestantes(d.restantes)
+      setEsAdmin(!!d.esAdmin)
+      setEsPremium(!!d.esPremium)
+    })
+  }, [isLoaded, isSignedIn])
 
   const handleSaveKey = (key: string) => { setApiKey(key); setApiKeyState(key); setShowApiKeySetup(false) }
   const handleRemoveKey = () => { setApiKey(''); setApiKeyState('') }
@@ -114,6 +127,8 @@ export default function HomePage() {
 
   if (showApiKeySetup) return <ApiKeySetup onSave={handleSaveKey} />
 
+  const sinLimite = esAdmin || esPremium || !!apiKey
+
   return (
     <div className="min-h-screen" style={{ background: 'var(--navy)' }}>
 
@@ -128,9 +143,9 @@ export default function HomePage() {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            {!apiKey && restantes !== null && (
+            {!sinLimite && restantes !== null && (
               <span className="text-xs px-2 py-1 rounded-full" style={{ background: 'var(--navy-border)', color: 'var(--gold)' }}>
-                {restantes > 0 ? `${restantes} consultas gratis hoy` : `Límite alcanzado · ${PRECIO_PREMIUM}`}
+                {restantes > 0 ? `${restantes} consultas gratis hoy` : 'Límite alcanzado'}
               </span>
             )}
             <button className="btn-secondary" style={{ padding: '7px 10px' }} onClick={() => setShowLibrary(!showLibrary)}>
@@ -139,9 +154,29 @@ export default function HomePage() {
             <button className="btn-secondary" style={{ padding: '7px 10px' }} onClick={() => setShowSettings(!showSettings)}>
               <Settings size={16} />
             </button>
+            {isLoaded && (isSignedIn ? <UserButton afterSignOutUrl="/" /> : (
+              <SignInButton mode="modal">
+                <button className="btn-secondary" style={{ padding: '7px 10px', fontSize: 12 }}>Iniciar sesión</button>
+              </SignInButton>
+            ))}
           </div>
         </div>
       </nav>
+
+      {/* Banner: se acabaron las 3 consultas anónimas → crear cuenta */}
+      {mostrarCTA && !isSignedIn && (
+        <div className="max-w-4xl mx-auto px-4 pt-4">
+          <div className="card flex items-center justify-between gap-4 flex-wrap" style={{ border: '1px solid var(--gold)' }}>
+            <div>
+              <p className="text-sm font-semibold" style={{ color: 'var(--gold)' }}>✨ Usaste tus 3 consultas gratis</p>
+              <p className="text-xs mt-1" style={{ color: 'var(--text-dim)' }}>Crea una cuenta gratis y obtén 3 consultas más.</p>
+            </div>
+            <SignInButton mode="modal">
+              <button className="btn-primary" style={{ fontSize: 12 }}><UserPlus size={14} /> Crear cuenta gratis</button>
+            </SignInButton>
+          </div>
+        </div>
+      )}
 
       {showSettings && (
         <div className="max-w-4xl mx-auto px-4 py-4">
@@ -156,19 +191,29 @@ export default function HomePage() {
                   <X size={13} /> Quitar API Key
                 </button>
               </>
-            ) : (
+            ) : esPremium ? (
+              <div>
+                <p className="text-sm font-semibold" style={{ color: 'var(--gold)' }}>⭐ Cuenta Premium activa</p>
+                <p className="text-xs mt-1" style={{ color: 'var(--gold)' }}>Uso ilimitado</p>
+              </div>
+            ) : esAdmin ? (
               <>
                 <div>
-                  <p className="text-sm font-semibold" style={{ color: 'var(--gold)' }}>✨ Usando el servicio gratuito</p>
-                  <p className="text-xs mt-1" style={{ color: 'var(--gold)' }}>
-                    {restantes !== null ? `Te quedan ${restantes} consultas gratis hoy. ` : ''}
-                    Conecta tu propia API Key gratis para uso ilimitado, o hazte premium por {PRECIO_PREMIUM}.
-                  </p>
+                  <p className="text-sm font-semibold" style={{ color: 'var(--gold)' }}>✨ Cuenta admin</p>
+                  <p className="text-xs mt-1" style={{ color: 'var(--gold)' }}>Conecta tu propia API Key para uso ilimitado.</p>
                 </div>
                 <button className="btn-secondary" style={{ fontSize: 12 }} onClick={() => setShowApiKeySetup(true)}>
                   <Key size={13} /> Conectar mi API Key
                 </button>
               </>
+            ) : (
+              <div>
+                <p className="text-sm font-semibold" style={{ color: 'var(--gold)' }}>✨ Usando el servicio gratuito</p>
+                <p className="text-xs mt-1" style={{ color: 'var(--gold)' }}>
+                  {restantes !== null ? `Te quedan ${restantes} consultas gratis hoy. ` : ''}
+                  Hazte premium: {PRECIO_MENSUAL} o {PRECIO_ANUAL}.
+                </p>
+              </div>
             )}
           </div>
         </div>
@@ -236,7 +281,6 @@ export default function HomePage() {
           <div className="card">
             <p className="text-sm mb-4" style={{ color: 'var(--text-secondary)' }}>Genera un sermón expositivo, devocional basado en un pasaje</p>
 
-            {/* Selector de estilo */}
             <div className="flex gap-2 mb-3 flex-wrap">
               {([['expositivo','📖 Sermón expositivo'],['devocional','🌅 Devocional breve']] as [EstiloSermon,string][]).map(([val,label]) => (
                 <button key={val} onClick={() => setEstiloSermon(val)}
