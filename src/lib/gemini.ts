@@ -17,7 +17,8 @@ export interface EventoTimeline {
 }
 export interface Timeline { periodos: PeriodoBiblico[]; eventos: EventoTimeline[]; periodoGeneral: string; contextoHistorico: string }
 
-export const PRECIO_PREMIUM = '$14.900 COP/mes'
+export const PRECIO_MENSUAL = '$14.900 COP/mes'
+export const PRECIO_ANUAL = '$149.000 COP/año (ahorra 2 meses)'
 
 let restantesCallback: ((restantes: number) => void) | null = null
 // El componente de UI se suscribe aquí para enterarse cuando cambia el contador
