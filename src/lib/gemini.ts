@@ -21,8 +21,10 @@ export const PRECIO_MENSUAL = '$14.900 COP/mes'
 export const PRECIO_ANUAL = '$149.000 COP/año (ahorra 2 meses)'
 
 let restantesCallback: ((restantes: number) => void) | null = null
-// El componente de UI se suscribe aquí para enterarse cuando cambia el contador
 export function onRestantesChange(cb: (restantes: number) => void) { restantesCallback = cb }
+
+let requiereCuentaCallback: (() => void) | null = null
+export function onRequiereCuenta(cb: () => void) { requiereCuentaCallback = cb }
 
 async function llamarAPI<T extends { restantes?: number }>(action: string, params: Record<string, unknown>, userApiKey?: string): Promise<T> {
   const res = await fetch('/api/gemini', {
@@ -31,12 +33,15 @@ async function llamarAPI<T extends { restantes?: number }>(action: string, param
     body: JSON.stringify({ action, params, userApiKey: userApiKey || undefined }),
   })
   const data = await res.json()
-  if (!res.ok) throw new Error(data.error || `Error ${res.status}`)
+  if (!res.ok) {
+    if (data.requiereCuenta && requiereCuentaCallback) requiereCuentaCallback()
+    throw new Error(data.error || `Error ${res.status}`)
+  }
   if (typeof data.restantes === 'number' && restantesCallback) restantesCallback(data.restantes)
   return data as T
 }
 
-export async function consultarLimite(): Promise<{ restantes: number; limite: number }> {
+export async function consultarLimite(): Promise<{ restantes: number; limite: number; loggedIn: boolean; esAdmin?: boolean; esPremium?: boolean }> {
   const res = await fetch('/api/gemini')
   return res.json()
 }
