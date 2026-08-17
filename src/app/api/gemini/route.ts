@@ -12,7 +12,7 @@ import {
 // Para producción real con más usuarios, cambia este Map por Vercel KV
 // (Upstash Redis, gratis hasta cierto límite) — es un cambio de 5 líneas.
 const usosPorIP = new Map<string, { count: number; resetAt: number }>()
-const LIMITE_DIARIO = 8
+const LIMITE_DIARIO = 3
 
 function getIP(req: NextRequest): string {
   return req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
