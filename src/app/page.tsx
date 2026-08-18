@@ -196,7 +196,7 @@ export default function HomePage() {
 
       <main className="max-w-4xl mx-auto px-4 py-6 space-y-8">
 
-        <section className="ember-glow">
+        <section>
           <h2 className="font-bold text-lg mb-4 flex items-center gap-2" style={{ fontFamily: 'Crimson Pro, serif', color: 'var(--gold)' }}><ScrollText size={20} />Estudio Bíblico</h2>
           <div className="card">
             <div className="flex gap-3 flex-col sm:flex-row">
