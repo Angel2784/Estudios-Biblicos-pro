@@ -1,5 +1,6 @@
 'use client'
 import { useEffect, useRef, useState, useCallback } from 'react'
+import { Check, Copy, PenLine, Link2, MessageCircle, StickyNote } from 'lucide-react'
 import { getAnotaciones, guardarAnotaciones } from '@/lib/storage'
 import type { Anotacion } from '@/lib/storage'
 import { convertirEnlacesBiblicos } from '@/lib/parser'
@@ -59,7 +60,25 @@ export default function AnnotationReader({ texto, cita }: Props) {
   }, [])
 
   const buildHtml = useCallback((): string => {
-    let html = convertirEnlacesBiblicos(texto).replace(/\n/g, '<br/>')
+    // Convierte líneas que empiezan con "> " (formato markdown de cita) en <blockquote>,
+    // para que el texto bíblico citado se distinga tipográficamente del resto del análisis.
+    const lineas = texto.split('\n')
+    const bloques: string[] = []
+    let citaBuffer: string[] = []
+    const flushCita = () => {
+      if (citaBuffer.length) {
+        bloques.push(`<blockquote>${citaBuffer.join('<br/>')}</blockquote>`)
+        citaBuffer = []
+      }
+    }
+    lineas.forEach(linea => {
+      const m = linea.match(/^\s*>\s?(.*)$/)
+      if (m) { citaBuffer.push(m[1]) }
+      else { flushCita(); bloques.push(linea) }
+    })
+    flushCita()
+
+    let html = convertirEnlacesBiblicos(bloques.join('\n')).replace(/\n(?!<\/?blockquote>)/g, '<br/>')
     anotaciones.forEach(an => {
       const escaped = an.fragmento.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
       const notaAttr = an.nota
@@ -157,7 +176,7 @@ export default function AnnotationReader({ texto, cita }: Props) {
     if (!modal) return
     setAnotaciones(prev => prev.map(a => a.id === modal.id ? { ...a, nota: modal.nota } : a))
     setModal(null)
-    setSaveMsg('✅ Nota guardada')
+    setSaveMsg('Nota guardada')
     setTimeout(() => setSaveMsg(''), 2500)
   }
 
@@ -170,7 +189,7 @@ export default function AnnotationReader({ texto, cita }: Props) {
     const text = getTextForAction()
     if (text) {
       navigator.clipboard.writeText(`${text}\n\n— ${cita} (RVR1960)`)
-      setSaveMsg('📋 Copiado')
+      setSaveMsg('Copiado')
       setTimeout(() => setSaveMsg(''), 2000)
     }
     setToolbar(null)
@@ -192,8 +211,8 @@ export default function AnnotationReader({ texto, cita }: Props) {
 
   return (
     <div className="relative">
-      <p className="text-xs mb-3" style={{ color: 'var(--text-dim)' }}>
-        ✋ Selecciona cualquier fragmento para resaltar, anotar y compartir
+      <p className="text-xs mb-3 flex items-center gap-1" style={{ color: 'var(--text-dim)' }}>
+        <PenLine size={12} />Selecciona cualquier fragmento para resaltar, anotar y compartir
       </p>
 
       <div
@@ -225,12 +244,12 @@ export default function AnnotationReader({ texto, cita }: Props) {
             />
           ))}
           <div style={{ width: 1, height: 20, background: '#475569' }} />
-          <button className="tab-btn" style={{ padding: '4px 8px', fontSize: 11 }} onClick={handleNota}>📝</button>
-          <button className="tab-btn" style={{ padding: '4px 8px', fontSize: 11 }} onClick={handleCopy}>📋</button>
-          <button className="tab-btn" style={{ padding: '4px 8px', fontSize: 11 }} onClick={() => setShareMenu(v => !v)}>↗️</button>
+          <button className="tab-btn" style={{ padding: '4px 8px', fontSize: 11 }} onClick={handleNota} aria-label="Añadir nota"><StickyNote size={13} /></button>
+          <button className="tab-btn" style={{ padding: '4px 8px', fontSize: 11 }} onClick={handleCopy} aria-label="Copiar"><Copy size={13} /></button>
+          <button className="tab-btn" style={{ padding: '4px 8px', fontSize: 11 }} onClick={() => setShareMenu(v => !v)} aria-label="Compartir"><Link2 size={13} /></button>
           {activeId && (
             <button className="tab-btn" style={{ padding: '4px 8px', fontSize: 11, background: '#7f1d1d' }}
-              onClick={removeHighlight}>✕</button>
+              onClick={removeHighlight} aria-label="Quitar resaltado">✕</button>
           )}
           {shareMenu && (
             <div style={{
@@ -240,15 +259,14 @@ export default function AnnotationReader({ texto, cita }: Props) {
               display: 'flex', flexDirection: 'column', gap: 4, minWidth: 170,
             }}>
               {[
-                { label: '💬 WhatsApp', fn: () => window.open(`https://wa.me/?text=${encodeURIComponent(getTextForAction()+'\n'+shareUrl)}`, '_blank') },
-                { label: '🐦 Twitter/X', fn: () => window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(getTextForAction())}&url=${encodeURIComponent(shareUrl)}`, '_blank') },
-                { label: '🔗 Copiar link', fn: () => { navigator.clipboard.writeText(shareUrl); setSaveMsg('🔗 Link copiado'); setTimeout(() => setSaveMsg(''), 2000) } },
-                { label: '📋 Copiar texto', fn: () => { navigator.clipboard.writeText(getTextForAction()); setSaveMsg('📋 Copiado'); setTimeout(() => setSaveMsg(''), 2000) } },
+                { label: 'WhatsApp', Icon: MessageCircle, fn: () => window.open(`https://wa.me/?text=${encodeURIComponent(getTextForAction()+'\n'+shareUrl)}`, '_blank') },
+                { label: 'Copiar link', Icon: Link2, fn: () => { navigator.clipboard.writeText(shareUrl); setSaveMsg('Link copiado'); setTimeout(() => setSaveMsg(''), 2000) } },
+                { label: 'Copiar texto', Icon: Copy, fn: () => { navigator.clipboard.writeText(getTextForAction()); setSaveMsg('Copiado'); setTimeout(() => setSaveMsg(''), 2000) } },
               ].map(item => (
-                <button key={item.label} className="tab-btn"
+                <button key={item.label} className="tab-btn inline-flex items-center gap-2"
                   style={{ padding: '5px 10px', fontSize: 11, textAlign: 'left' }}
                   onClick={() => { item.fn(); setShareMenu(false); setToolbar(null) }}>
-                  {item.label}
+                  <item.Icon size={13} />{item.label}
                 </button>
               ))}
             </div>
@@ -258,9 +276,9 @@ export default function AnnotationReader({ texto, cita }: Props) {
 
       <div className="flex items-center gap-3 mt-4 flex-wrap"
         style={{ borderTop: '1px solid var(--navy-border)', paddingTop: 12 }}>
-        <button className="btn-secondary" style={{ fontSize: 11, padding: '5px 12px' }}
+        <button className="btn-secondary inline-flex items-center gap-1" style={{ fontSize: 11, padding: '5px 12px' }}
           onClick={() => setShowNotes(v => !v)}>
-          📋 Notas ({notasConTexto.length})
+          <StickyNote size={13} />Notas ({notasConTexto.length})
         </button>
         <span style={{ color: 'var(--green)', fontSize: 11 }}>{saveMsg}</span>
         {anotaciones.length > 0 && (
@@ -274,7 +292,7 @@ export default function AnnotationReader({ texto, cita }: Props) {
         <div className="mt-3" style={{ animation: 'slideUp 0.3s ease-out' }}>
           {notasConTexto.length === 0 ? (
             <p style={{ color: 'var(--text-dim)', fontSize: 12 }}>
-              Sin notas aún. Resalta texto y toca 📝 para agregar una nota.
+              Sin notas aún. Resalta texto y toca el ícono de nota para agregar una.
             </p>
           ) : (
             <div className="space-y-2">
@@ -308,7 +326,7 @@ export default function AnnotationReader({ texto, cita }: Props) {
             borderRadius: 14, padding: 24, width: '100%', maxWidth: 380,
             animation: 'slideUp 0.2s ease-out',
           }}>
-            <h3 style={{ color: 'var(--gold)', fontSize: 14, marginBottom: 10 }}>📝 Nota</h3>
+            <h3 className="flex items-center gap-2" style={{ color: 'var(--gold)', fontSize: 14, marginBottom: 10 }}><StickyNote size={15} />Nota</h3>
             <p style={{ color: 'var(--text-dim)', fontSize: 12, fontStyle: 'italic', marginBottom: 10 }}>
               &ldquo;{modal.preview}{modal.preview.length >= 60 ? '...' : ''}&rdquo;
             </p>
