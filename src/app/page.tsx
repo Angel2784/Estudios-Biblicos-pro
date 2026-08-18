@@ -120,9 +120,9 @@ export default function HomePage() {
   const sinLimite = esAdmin || esPremium || !!apiKey
 
   return (
-    <div className="min-h-screen" style={{ background: 'var(--navy)' }}>
+    <div className="min-h-screen" style={{ background: 'transparent' }}>
 
-      <nav style={{ background: 'var(--navy-card)', borderBottom: '1px solid var(--navy-border)', position: 'sticky', top: 0, zIndex: 100 }}>
+      <nav style={{ background: 'rgba(21,19,33,0.72)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', borderBottom: '1px solid rgba(212,162,78,0.18)', position: 'sticky', top: 0, zIndex: 100 }}>
         <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <span style={{ position: 'relative', display: 'inline-flex' }}>
