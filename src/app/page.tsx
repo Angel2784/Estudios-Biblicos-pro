@@ -36,20 +36,17 @@ export default function HomePage() {
   const [esPremium, setEsPremium]    = useState(false)
   const [mostrarCTA, setMostrarCTA]  = useState(false)
 
-  // Exégesis
   const [citaInput, setCitaInput]    = useState('')
   const [estudiando, setEstudiando]  = useState(false)
   const [errorExeg, setErrorExeg]    = useState('')
   const [estudios, setEstudios]      = useState<StudyResult[]>([])
 
-  // Comparado
   const [cita1, setCita1]            = useState('')
   const [cita2, setCita2]            = useState('')
   const [comparando, setComparando]  = useState(false)
   const [errorComp, setErrorComp]    = useState('')
   const [comparados, setComparados]  = useState<CompResult[]>([])
 
-  // Sermón
   const [citaSermon, setCitaSermon]      = useState('')
   const [estiloSermon, setEstiloSermon]  = useState<EstiloSermon>('expositivo')
   const [generando, setGenerando]        = useState(false)
@@ -128,11 +125,11 @@ export default function HomePage() {
   if (showApiKeySetup) return <ApiKeySetup onSave={handleSaveKey} />
 
   const sinLimite = esAdmin || esPremium || !!apiKey
+  const mostrarBannerCuenta = !isSignedIn && (mostrarCTA || restantes === 0)
 
   return (
     <div className="min-h-screen" style={{ background: 'var(--navy)' }}>
 
-      {/* NAV */}
       <nav style={{ background: 'var(--navy-card)', borderBottom: '1px solid var(--navy-border)', position: 'sticky', top: 0, zIndex: 100 }}>
         <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -148,6 +145,8 @@ export default function HomePage() {
                 {restantes > 0 ? `${restantes} consultas gratis hoy` : 'Límite alcanzado'}
               </span>
             )}
+            {esAdmin && <span className="text-xs px-2 py-1 rounded-full" style={{ background: 'var(--navy-border)', color: 'var(--gold)' }}>👑 Admin</span>}
+            {esPremium && <span className="text-xs px-2 py-1 rounded-full" style={{ background: 'var(--navy-border)', color: 'var(--gold)' }}>⭐ Premium</span>}
             <button className="btn-secondary" style={{ padding: '7px 10px' }} onClick={() => setShowLibrary(!showLibrary)}>
               <Library size={16} /><span className="hidden sm:inline text-xs">Biblioteca</span>
             </button>
@@ -163,8 +162,7 @@ export default function HomePage() {
         </div>
       </nav>
 
-      {/* Banner: se acabaron las 3 consultas anónimas → crear cuenta */}
-      {mostrarCTA && !isSignedIn && (
+      {mostrarBannerCuenta && (
         <div className="max-w-4xl mx-auto px-4 pt-4">
           <div className="card flex items-center justify-between gap-4 flex-wrap" style={{ border: '1px solid var(--gold)' }}>
             <div>
@@ -199,13 +197,21 @@ export default function HomePage() {
             ) : esAdmin ? (
               <>
                 <div>
-                  <p className="text-sm font-semibold" style={{ color: 'var(--gold)' }}>✨ Cuenta admin</p>
+                  <p className="text-sm font-semibold" style={{ color: 'var(--gold)' }}>👑 Cuenta admin</p>
                   <p className="text-xs mt-1" style={{ color: 'var(--gold)' }}>Conecta tu propia API Key para uso ilimitado.</p>
                 </div>
                 <button className="btn-secondary" style={{ fontSize: 12 }} onClick={() => setShowApiKeySetup(true)}>
                   <Key size={13} /> Conectar mi API Key
                 </button>
               </>
+            ) : !isSignedIn ? (
+              <div>
+                <p className="text-sm font-semibold" style={{ color: 'var(--gold)' }}>✨ Usando el servicio gratuito</p>
+                <p className="text-xs mt-1" style={{ color: 'var(--gold)' }}>
+                  {restantes !== null ? `Te quedan ${restantes} consultas gratis hoy. ` : ''}
+                  {restantes === 0 ? 'Crea una cuenta gratis para obtener 3 consultas más.' : ''}
+                </p>
+              </div>
             ) : (
               <div>
                 <p className="text-sm font-semibold" style={{ color: 'var(--gold)' }}>✨ Usando el servicio gratuito</p>
@@ -221,7 +227,6 @@ export default function HomePage() {
 
       <main className="max-w-4xl mx-auto px-4 py-6 space-y-8">
 
-        {/* ── SECCIÓN 1: EXÉGESIS ── */}
         <section>
           <h2 className="font-bold text-lg mb-4" style={{ fontFamily: 'Crimson Pro, serif', color: 'var(--gold)' }}>📖 Estudio Bíblico</h2>
           <div className="card">
@@ -246,7 +251,6 @@ export default function HomePage() {
           ))}
         </section>
 
-        {/* ── SECCIÓN 2: COMPARADO ── */}
         <section>
           <div className="flex items-center gap-2 mb-4">
             <h2 className="font-bold text-lg" style={{ fontFamily: 'Crimson Pro, serif', color: 'var(--gold)' }}>⚖️ Estudio Comparado</h2>           
@@ -273,7 +277,6 @@ export default function HomePage() {
           ))}
         </section>
 
-        {/* ── SECCIÓN 3: SERMÓN / DEVOCIONAL ── */}
         <section>
           <div className="flex items-center gap-2 mb-4">
             <h2 className="font-bold text-lg" style={{ fontFamily: 'Crimson Pro, serif', color: 'var(--gold)' }}>📝 Sermón / Devocional</h2>            
