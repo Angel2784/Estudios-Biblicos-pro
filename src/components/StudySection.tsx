@@ -1,6 +1,6 @@
 'use client'
 import { useState } from 'react'
-import { BookOpen, Download, Library, ChevronDown, ChevronUp, MapPin, ExternalLink, X, Copy, Check } from 'lucide-react'
+import { BookOpen, Download, Library, ChevronDown, ChevronUp, MapPin, ExternalLink, X, Copy, Check, LayoutGrid, FileText, Link2, Languages, Landmark, SearchCode, Crown, Lightbulb, Scale, CalendarClock, Compass, FlagTriangleRight, HelpCircle, BookMarked, Users, Clock3, RotateCcw, AlertCircle, CalendarDays } from 'lucide-react'
 import AnnotationReader from './AnnotationReader'
 import { extraerSeccion, extraerLugarGeografico } from '@/lib/parser'
 import { guardarEstudio } from '@/lib/storage'
@@ -12,22 +12,22 @@ import {
 } from '@/lib/gemini'
 
 const TABS_EXEGESIS = [
-  { label: '📋 Todo' },
-  { label: '📖 Texto',       seccion: 1 },
-  { label: '🔗 Referencias', seccion: 2 },
-  { label: '🔡 Lingüística', seccion: 3 },
-  { label: '🏛️ Contexto',    seccion: 4 },
-  { label: '🔍 Exégesis',    seccion: 5 },
-  { label: '👑 Reino',       seccion: 6 },
-  { label: '💡 Aplicación',  seccion: 7 },
-  { label: '⚖️ Versiones',   seccion: 8 },
-  { label: '📅 Cronología',  seccion: 9 },
-  { label: '🗺️ Geografía',   seccion: 10 },
-  { label: '🏁 Conclusión',  seccion: 11 },
-  { label: '❓ Reflexión',   seccion: 12 },
-  { label: '📚 Recursos',    seccion: 13 },
-  { label: '👥 Personajes' },        // índice 14
-  { label: '⏱️ Línea de Tiempo' },   // índice 15
+  { label: 'Todo',        Icon: LayoutGrid },
+  { label: 'Texto',       seccion: 1,  Icon: FileText },
+  { label: 'Referencias', seccion: 2,  Icon: Link2 },
+  { label: 'Lingüística', seccion: 3,  Icon: Languages },
+  { label: 'Contexto',    seccion: 4,  Icon: Landmark },
+  { label: 'Exégesis',    seccion: 5,  Icon: SearchCode },
+  { label: 'Reino',       seccion: 6,  Icon: Crown },
+  { label: 'Aplicación',  seccion: 7,  Icon: Lightbulb },
+  { label: 'Versiones',   seccion: 8,  Icon: Scale },
+  { label: 'Cronología',  seccion: 9,  Icon: CalendarClock },
+  { label: 'Geografía',   seccion: 10, Icon: Compass },
+  { label: 'Conclusión',  seccion: 11, Icon: FlagTriangleRight },
+  { label: 'Reflexión',   seccion: 12, Icon: HelpCircle },
+  { label: 'Recursos',    seccion: 13, Icon: BookMarked },
+  { label: 'Personajes',      Icon: Users },   // índice 14
+  { label: 'Línea de tiempo', Icon: Clock3 },  // índice 15
 ]
 
 interface Props { cita: string; texto: string; onClear: () => void; apiKey: string }
@@ -62,12 +62,12 @@ function ArbolView({ cita, apiKey }: { cita: string; apiKey: string }) {
 
   if (!data && !loading) return (
     <div className="flex flex-col items-center justify-center py-12 gap-4">
-      <div style={{ fontSize: 52 }}>👥</div>
+      <div style={{ fontSize: 44, color: 'var(--gold)', opacity: 0.5 }}><Users size={44} /></div>
       <p style={{ color: 'var(--text-secondary)', fontSize: 14, textAlign: 'center', maxWidth: 320 }}>
         Analiza todos los personajes que intervienen en el pasaje, con su historia bíblica, rol y relaciones
       </p>
-      {error && <p className="text-xs px-3 py-2 rounded" style={{ color: '#ef4444', background: '#7f1d1d33' }}>⚠️ {error}</p>}
-      <button className="btn-primary" onClick={cargar}>👥 Analizar personajes</button>
+      {error && <p className="text-xs px-3 py-2 rounded flex items-center gap-1" style={{ color: '#ef4444', background: '#7f1d1d33' }}><AlertCircle size={13} />{error}</p>}
+      <button className="btn-primary inline-flex items-center gap-1" onClick={cargar}><Users size={15} />Analizar personajes</button>
     </div>
   )
 
@@ -102,7 +102,7 @@ function ArbolView({ cita, apiKey }: { cita: string; apiKey: string }) {
                 color: vista === v ? 'var(--navy-card)' : 'var(--text-dim)',
                 fontWeight: vista === v ? 700 : 400, transition:'all 0.2s',
               }}>
-              {v === 'lista' ? '📋 Lista' : '🔗 Árbol'}
+              {v === 'lista' ? <><LayoutGrid size={12} className="inline" style={{marginRight:4, verticalAlign:-2}} />Lista</> : <><Link2 size={12} className="inline" style={{marginRight:4, verticalAlign:-2}} />Árbol</>}
             </button>
           ))}
         </div>
@@ -140,7 +140,7 @@ function ArbolView({ cita, apiKey }: { cita: string; apiKey: string }) {
                       ))}
                     </div>
                   </div>
-                  <div style={{ color:'var(--text-dim)', fontSize:12, flexShrink:0 }}>{isActive ? '▲' : '▼'}</div>
+                  <div style={{ color:'var(--text-dim)', fontSize:12, flexShrink:0 }}>{isActive ? <ChevronUp size={14} /> : <ChevronDown size={14} />}</div>
                 </button>
 
                 {/* Detalle expandido */}
@@ -272,8 +272,8 @@ function ArbolView({ cita, apiKey }: { cita: string; apiKey: string }) {
         </div>
       )}
 
-      <button className="btn-secondary mt-4" style={{ fontSize:11, padding:'5px 12px' }}
-        onClick={() => { setData(null); setActivo(null) }}>🔄 Regenerar</button>
+      <button className="btn-secondary mt-4 inline-flex items-center gap-1" style={{ fontSize:11, padding:'5px 12px' }}
+        onClick={() => { setData(null); setActivo(null) }}><RotateCcw size={12} />Regenerar</button>
     </div>
   )
 }
@@ -297,12 +297,12 @@ function TimelineView({ cita, apiKey }: { cita: string; apiKey: string }) {
 
   if (!data && !loading) return (
     <div className="flex flex-col items-center justify-center py-12 gap-4">
-      <div style={{ fontSize:52 }}>🗓️</div>
+      <div style={{ color: 'var(--gold)', opacity: 0.5 }}><CalendarDays size={44} /></div>
       <p style={{ color:'var(--text-secondary)', fontSize:14, textAlign:'center', maxWidth:320 }}>
         Genera un mapa histórico completo con los períodos bíblicos y eventos clave relacionados con el pasaje
       </p>
-      {error && <p className="text-xs px-3 py-2 rounded" style={{ color:'#ef4444', background:'#7f1d1d33' }}>⚠️ {error}</p>}
-      <button className="btn-primary" onClick={cargar}>🗓️ Generar línea de tiempo</button>
+      {error && <p className="text-xs px-3 py-2 rounded flex items-center gap-1" style={{ color:'#ef4444', background:'#7f1d1d33' }}><AlertCircle size={13} />{error}</p>}
+      <button className="btn-primary inline-flex items-center gap-1" onClick={cargar}><CalendarDays size={15} />Generar línea de tiempo</button>
     </div>
   )
 
@@ -335,7 +335,7 @@ function TimelineView({ cita, apiKey }: { cita: string; apiKey: string }) {
     <div>
       {/* Período general y contexto */}
       <div style={{ background:'var(--navy)', border:'1px solid var(--navy-border)', borderRadius:12, padding:'14px 18px', marginBottom:20 }}>
-        <p style={{ color:'var(--gold)', fontWeight:700, fontSize:14, marginBottom:6 }}>📅 {data.periodoGeneral}</p>
+        <p className="flex items-center gap-1" style={{ color:'var(--gold)', fontWeight:700, fontSize:14, marginBottom:6 }}><CalendarDays size={15} />{data.periodoGeneral}</p>
         <p style={{ color:'var(--text-secondary)', fontSize:13, lineHeight:1.7 }}>{data.contextoHistorico}</p>
       </div>
 
@@ -434,7 +434,7 @@ function TimelineView({ cita, apiKey }: { cita: string; apiKey: string }) {
                       {ev.descripcion}
                     </p>
                     {ev.lugarGeografico && (
-                      <p style={{ color:'var(--text-dim)', fontSize:10, marginTop:5 }}>📍 {ev.lugarGeografico}</p>
+                      <p className="flex items-center gap-1" style={{ color:'var(--text-dim)', fontSize:10, marginTop:5 }}><MapPin size={10} />{ev.lugarGeografico}</p>
                     )}
                   </button>
 
@@ -451,8 +451,8 @@ function TimelineView({ cita, apiKey }: { cita: string; apiKey: string }) {
                         </div>
                       )}
                       {ev.personajesInvolucrados.length > 0 && (
-                        <p style={{ color:'var(--text-dim)', fontSize:10, margin:'0 0 4px' }}>
-                          👤 {ev.personajesInvolucrados.join(', ')}
+                        <p className="flex items-center gap-1" style={{ color:'var(--text-dim)', fontSize:10, margin:'0 0 4px' }}>
+                          <Users size={10} />{ev.personajesInvolucrados.join(', ')}
                         </p>
                       )}
                       {ev.referenciasBiblicas.length > 0 && (
@@ -480,7 +480,7 @@ function TimelineView({ cita, apiKey }: { cita: string; apiKey: string }) {
       </p>
 
       <button className="btn-secondary mt-4" style={{ fontSize:11, padding:'5px 12px' }}
-        onClick={() => { setData(null); setActivo(null); setFiltroPeriodo(null) }}>🔄 Regenerar</button>
+        onClick={() => { setData(null); setActivo(null); setFiltroPeriodo(null) }}><RotateCcw size={12} style={{marginRight:4, verticalAlign:-2}} />Regenerar</button>
     </div>
   )
 }
@@ -579,7 +579,7 @@ export default function StudySection({ cita, texto, onClear, apiKey }: Props) {
             )}
           </div>
         ) : (
-          <p style={{ color:'var(--text-dim)', fontSize:13, marginTop:12 }}>📍 No se detectó una ubicación geográfica específica.</p>
+          <p className="flex items-center gap-1" style={{ color:'var(--text-dim)', fontSize:13, marginTop:12 }}><MapPin size={13} />No se detectó una ubicación geográfica específica.</p>
         )}
       </div>
     )
@@ -605,7 +605,7 @@ export default function StudySection({ cita, texto, onClear, apiKey }: Props) {
             {copied ? 'Copiado' : 'Copiar todo'}
           </button>
           <button className="btn-secondary" style={{ fontSize:12, padding:'7px 12px' }} onClick={handleSave}>
-            <Library size={13} />{saved ? '✅ Guardado' : 'Guardar'}
+            <Library size={13} />{saved ? <span className="inline-flex items-center gap-1"><Check size={12} />Guardado</span> : 'Guardar'}
           </button>
           <button className="btn-secondary" style={{ fontSize:12, padding:'7px 12px', opacity: downloading ? 0.7 : 1 }}
             onClick={handleDownload} disabled={downloading}>
@@ -625,16 +625,17 @@ export default function StudySection({ cita, texto, onClear, apiKey }: Props) {
           <div className="tab-bar" style={{ flexWrap:'wrap' }}>
             {tabOrder.map(origIdx => {
               const tab = TABS_EXEGESIS[origIdx]
+              const Icon = tab.Icon
               return (
                 <button key={origIdx} draggable
                   onDragStart={() => handleTabDragStart(origIdx)}
                   onDragOver={e => handleTabDragOver(e, origIdx)}
                   onDrop={() => handleTabDrop(origIdx)}
                   onDragEnd={() => { setDragTabIdx(null); setDragOverTabIdx(null) }}
-                  className={`tab-btn ${activeOrigIdx === origIdx ? 'active' : ''}`}
+                  className={`tab-btn inline-flex items-center gap-1 ${activeOrigIdx === origIdx ? 'active' : ''}`}
                   onClick={() => setActiveOrigIdx(origIdx)}
                   style={{ opacity: dragTabIdx === origIdx ? 0.4 : 1, outline: dragOverTabIdx === origIdx ? '2px solid var(--gold)' : 'none', cursor:'grab', userSelect:'none' }}>
-                  {tab.label}
+                  <Icon size={13} />{tab.label}
                 </button>
               )
             })}
