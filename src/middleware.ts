@@ -1,7 +1,15 @@
 // src/middleware.ts
-import { clerkMiddleware } from '@clerk/nextjs/server'
+import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
 
-export default clerkMiddleware()
+// Únicas rutas públicas: las pantallas de login/registro en sí mismas.
+// Todo lo demás (la app, y /api/gemini) exige sesión iniciada.
+const esRutaPublica = createRouteMatcher(['/sign-in(.*)', '/sign-up(.*)'])
+
+export default clerkMiddleware(async (auth, req) => {
+  if (!esRutaPublica(req)) {
+    await auth.protect()
+  }
+})
 
 export const config = {
   matcher: [
