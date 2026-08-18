@@ -1,13 +1,13 @@
 'use client'
 import { useState, useEffect, useRef } from 'react'
-import { Library, Settings, Flame, Search, X, BookMarked, Key, UserPlus } from 'lucide-react'
-import { useUser, UserButton, SignInButton } from '@clerk/nextjs'
+import { Library, Settings, Flame, Search, X, BookMarked, Key } from 'lucide-react'
+import { UserButton } from '@clerk/nextjs'
 import ApiKeySetup from '@/components/ApiKeySetup'
 import StudySection from '@/components/StudySection'
 import ComparativeSection from '@/components/ComparativeSection'
 import SermonSection from '@/components/SermonSection'
 import LibrarySidebar from '@/components/LibrarySidebar'
-import { obtenerExegesis, obtenerComparado, obtenerSermon, type EstiloSermon, consultarLimite, onRestantesChange, onRequiereCuenta, PRECIO_MENSUAL, PRECIO_ANUAL } from '@/lib/gemini'
+import { obtenerExegesis, obtenerComparado, obtenerSermon, type EstiloSermon, consultarLimite, onRestantesChange, PRECIO_MENSUAL, PRECIO_ANUAL } from '@/lib/gemini'
 import { getApiKey, setApiKey, type EstudioGuardado } from '@/lib/storage'
 
 interface StudyResult  { id: string; cita: string; texto: string }
@@ -26,15 +26,12 @@ function reorder<T>(arr: T[], from: number, to: number): T[] {
 }
 
 export default function HomePage() {
-  const { isSignedIn, isLoaded } = useUser()
-
   const [apiKey, setApiKeyState]     = useState<string>('')
   const [loading, setLoading]        = useState(true)
   const [showApiKeySetup, setShowApiKeySetup] = useState(false)
   const [restantes, setRestantes]    = useState<number | null>(null)
   const [esAdmin, setEsAdmin]        = useState(false)
   const [esPremium, setEsPremium]    = useState(false)
-  const [mostrarCTA, setMostrarCTA]  = useState(false)
 
   const [citaInput, setCitaInput]    = useState('')
   const [estudiando, setEstudiando]  = useState(false)
@@ -62,19 +59,15 @@ export default function HomePage() {
 
   useEffect(() => { const key = getApiKey(); if (key) setApiKeyState(key); setLoading(false) }, [])
 
-  useEffect(() => {
-    onRestantesChange(setRestantes)
-    onRequiereCuenta(() => setMostrarCTA(true))
-  }, [])
+  useEffect(() => { onRestantesChange(setRestantes) }, [])
 
   useEffect(() => {
-    if (!isLoaded) return
     consultarLimite().then(d => {
       setRestantes(d.restantes)
       setEsAdmin(!!d.esAdmin)
       setEsPremium(!!d.esPremium)
     })
-  }, [isLoaded, isSignedIn])
+  }, [])
 
   const handleSaveKey = (key: string) => { setApiKey(key); setApiKeyState(key); setShowApiKeySetup(false) }
   const handleRemoveKey = () => { setApiKey(''); setApiKeyState('') }
@@ -125,7 +118,6 @@ export default function HomePage() {
   if (showApiKeySetup) return <ApiKeySetup onSave={handleSaveKey} />
 
   const sinLimite = esAdmin || esPremium || !!apiKey
-  const mostrarBannerCuenta = !isSignedIn && (mostrarCTA || restantes === 0)
 
   return (
     <div className="min-h-screen" style={{ background: 'var(--navy)' }}>
@@ -153,28 +145,10 @@ export default function HomePage() {
             <button className="btn-secondary" style={{ padding: '7px 10px' }} onClick={() => setShowSettings(!showSettings)}>
               <Settings size={16} />
             </button>
-            {isLoaded && (isSignedIn ? <UserButton afterSignOutUrl="/" /> : (
-              <SignInButton mode="modal">
-                <button className="btn-secondary" style={{ padding: '7px 10px', fontSize: 12 }}>Iniciar sesión</button>
-              </SignInButton>
-            ))}
+            <UserButton afterSignOutUrl="/sign-in" />
           </div>
         </div>
       </nav>
-
-      {mostrarBannerCuenta && (
-        <div className="max-w-4xl mx-auto px-4 pt-4">
-          <div className="card flex items-center justify-between gap-4 flex-wrap" style={{ border: '1px solid var(--gold)' }}>
-            <div>
-              <p className="text-sm font-semibold" style={{ color: 'var(--gold)' }}>✨ Usaste tus 3 consultas gratis</p>
-              <p className="text-xs mt-1" style={{ color: 'var(--text-dim)' }}>Crea una cuenta gratis y obtén 3 consultas más.</p>
-            </div>
-            <SignInButton mode="modal">
-              <button className="btn-primary" style={{ fontSize: 12 }}><UserPlus size={14} /> Crear cuenta gratis</button>
-            </SignInButton>
-          </div>
-        </div>
-      )}
 
       {showSettings && (
         <div className="max-w-4xl mx-auto px-4 py-4">
@@ -204,14 +178,6 @@ export default function HomePage() {
                   <Key size={13} /> Conectar mi API Key
                 </button>
               </>
-            ) : !isSignedIn ? (
-              <div>
-                <p className="text-sm font-semibold" style={{ color: 'var(--gold)' }}>✨ Usando el servicio gratuito</p>
-                <p className="text-xs mt-1" style={{ color: 'var(--gold)' }}>
-                  {restantes !== null ? `Te quedan ${restantes} consultas gratis hoy. ` : ''}
-                  {restantes === 0 ? 'Crea una cuenta gratis para obtener 3 consultas más.' : ''}
-                </p>
-              </div>
             ) : (
               <div>
                 <p className="text-sm font-semibold" style={{ color: 'var(--gold)' }}>✨ Usando el servicio gratuito</p>
