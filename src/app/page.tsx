@@ -1,6 +1,6 @@
 'use client'
 import { useState, useEffect, useRef } from 'react'
-import { Library, Settings, Flame, Search, X, BookMarked, Key } from 'lucide-react'
+import { Library, Settings, Flame, Search, X, BookMarked, Key, ScrollText, Crown, Star, Scale, PenLine, Sunrise, AlertTriangle, Sparkles } from 'lucide-react'
 import { UserButton } from '@clerk/nextjs'
 import ApiKeySetup from '@/components/ApiKeySetup'
 import StudySection from '@/components/StudySection'
@@ -125,7 +125,10 @@ export default function HomePage() {
       <nav style={{ background: 'var(--navy-card)', borderBottom: '1px solid var(--navy-border)', position: 'sticky', top: 0, zIndex: 100 }}>
         <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <span className="text-2xl">📜</span>
+            <span style={{ position: 'relative', display: 'inline-flex' }}>
+              <span style={{ position: 'absolute', inset: '-10px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(199,107,63,0.35) 0%, rgba(199,107,63,0) 70%)' }} />
+              <ScrollText size={22} style={{ position: 'relative', color: 'var(--gold)' }} />
+            </span>
             <div>
               <h1 className="font-bold text-base leading-tight" style={{ color: 'var(--gold)', fontFamily: 'Crimson Pro, serif' }}>Estudio Bíblico Pro</h1>
               <p className="text-xs hidden sm:block" style={{ color: 'var(--text-dim)' }}>Exégesis académica</p>
@@ -137,8 +140,8 @@ export default function HomePage() {
                 {restantes > 0 ? `${restantes} consultas gratis hoy` : 'Límite alcanzado'}
               </span>
             )}
-            {esAdmin && <span className="text-xs px-2 py-1 rounded-full" style={{ background: 'var(--navy-border)', color: 'var(--gold)' }}>👑 Admin</span>}
-            {esPremium && <span className="text-xs px-2 py-1 rounded-full" style={{ background: 'var(--navy-border)', color: 'var(--gold)' }}>⭐ Premium</span>}
+            {esAdmin && <span className="text-xs px-2 py-1 rounded-full inline-flex items-center gap-1" style={{ background: 'var(--navy-border)', color: 'var(--gold)' }}><Crown size={12} />Admin</span>}
+            {esPremium && <span className="text-xs px-2 py-1 rounded-full inline-flex items-center gap-1" style={{ background: 'var(--navy-border)', color: 'var(--gold)' }}><Star size={12} />Premium</span>}
             <button className="btn-secondary" style={{ padding: '7px 10px' }} onClick={() => setShowLibrary(!showLibrary)}>
               <Library size={16} /><span className="hidden sm:inline text-xs">Biblioteca</span>
             </button>
@@ -156,7 +159,7 @@ export default function HomePage() {
             {apiKey ? (
               <>
                 <div>
-                  <p className="text-sm font-semibold" style={{ color: 'var(--gold)' }}>🔑 Usando tu propia API Key</p>
+                  <p className="text-sm font-semibold flex items-center gap-1" style={{ color: 'var(--gold)' }}><Key size={14} />Usando tu propia API Key</p>
                   <p className="text-xs mt-1" style={{ color: 'var(--text-dim)' }}>{apiKey.substring(0, 8)}{'•'.repeat(20)} · Uso ilimitado</p>
                 </div>
                 <button className="btn-secondary" style={{ fontSize: 12 }} onClick={handleRemoveKey}>
@@ -165,13 +168,13 @@ export default function HomePage() {
               </>
             ) : esPremium ? (
               <div>
-                <p className="text-sm font-semibold" style={{ color: 'var(--gold)' }}>⭐ Cuenta Premium activa</p>
+                <p className="text-sm font-semibold flex items-center gap-1" style={{ color: 'var(--gold)' }}><Star size={14} />Cuenta Premium activa</p>
                 <p className="text-xs mt-1" style={{ color: 'var(--gold)' }}>Uso ilimitado</p>
               </div>
             ) : esAdmin ? (
               <>
                 <div>
-                  <p className="text-sm font-semibold" style={{ color: 'var(--gold)' }}>👑 Cuenta admin</p>
+                  <p className="text-sm font-semibold flex items-center gap-1" style={{ color: 'var(--gold)' }}><Crown size={14} />Cuenta admin</p>
                   <p className="text-xs mt-1" style={{ color: 'var(--gold)' }}>Conecta tu propia API Key para uso ilimitado.</p>
                 </div>
                 <button className="btn-secondary" style={{ fontSize: 12 }} onClick={() => setShowApiKeySetup(true)}>
@@ -180,7 +183,7 @@ export default function HomePage() {
               </>
             ) : (
               <div>
-                <p className="text-sm font-semibold" style={{ color: 'var(--gold)' }}>✨ Usando el servicio gratuito</p>
+                <p className="text-sm font-semibold flex items-center gap-1" style={{ color: 'var(--gold)' }}><Sparkles size={14} />Usando el servicio gratuito</p>
                 <p className="text-xs mt-1" style={{ color: 'var(--gold)' }}>
                   {restantes !== null ? `Te quedan ${restantes} consultas gratis hoy. ` : ''}
                   Hazte premium: {PRECIO_MENSUAL} o {PRECIO_ANUAL}.
@@ -194,7 +197,7 @@ export default function HomePage() {
       <main className="max-w-4xl mx-auto px-4 py-6 space-y-8">
 
         <section>
-          <h2 className="font-bold text-lg mb-4" style={{ fontFamily: 'Crimson Pro, serif', color: 'var(--gold)' }}>📖 Estudio Bíblico</h2>
+          <h2 className="font-bold text-lg mb-4 flex items-center gap-2" style={{ fontFamily: 'Crimson Pro, serif', color: 'var(--gold)' }}><ScrollText size={20} />Estudio Bíblico</h2>
           <div className="card">
             <div className="flex gap-3 flex-col sm:flex-row">
               <input className="input-field flex-1" placeholder="Referencia bíblica (ej: Juan 3:16)"
@@ -207,8 +210,8 @@ export default function HomePage() {
             <div className="flex gap-2 mt-3 flex-wrap">
               {EJEMPLOS.map(ej => <button key={ej} className="tab-btn" style={{ fontSize: 11 }} onClick={() => setCitaInput(ej)}>{ej}</button>)}
             </div>
-            {errorExeg && <div className="mt-3 p-3 rounded-lg text-xs" style={{ background: '#7f1d1d33', color: '#ef4444', border: '1px solid #7f1d1d' }}>⚠️ {errorExeg}</div>}
-            {estudiando && <div className="mt-4 space-y-3">{[90,70,80].map((w,i) => <div key={i} className="shimmer rounded-lg" style={{ height:16, width:`${w}%` }} />)}<p className="text-xs" style={{ color: 'var(--text-dim)' }}>✨ Generando exégesis académica...</p></div>}
+            {errorExeg && <div className="mt-3 p-3 rounded-lg text-xs flex items-center gap-2" style={{ background: '#7f1d1d33', color: '#ef4444', border: '1px solid #7f1d1d' }}><AlertTriangle size={13} />{errorExeg}</div>}
+            {estudiando && <div className="mt-4 space-y-3">{[90,70,80].map((w,i) => <div key={i} className="shimmer rounded-lg" style={{ height:16, width:`${w}%` }} />)}<p className="text-xs flex items-center gap-1" style={{ color: 'var(--text-dim)' }}><Sparkles size={12} />Generando exégesis académica...</p></div>}
           </div>
           {estudios.map((e, i) => (
             <div key={e.id} draggable onDragStart={() => { dragEstudio.current = i }} onDragOver={ev => ev.preventDefault()} onDrop={() => { if (dragEstudio.current !== null) { setEstudios(p => reorder(p, dragEstudio.current!, i)); dragEstudio.current = null } }} style={{ cursor: 'grab' }}>
@@ -219,7 +222,7 @@ export default function HomePage() {
 
         <section>
           <div className="flex items-center gap-2 mb-4">
-            <h2 className="font-bold text-lg" style={{ fontFamily: 'Crimson Pro, serif', color: 'var(--gold)' }}>⚖️ Estudio Comparado</h2>           
+            <h2 className="font-bold text-lg flex items-center gap-2" style={{ fontFamily: 'Crimson Pro, serif', color: 'var(--gold)' }}><Scale size={20} />Estudio comparado</h2>           
           </div>
           <div className="card">
             <p className="text-sm mb-4" style={{ color: 'var(--text-secondary)' }}>Compara dos pasajes con análisis teológico profundo</p>
@@ -233,8 +236,8 @@ export default function HomePage() {
             <div className="flex gap-2 mt-3 flex-wrap">
               {COMP_EJEMPLOS.map(([c1,c2]) => <button key={`${c1}-${c2}`} className="tab-btn" style={{ fontSize: 11 }} onClick={() => { setCita1(c1); setCita2(c2) }}>{c1} vs {c2}</button>)}
             </div>
-            {errorComp && <div className="mt-3 p-3 rounded-lg text-xs" style={{ background: '#7f1d1d33', color: '#ef4444', border: '1px solid #7f1d1d' }}>⚠️ {errorComp}</div>}
-            {comparando && <div className="mt-4 space-y-3">{[85,65,75].map((w,i) => <div key={i} className="shimmer rounded-lg" style={{ height:16, width:`${w}%` }} />)}<p className="text-xs" style={{ color: 'var(--text-dim)' }}>🔍 Generando análisis comparativo...</p></div>}
+            {errorComp && <div className="mt-3 p-3 rounded-lg text-xs flex items-center gap-2" style={{ background: '#7f1d1d33', color: '#ef4444', border: '1px solid #7f1d1d' }}><AlertTriangle size={13} />{errorComp}</div>}
+            {comparando && <div className="mt-4 space-y-3">{[85,65,75].map((w,i) => <div key={i} className="shimmer rounded-lg" style={{ height:16, width:`${w}%` }} />)}<p className="text-xs flex items-center gap-1" style={{ color: 'var(--text-dim)' }}><Search size={12} />Generando análisis comparativo...</p></div>}
           </div>
           {comparados.map((c, i) => (
             <div key={c.id} draggable onDragStart={() => { dragComparado.current = i }} onDragOver={ev => ev.preventDefault()} onDrop={() => { if (dragComparado.current !== null) { setComparados(p => reorder(p, dragComparado.current!, i)); dragComparado.current = null } }} style={{ cursor: 'grab' }}>
@@ -245,17 +248,17 @@ export default function HomePage() {
 
         <section>
           <div className="flex items-center gap-2 mb-4">
-            <h2 className="font-bold text-lg" style={{ fontFamily: 'Crimson Pro, serif', color: 'var(--gold)' }}>📝 Sermón / Devocional</h2>            
+            <h2 className="font-bold text-lg flex items-center gap-2" style={{ fontFamily: 'Crimson Pro, serif', color: 'var(--gold)' }}><PenLine size={20} />Sermón / devocional</h2>            
           </div>
           <div className="card">
             <p className="text-sm mb-4" style={{ color: 'var(--text-secondary)' }}>Genera un sermón expositivo, devocional basado en un pasaje</p>
 
             <div className="flex gap-2 mb-3 flex-wrap">
-              {([['expositivo','📖 Sermón expositivo'],['devocional','🌅 Devocional breve']] as [EstiloSermon,string][]).map(([val,label]) => (
+              {([['expositivo', ScrollText, 'Sermón expositivo'],['devocional', Sunrise, 'Devocional breve']] as [EstiloSermon, typeof ScrollText, string][]).map(([val, Icon, label]) => (
                 <button key={val} onClick={() => setEstiloSermon(val)}
-                  className="tab-btn"
+                  className="tab-btn inline-flex items-center gap-1"
                   style={{ fontSize: 12, outline: estiloSermon === val ? '2px solid #a78bfa' : 'none', color: estiloSermon === val ? '#a78bfa' : undefined }}>
-                  {label}
+                  <Icon size={13} />{label}
                 </button>
               ))}
             </div>
@@ -272,8 +275,8 @@ export default function HomePage() {
             <div className="flex gap-2 mt-3 flex-wrap">
               {SERMON_EJEMPLOS.map(ej => <button key={ej} className="tab-btn" style={{ fontSize: 11 }} onClick={() => setCitaSermon(ej)}>{ej}</button>)}
             </div>
-            {errorSermon && <div className="mt-3 p-3 rounded-lg text-xs" style={{ background: '#7f1d1d33', color: '#ef4444', border: '1px solid #7f1d1d' }}>⚠️ {errorSermon}</div>}
-            {generando && <div className="mt-4 space-y-3">{[85,65,75].map((w,i) => <div key={i} className="shimmer rounded-lg" style={{ height:16, width:`${w}%` }} />)}<p className="text-xs" style={{ color: 'var(--text-dim)' }}>✍️ Preparando el mensaje...</p></div>}
+            {errorSermon && <div className="mt-3 p-3 rounded-lg text-xs flex items-center gap-2" style={{ background: '#7f1d1d33', color: '#ef4444', border: '1px solid #7f1d1d' }}><AlertTriangle size={13} />{errorSermon}</div>}
+            {generando && <div className="mt-4 space-y-3">{[85,65,75].map((w,i) => <div key={i} className="shimmer rounded-lg" style={{ height:16, width:`${w}%` }} />)}<p className="text-xs flex items-center gap-1" style={{ color: 'var(--text-dim)' }}><PenLine size={12} />Preparando el mensaje...</p></div>}
           </div>
           {sermones.map((s, i) => (
             <div key={s.id} draggable onDragStart={() => { dragSermon.current = i }} onDragOver={ev => ev.preventDefault()} onDrop={() => { if (dragSermon.current !== null) { setSermones(p => reorder(p, dragSermon.current!, i)); dragSermon.current = null } }} style={{ cursor: 'grab' }}>
@@ -292,7 +295,7 @@ export default function HomePage() {
       )}
 
       <footer className="text-center py-8 mt-8" style={{ borderTop: '1px solid var(--navy-border)', color: 'var(--text-dim)', fontSize: 12 }}>
-        <p>📜 Estudio Bíblico Pro</p>
+        <p className="flex items-center justify-center gap-1"><ScrollText size={13} />Estudio Bíblico Pro</p>
         <p className="mt-1">Powered by Google Gemini</p>
       </footer>
 
