@@ -1,21 +1,23 @@
-@import url('https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,300;0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,300;0,400;0,600;0,700;1,400;1,600&family=Fraunces:ital,opsz,wght@1,9..144,500&family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --gold: #e2b96f;
-  --gold-light: #fbbf24;
-  --gold-dim: #e2b96f44;
-  --navy: #0d1117;
+  --gold: #d4a24e;
+  --gold-light: #e6b868;
+  --gold-dim: #d4a24e33;
+  --ember: #c76b3f;
+  --parchment: #f0e6d2;
+  --navy: #0a0d14;
   --navy-mid: #0f172a;
-  --navy-card: #1a1a2e;
-  --navy-border: #1e293b;
-  --navy-hover: #16213e;
+  --navy-card: #151321;
+  --navy-border: #2a2440;
+  --navy-hover: #1c1830;
   --text-primary: #e2e8f0;
   --text-secondary: #94a3b8;
-  --text-dim: #64748b;
+  --text-dim: #6b6656;
   --green: #4ade80;
   --red: #ef4444;
 }
@@ -69,6 +71,17 @@ body {
 .prose-biblical ul { padding-left: 1.5em; margin-bottom: 1em; }
 .prose-biblical li { margin-bottom: 0.4em; }
 .prose-biblical strong { color: var(--gold); font-weight: 600; }
+.prose-biblical blockquote {
+  font-family: 'Fraunces', serif;
+  font-style: italic;
+  font-size: 1.15em;
+  line-height: 1.7;
+  color: var(--parchment);
+  border-left: 2px solid var(--ember);
+  border-radius: 0;
+  margin: 1.2em 0;
+  padding: 0.2em 0 0.2em 1em;
+}
 
 /* ── Highlight colors ── */
 .hl-yellow { background: #fbbf24; color: #1a1a2e; border-radius: 3px; padding: 1px 2px; }
@@ -94,11 +107,11 @@ body {
   border-radius: 12px;
 }
 .tab-btn {
-  padding: 6px 14px !important;
-  border-radius: 8px !important;
-  border: none !important;
-  background: var(--navy-hover) !important;
-  color: #a8d8ea !important;
+  padding: 5px 12px !important;
+  border-radius: 20px !important;
+  border: 1px solid rgba(212, 162, 78, 0.3) !important;
+  background: transparent !important;
+  color: var(--gold) !important;
   font-size: 12px !important;
   font-weight: 500 !important;
   cursor: pointer !important;
@@ -106,8 +119,8 @@ body {
   white-space: nowrap !important;
   font-family: 'DM Sans', sans-serif !important;
 }
-.tab-btn:hover { background: var(--navy-border) !important; color: #e2e8f0 !important; }
-.tab-btn.active { background: var(--gold) !important; color: var(--navy-card) !important; font-weight: 700 !important; }
+.tab-btn:hover { background: rgba(212, 162, 78, 0.1) !important; border-color: var(--gold) !important; }
+.tab-btn.active { background: var(--gold) !important; color: #241a08 !important; border-color: var(--gold) !important; font-weight: 700 !important; }
 
 /* ── Tab panel ── */
 .tab-panel {
@@ -129,19 +142,29 @@ body {
 
 /* ── Cards ── */
 .card {
-  background: var(--navy-card);
-  border: 1px solid var(--navy-border);
-  border-radius: 16px;
+  position: relative;
+  background: rgba(212, 162, 78, 0.05);
+  border: 1px solid rgba(212, 162, 78, 0.22);
+  border-radius: 14px;
   padding: 24px;
   transition: border-color 0.2s;
 }
-.card:hover { border-color: var(--gold-dim); }
+.card::before {
+  content: '';
+  position: absolute;
+  top: -1px; left: -1px; right: -1px;
+  height: 2px;
+  border-radius: 14px 14px 0 0;
+  background: linear-gradient(90deg, transparent, var(--ember) 20%, var(--gold) 50%, var(--ember) 80%, transparent);
+  opacity: 0.55;
+}
+.card:hover { border-color: rgba(212, 162, 78, 0.4); }
 
 /* ── Input ── */
 .input-field {
   width: 100%;
-  background: var(--navy-hover);
-  border: 1px solid var(--navy-border);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(212, 162, 78, 0.22);
   border-radius: 10px;
   padding: 12px 16px;
   color: var(--text-primary);
@@ -158,8 +181,8 @@ body {
 
 /* ── Buttons ── */
 .btn-primary {
-  background: linear-gradient(135deg, var(--gold), #d97706) !important;
-  color: var(--navy-card) !important;
+  background: linear-gradient(180deg, var(--gold-light), var(--gold)) !important;
+  color: #241a08 !important;
   border: none !important;
   border-radius: 10px !important;
   padding: 12px 24px !important;
