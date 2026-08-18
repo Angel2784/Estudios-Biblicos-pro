@@ -136,7 +136,7 @@ export default function HomePage() {
           </div>
           <div className="flex items-center gap-2">
             {!sinLimite && restantes !== null && (
-              <span className="text-xs px-2 py-1 rounded-full" style={{ background: 'var(--navy-border)', color: 'var(--gold)' }}>
+              <span className="text-xs px-2 py-1 rounded-full" style={{ background: 'rgba(212,162,78,0.14)', border: '1px solid rgba(212,162,78,0.4)', color: 'var(--gold-light)', fontWeight: 600 }}>
                 {restantes > 0 ? `${restantes} consultas gratis hoy` : 'Límite alcanzado'}
               </span>
             )}
@@ -196,7 +196,7 @@ export default function HomePage() {
 
       <main className="max-w-4xl mx-auto px-4 py-6 space-y-8">
 
-        <section>
+        <section className="ember-glow">
           <h2 className="font-bold text-lg mb-4 flex items-center gap-2" style={{ fontFamily: 'Crimson Pro, serif', color: 'var(--gold)' }}><ScrollText size={20} />Estudio Bíblico</h2>
           <div className="card">
             <div className="flex gap-3 flex-col sm:flex-row">
