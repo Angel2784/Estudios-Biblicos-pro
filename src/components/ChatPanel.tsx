@@ -5,9 +5,73 @@ import { obtenerRespuestaChat, type MensajeChat } from '@/lib/gemini'
 import { convertirEnlacesBiblicos } from '@/lib/parser'
 
 interface Props {
-  cita:       string
+  cita:        string
   textoPasaje: string
-  apiKey:     string
+  apiKey:      string
+}
+
+// Función para convertir tablas y markdown de Gemini a HTML estructurado
+function renderMarkdownConTablas(texto: string): string {
+  let html = texto
+
+  // 1. Convertir tablas Markdown (| col | col |)
+  const lineas = html.split('\n')
+  const resultado: string[] = []
+  let enTabla = false
+  let tablaHtml = ''
+
+  for (let i = 0; i < lineas.length; i++) {
+    const linea = lineas[i].trim()
+    if (linea.startsWith('|') && linea.endsWith('|')) {
+      // Ignorar fila divisoria |---|---|
+      if (/^\|[\s\-:|]+\|$/.test(linea)) {
+        continue
+      }
+      
+      const celdas = linea.split('|').slice(1, -1).map(c => c.trim())
+      
+      if (!enTabla) {
+        enTabla = true
+        tablaHtml = '<div class="overflow-x-auto my-3 rounded-xl border border-amber-500/30 bg-black/40"><table class="w-full text-xs text-left border-collapse"><thead><tr class="bg-amber-500/15 border-b border-amber-500/30 text-amber-200">'
+        celdas.forEach(c => {
+          tablaHtml += `<th class="p-2.5 font-semibold">${c.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')}</th>`
+        })
+        tablaHtml += '</tr></thead><tbody>'
+      } else {
+        tablaHtml += '<tr class="border-b border-white/5 hover:bg-white/5">'
+        celdas.forEach(c => {
+          tablaHtml += `<td class="p-2.5 text-slate-200">${c.replace(/\*\*(.*?)\*\*/g, '<strong class="text-amber-300">$1</strong>')}</td>`
+        })
+        tablaHtml += '</tr>'
+      }
+    } else {
+      if (enTabla) {
+        tablaHtml += '</tbody></table></div>'
+        resultado.push(tablaHtml)
+        enTabla = false
+        tablaHtml = ''
+      }
+      resultado.push(lineas[i])
+    }
+  }
+  if (enTabla) {
+    tablaHtml += '</tbody></table></div>'
+    resultado.push(tablaHtml)
+  }
+
+  html = resultado.join('\n')
+
+  // 2. Convertir negritas (**texto**)
+  html = html.replace(/\*\*(.*?)\*\*/g, '<strong class="text-amber-300 font-semibold">$1</strong>')
+  
+  // 3. Convertir listas (- item o * item)
+  html = html.replace(/^\s*[-*]\s+(.*)$/gm, '<li class="ml-4 list-disc text-slate-200 my-1">$1</li>')
+
+  // 4. Convertir enlaces bíblicos y saltos de línea
+  html = convertirEnlacesBiblicos(html)
+  html = html.replace(/\n(?!<\/?(table|thead|tbody|tr|th|td|div|li|ul)>)/g, '<br/>')
+
+  return html
 }
 
 export default function ChatPanel({ cita, textoPasaje, apiKey }: Props) {
@@ -48,24 +112,20 @@ export default function ChatPanel({ cita, textoPasaje, apiKey }: Props) {
   ]
 
   return (
-    <div className="card mt-3 overflow-hidden" style={{ padding: 0 }}>
+    <div className="card mt-4 overflow-hidden border border-amber-500/20 bg-slate-950/40 p-0">
 
       {/* Toggle header */}
       <button
         onClick={() => setOpen(o => !o)}
-        className="w-full flex items-center justify-between px-4 py-3"
-        style={{ background: 'transparent', border: 'none', cursor: 'pointer' }}
+        className="w-full flex items-center justify-between px-4 py-3 bg-transparent border-none cursor-pointer hover:bg-white/5 transition-colors"
       >
         <div className="flex items-center gap-2">
-          <MessageCircle size={15} style={{ color: '#60a5fa' }} />
-          <span className="text-sm font-medium" style={{ color: '#60a5fa' }}>
+          <MessageCircle size={16} className="text-sky-400" />
+          <span className="text-sm font-medium text-sky-300">
             Chat con el pasaje
           </span>
           {mensajes.length > 0 && (
-            <span style={{
-              background: '#1e3a5f', color: '#60a5fa',
-              fontSize: 10, fontWeight: 700, padding: '1px 7px', borderRadius: 20,
-            }}>
+            <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-sky-950/80 text-sky-300 border border-sky-500/30">
               {Math.floor(mensajes.length / 2)} preguntas
             </span>
           )}
@@ -74,129 +134,97 @@ export default function ChatPanel({ cita, textoPasaje, apiKey }: Props) {
           {mensajes.length > 0 && (
             <button
               onClick={e => { e.stopPropagation(); limpiar() }}
-              style={{ color: 'var(--text-dim)', background: 'none', border: 'none', cursor: 'pointer', padding: '2px 4px' }}
+              className="text-slate-400 hover:text-red-400 bg-transparent border-none cursor-pointer p-1"
               title="Limpiar conversación"
             >
-              <X size={13} />
+              <X size={14} />
             </button>
           )}
-          {open
-            ? <ChevronUp size={15} style={{ color: 'var(--text-dim)' }} />
-            : <ChevronDown size={15} style={{ color: 'var(--text-dim)' }} />
-          }
+          {open ? <ChevronUp size={16} className="text-slate-400" /> : <ChevronDown size={16} className="text-slate-400" />}
         </div>
       </button>
 
       {open && (
-        <div style={{ borderTop: '1px solid var(--navy-border)' }}>
+        <div className="border-t border-white/10">
 
           {/* Mensajes */}
-          <div style={{ maxHeight: 340, overflowY: 'auto', padding: '12px 16px' }}>
-
+          <div className="max-h-[380px] overflow-y-auto p-4 space-y-3">
             {mensajes.length === 0 && (
               <div>
-                <p className="text-xs mb-3" style={{ color: 'var(--text-dim)' }}>
-                  Haz preguntas sobre <strong style={{ color: 'var(--gold)' }}>{cita}</strong>
+                <p className="text-xs mb-3 text-slate-400">
+                  Haz preguntas sobre <strong className="text-amber-300">{cita}</strong>
                 </p>
                 <div className="flex flex-wrap gap-2">
                   {SUGERENCIAS.map(s => (
-                    <button key={s} className="tab-btn" style={{ fontSize: 11 }}
-                      onClick={() => setInput(s)}>{s}</button>
+                    <button 
+                      key={s} 
+                      className="pill text-xs hover:border-amber-400" 
+                      onClick={() => setInput(s)}
+                    >
+                      {s}
+                    </button>
                   ))}
                 </div>
               </div>
             )}
 
             {mensajes.map((m, i) => (
-              <div key={i} className={`flex gap-2 mb-3 ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+              <div key={i} className={`flex gap-2.5 ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
 
                 {m.role === 'assistant' && (
-                  <div style={{
-                    flexShrink: 0, width: 26, height: 26, borderRadius: '50%',
-                    background: '#1e3a5f', display: 'flex', alignItems: 'center',
-                    justifyContent: 'center', marginTop: 2,
-                  }}>
-                    <Bot size={13} style={{ color: '#60a5fa' }} />
+                  <div className="shrink-0 w-7 h-7 rounded-full bg-sky-950/80 border border-sky-400/30 flex items-center justify-center mt-1">
+                    <Bot size={14} className="text-sky-300" />
                   </div>
                 )}
 
-                <div style={{
-                  maxWidth: '80%',
-                  padding: '8px 12px',
-                  borderRadius: m.role === 'user' ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
-                  background: m.role === 'user' ? 'var(--gold-dim)' : 'var(--navy-mid)',
-                  color: m.role === 'user' ? 'var(--gold)' : 'var(--text-primary)',
-                }}>
+                <div 
+                  className={`max-w-[85%] px-4 py-2.5 rounded-2xl text-sm leading-relaxed ${
+                    m.role === 'user'
+                      ? 'bg-amber-500/20 border border-amber-500/40 text-amber-100 rounded-br-none'
+                      : 'bg-slate-900/80 border border-white/10 text-slate-100 rounded-bl-none'
+                  }`}
+                >
                   {m.role === 'assistant' ? (
                     <div
-                      dangerouslySetInnerHTML={{
-                        __html: convertirEnlacesBiblicos(m.content).replace(/\n/g, '<br/>')
-                      }}
-                      style={{
-                        fontFamily: 'Crimson Pro, serif',
-                        fontSize: '1rem',
-                        lineHeight: 1.65,
-                        color: 'var(--text-primary)',
-                      }}
+                      dangerouslySetInnerHTML={{ __html: renderMarkdownConTablas(m.content) }}
+                      className="prose-biblical text-sm leading-relaxed"
                     />
                   ) : (
-                    <span style={{
-                      whiteSpace: 'pre-wrap',
-                      fontFamily: 'DM Sans, sans-serif',
-                      fontSize: 13,
-                      lineHeight: 1.55,
-                    }}>
-                      {m.content}
-                    </span>
+                    <span className="whitespace-pre-wrap">{m.content}</span>
                   )}
                 </div>
 
                 {m.role === 'user' && (
-                  <div style={{
-                    flexShrink: 0, width: 26, height: 26, borderRadius: '50%',
-                    background: 'var(--gold-dim)', display: 'flex', alignItems: 'center',
-                    justifyContent: 'center', marginTop: 2,
-                  }}>
-                    <User size={13} style={{ color: 'var(--gold)' }} />
+                  <div className="shrink-0 w-7 h-7 rounded-full bg-amber-500/20 border border-amber-400/40 flex items-center justify-center mt-1">
+                    <User size={14} className="text-amber-300" />
                   </div>
                 )}
               </div>
             ))}
 
             {cargando && (
-              <div className="flex gap-2 mb-3">
-                <div style={{
-                  flexShrink: 0, width: 26, height: 26, borderRadius: '50%',
-                  background: '#1e3a5f', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                }}>
-                  <Bot size={13} style={{ color: '#60a5fa' }} />
+              <div className="flex gap-2 items-center">
+                <div className="shrink-0 w-7 h-7 rounded-full bg-sky-950/80 border border-sky-400/30 flex items-center justify-center">
+                  <Bot size={14} className="text-sky-300" />
                 </div>
-                <div style={{ padding: '10px 14px', borderRadius: '16px 16px 16px 4px', background: 'var(--navy-mid)' }}>
-                  <div className="flex gap-1">
-                    {[0, 1, 2].map(i => (
-                      <div key={i} style={{
-                        width: 6, height: 6, borderRadius: '50%', background: '#60a5fa',
-                        animation: `pulse 1.2s ease-in-out ${i * 0.2}s infinite`,
-                      }} />
-                    ))}
-                  </div>
+                <div className="px-4 py-2.5 rounded-2xl bg-slate-900/80 border border-white/10 text-xs text-sky-300 flex items-center gap-2">
+                  <span className="animate-spin text-sm">⟳</span> Analizando y respondiendo...
                 </div>
               </div>
             )}
 
             {error && (
-              <p className="text-xs p-2 rounded" style={{ color: '#ef4444', background: '#7f1d1d33' }}>
+              <p className="text-xs p-2.5 rounded-xl bg-red-950/40 text-red-400 border border-red-800/60">
                 ⚠️ {error}
               </p>
             )}
             <div ref={bottomRef} />
           </div>
 
-          {/* Input */}
-          <div className="flex gap-2 px-3 pb-3" style={{ borderTop: '1px solid var(--navy-border)', paddingTop: 10 }}>
+          {/* Input de Chat */}
+          <div className="flex gap-2 p-3 border-t border-white/10 bg-black/20">
             <input
-              className="input-field flex-1"
-              style={{ fontSize: 13, padding: '8px 12px' }}
+              className="input-gold flex-1 text-sm py-2.5 px-3.5"
               placeholder="Pregunta sobre el pasaje..."
               value={input}
               onChange={e => setInput(e.target.value)}
@@ -204,8 +232,7 @@ export default function ChatPanel({ cita, textoPasaje, apiKey }: Props) {
               disabled={cargando}
             />
             <button
-              className="btn-primary"
-              style={{ padding: '8px 12px', opacity: cargando || !input.trim() ? 0.6 : 1 }}
+              className="btn-gold px-4 py-2.5 text-xs"
               onClick={enviar}
               disabled={cargando || !input.trim()}
             >
@@ -214,13 +241,6 @@ export default function ChatPanel({ cita, textoPasaje, apiKey }: Props) {
           </div>
         </div>
       )}
-
-      <style>{`
-        @keyframes pulse {
-          0%, 100% { opacity: 0.3; transform: scale(0.8); }
-          50%       { opacity: 1;   transform: scale(1.2); }
-        }
-      `}</style>
     </div>
   )
 }
