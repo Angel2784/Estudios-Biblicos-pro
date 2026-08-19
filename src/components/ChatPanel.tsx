@@ -102,7 +102,6 @@ export default function ChatPanel({ cita, textoPasaje, apiKey }: Props) {
   return (
     <div className="card mt-3" style={{ padding: 0, overflow: 'hidden' }}>
 
-      {/* Header en tonos dorados */}
       <button
         onClick={() => setOpen(o => !o)}
         className="w-full flex items-center justify-between px-4 py-3"
@@ -139,7 +138,6 @@ export default function ChatPanel({ cita, textoPasaje, apiKey }: Props) {
       {open && (
         <div style={{ borderTop: '1px solid var(--navy-border)' }}>
 
-          {/* Mensajes */}
           <div style={{ maxHeight: 380, overflowY: 'auto', padding: '12px 16px' }}>
             {mensajes.length === 0 && (
               <div>
@@ -230,7 +228,6 @@ export default function ChatPanel({ cita, textoPasaje, apiKey }: Props) {
             <div ref={bottomRef} />
           </div>
 
-          {/* Input de Chat */}
           <div className="flex gap-2 px-3 pb-3" style={{ borderTop: '1px solid var(--navy-border)', paddingTop: 10 }}>
             <input
               className="input-field flex-1"
