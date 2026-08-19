@@ -1,6 +1,6 @@
 'use client'
 import { useEffect, useRef, useState, useCallback } from 'react'
-import { Check, Copy, PenLine, Link2, MessageCircle, StickyNote } from 'lucide-react'
+import { Check, Copy, PenLine, Link2, MessageCircle, StickyNote, Plus, Trash2, Edit3, X } from 'lucide-react'
 import { getAnotaciones, guardarAnotaciones } from '@/lib/storage'
 import type { Anotacion } from '@/lib/storage'
 import { convertirEnlacesBiblicos } from '@/lib/parser'
@@ -17,51 +17,40 @@ interface Props { texto: string; cita: string }
 
 export default function AnnotationReader({ texto, cita }: Props) {
   const contentRef = useRef<HTMLDivElement>(null)
-  const toolbarRef = useRef<HTMLDivElement>(null)
-  // FIX A: ref para capturar texto seleccionado SIN closure stale
-  const pendingRef = useRef<string>('')
-
   const [anotaciones, setAnotaciones] = useState<Anotacion[]>([])
-  const [toolbar, setToolbar]         = useState<{ x: number; y: number } | null>(null)
+  const [toolbar, setToolbar]         = useState<{ x: number; y: number; text: string; id?: string } | null>(null)
   const [selectedColor, setSelectedColor] = useState('#fbbf24')
-  const [activeId, setActiveId]       = useState<string | null>(null)
-  const [pendingText, setPendingText] = useState<string>('')
   const [modal, setModal]             = useState<{ id: string; preview: string; nota: string } | null>(null)
-  const [shareMenu, setShareMenu]     = useState(false)
   const [saveMsg, setSaveMsg]         = useState('')
   const [showNotes, setShowNotes]     = useState(false)
 
-  const shareUrl = `https://www.biblegateway.com/passage/?search=${encodeURIComponent(cita)}&version=RVR1960`
-
-  const setPending = useCallback((text: string) => {
-    pendingRef.current = text
-    setPendingText(text)
-  }, [])
-
+  // Cargar anotaciones guardadas
   useEffect(() => { setAnotaciones(getAnotaciones(cita)) }, [cita])
   useEffect(() => { guardarAnotaciones(cita, anotaciones) }, [anotaciones, cita])
 
-  // FIX B: selectionchange — captura el texto MIENTRAS el usuario arrastra el dedo
-  // Esto resuelve tanto palabras sueltas como el problema de "necesita muchos intentos"
-  useEffect(() => {
-    const onSelChange = () => {
-      const sel = window.getSelection()
-      if (!sel || sel.isCollapsed || !contentRef.current) return
+  // Capturar selección de texto
+  const handleSelection = () => {
+    const sel = window.getSelection()
+    if (!sel || sel.isCollapsed || !contentRef.current) return
+    
+    const text = sel.toString().trim()
+    if (text.length >= 1) {
       try {
-        if (!contentRef.current.contains(sel.getRangeAt(0).commonAncestorContainer)) return
-      } catch { return }
-      const text = sel.toString().trim()
-      if (text.length >= 1) {
-        pendingRef.current = text  // solo ref, sin re-render innecesario
+        const range = sel.getRangeAt(0)
+        const rect = range.getBoundingClientRect()
+        setToolbar({
+          x: rect.left + rect.width / 2,
+          y: rect.top - 10,
+          text: text,
+        })
+      } catch {
+        // Fallback
       }
     }
-    document.addEventListener('selectionchange', onSelChange)
-    return () => document.removeEventListener('selectionchange', onSelChange)
-  }, [])
+  }
 
+  // Renderizar el HTML con citas y marcas resaltadas
   const buildHtml = useCallback((): string => {
-    // Convierte líneas que empiezan con "> " (formato markdown de cita) en <blockquote>,
-    // para que el texto bíblico citado se distinga tipográficamente del resto del análisis.
     const lineas = texto.split('\n')
     const bloques: string[] = []
     let citaBuffer: string[] = []
@@ -79,100 +68,73 @@ export default function AnnotationReader({ texto, cita }: Props) {
     flushCita()
 
     let html = convertirEnlacesBiblicos(bloques.join('\n')).replace(/\n(?!<\/?blockquote>)/g, '<br/>')
+    
     anotaciones.forEach(an => {
       const escaped = an.fragmento.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-      const notaAttr = an.nota
-        ? ` data-nota="${an.nota.replace(/"/g, "'").replace(/\n/g, '&#10;')}"`
-        : ''
+      const notaIndicator = an.nota ? ' 📝' : ''
       html = html.replace(
         new RegExp(escaped, 'g'),
         `<mark id="hl-${an.id}" data-id="${an.id}" data-color="${an.hex}" ` +
-        `style="background:${an.hex};color:#1a1a2e;border-radius:3px;padding:1px 3px;cursor:pointer"${notaAttr}>` +
-        `${an.fragmento}</mark>`
+        `class="cursor-pointer font-medium rounded px-1 transition-all" ` +
+        `style="background:${an.hex}40; color:#fff; border-bottom: 2px solid ${an.hex};">` +
+        `${an.fragmento}${notaIndicator}</mark>`
       )
     })
     return html
   }, [texto, anotaciones])
 
-  // FIX C: lógica unificada para mouse y touch
-  const openToolbarAt = useCallback((x: number, y: number, target: EventTarget | null) => {
-    // Si tocó un resaltado existente
-    const el = (target as HTMLElement)?.closest('[data-id]') as HTMLElement | null
-    if (el) {
-      setActiveId(el.dataset.id ?? null)
-      setSelectedColor(el.dataset.color ?? '#fbbf24')
-      setPending('')
-      setToolbar({ x, y })
-      return
-    }
-    // Usar el ref (ya actualizado por selectionchange)
-    const text = pendingRef.current
-    if (text && text.length >= 1) {
-      setActiveId(null)
-      setPendingText(text)
-      setToolbar({ x, y })
-      return
-    }
-    // Nada seleccionado: cerrar
-    if (!toolbarRef.current?.contains(target as Node)) {
-      setToolbar(null); setActiveId(null); setPending('')
-    }
-  }, [setPending])
-
-  const handleMouseUp = useCallback((e: React.MouseEvent) => {
-    openToolbarAt(e.clientX, e.clientY, e.target)
-  }, [openToolbarAt])
-
-  // FIX D: touchend con delay mínimo — selectionchange ya actualizó pendingRef
-  const handleTouchEnd = useCallback((e: React.TouchEvent) => {
-    const touch = e.changedTouches[0]
-    const target = e.target
-    setTimeout(() => openToolbarAt(touch.clientX, touch.clientY, target), 50)
-  }, [openToolbarAt])
-
-  // FIX E: applyHighlight lee del ref, nunca del estado stale
-  const applyHighlight = useCallback((): { id: string; fragmento: string } | null => {
-    const text = pendingRef.current || window.getSelection()?.toString().trim() || ''
-    if (!text || text.length < 1) return null
+  // Aplicar resaltado
+  const aplicarResaltado = (hexColor: string) => {
+    if (!toolbar?.text) return
     const id = 'an_' + Date.now()
-    const newAn: Anotacion = {
-      id, fragmento: text, color: selectedColor, hex: selectedColor,
-      nota: '', fecha: new Date().toISOString(),
+    const nueva: Anotacion = {
+      id,
+      fragmento: toolbar.text,
+      color: hexColor,
+      hex: hexColor,
+      nota: '',
+      fecha: new Date().toISOString(),
     }
-    setAnotaciones(prev => [...prev, newAn])
-    window.getSelection()?.removeAllRanges()
-    setPending('')
-    return { id, fragmento: text }
-  }, [selectedColor, setPending])
-
-  const handleColorClick = (color: string) => {
-    setSelectedColor(color)
-    if (activeId) {
-      setAnotaciones(prev => prev.map(a => a.id === activeId ? { ...a, color, hex: color } : a))
-    } else {
-      const result = applyHighlight()
-      if (result) setActiveId(result.id)
-    }
-  }
-
-  // FIX F: handleNota ya no busca fragmento en estado stale
-  const handleNota = () => {
-    let id = activeId
-    let fragmento = ''
-    if (!id) {
-      const result = applyHighlight()
-      if (!result) return
-      id = result.id
-      fragmento = result.fragmento
-    } else {
-      fragmento = anotaciones.find(a => a.id === id)?.fragmento ?? ''
-    }
-    const notaActual = anotaciones.find(a => a.id === id)?.nota ?? ''
-    setModal({ id, preview: fragmento.substring(0, 60), nota: notaActual })
+    setAnotaciones(prev => [...prev, nueva])
     setToolbar(null)
+    window.getSelection()?.removeAllRanges()
+    setSaveMsg('Resaltado guardado')
+    setTimeout(() => setSaveMsg(''), 2000)
   }
 
-  const saveNota = () => {
+  // Abrir modal para añadir/editar nota
+  const abrirModalNota = () => {
+    if (!toolbar) return
+    let id = toolbar.id
+    let fragmento = toolbar.text
+    let notaExistente = ''
+
+    if (id) {
+      const encontrada = anotaciones.find(a => a.id === id)
+      if (encontrada) {
+        fragmento = encontrada.fragmento
+        notaExistente = encontrada.nota || ''
+      }
+    } else {
+      id = 'an_' + Date.now()
+      const nueva: Anotacion = {
+        id,
+        fragmento,
+        color: selectedColor,
+        hex: selectedColor,
+        nota: '',
+        fecha: new Date().toISOString(),
+      }
+      setAnotaciones(prev => [...prev, nueva])
+    }
+
+    setModal({ id, preview: fragmento, nota: notaExistente })
+    setToolbar(null)
+    window.getSelection()?.removeAllRanges()
+  }
+
+  // Guardar nota
+  const guardarNota = () => {
     if (!modal) return
     setAnotaciones(prev => prev.map(a => a.id === modal.id ? { ...a, nota: modal.nota } : a))
     setModal(null)
@@ -180,134 +142,193 @@ export default function AnnotationReader({ texto, cita }: Props) {
     setTimeout(() => setSaveMsg(''), 2500)
   }
 
-  const getTextForAction = () =>
-    activeId
-      ? (anotaciones.find(a => a.id === activeId)?.fragmento ?? '')
-      : (pendingRef.current || pendingText || (window.getSelection()?.toString().trim() ?? ''))
+  // Eliminar anotación
+  const eliminarAnotacion = (id: string) => {
+    setAnotaciones(prev => prev.filter(a => a.id !== id))
+    setSaveMsg('Anotación eliminada')
+    setTimeout(() => setSaveMsg(''), 2000)
+  }
 
-  const handleCopy = () => {
-    const text = getTextForAction()
-    if (text) {
-      navigator.clipboard.writeText(`${text}\n\n— ${cita} (RVR1960)`)
-      setSaveMsg('Copiado')
-      setTimeout(() => setSaveMsg(''), 2000)
+  // Click en texto existente
+  const handleClickContenido = (e: React.MouseEvent) => {
+    const el = (e.target as HTMLElement).closest('[data-id]') as HTMLElement | null
+    if (el && el.dataset.id) {
+      const anId = el.dataset.id
+      const an = anotaciones.find(a => a.id === anId)
+      if (an) {
+        const rect = el.getBoundingClientRect()
+        setToolbar({
+          x: rect.left + rect.width / 2,
+          y: rect.top - 10,
+          text: an.fragmento,
+          id: an.id,
+        })
+      }
     }
-    setToolbar(null)
   }
 
-  const removeHighlight = () => {
-    if (!activeId) return
-    setAnotaciones(prev => prev.filter(a => a.id !== activeId))
-    setActiveId(null); setToolbar(null); setPending('')
-  }
-
-  const TOOLBAR_W = 360
-  const toolbarLeft = toolbar
-    ? Math.max(8, Math.min(toolbar.x - TOOLBAR_W / 2,
-        (typeof window !== 'undefined' ? window.innerWidth : 800) - TOOLBAR_W - 8))
-    : 0
-  const toolbarTop = toolbar ? Math.max(toolbar.y - 64, 8) : 0
   const notasConTexto = anotaciones.filter(a => a.nota)
 
   return (
     <div className="relative">
-      <p className="text-xs mb-3 flex items-center gap-1" style={{ color: 'var(--text-dim)' }}>
-        <PenLine size={12} />Selecciona cualquier fragmento para resaltar, anotar y compartir
+      <p className="text-xs mb-3 flex items-center gap-1.5 text-amber-200/70">
+        <PenLine size={13} /> Selecciona cualquier palabra o frase para resaltar y añadir notas.
       </p>
 
+      {/* Contenido interactivo */}
       <div
         ref={contentRef}
-        className="prose-biblical"
-        style={{ cursor: 'text', userSelect: 'text' }}
-        onMouseUp={handleMouseUp}
-        onTouchEnd={handleTouchEnd}
+        className="prose-biblical select-text cursor-text"
+        onMouseUp={handleSelection}
+        onTouchEnd={handleSelection}
+        onClick={handleClickContenido}
         dangerouslySetInnerHTML={{ __html: buildHtml() }}
       />
 
+      {/* ── TOOLBAR FLOTANTE DE RESALTADO Y NOTAS ── */}
       {toolbar && (
         <div
-          ref={toolbarRef}
-          className="annotation-toolbar"
-          style={{ left: toolbarLeft, top: toolbarTop, position: 'fixed', zIndex: 9999 }}
-          onMouseDown={e => e.preventDefault()}
-          onTouchStart={e => e.preventDefault()}
+          className="fixed z-[99999] flex items-center gap-2 p-2 rounded-2xl bg-[#0f131f]/95 border border-amber-400/50 shadow-[0_8px_30px_rgba(0,0,0,0.8)] backdrop-blur-xl -translate-x-1/2 -translate-y-full animate-fadeIn"
+          style={{ left: Math.max(160, Math.min(toolbar.x, typeof window !== 'undefined' ? window.innerWidth - 160 : 500)), top: Math.max(70, toolbar.y) }}
         >
-          {COLORS.map(c => (
-            <button key={c.hex} title={c.name} onClick={() => handleColorClick(c.hex)}
-              style={{
-                width: 22, height: 22, borderRadius: '50%',
-                border: `2px solid ${selectedColor === c.hex ? 'white' : 'transparent'}`,
-                background: c.hex, cursor: 'pointer', flexShrink: 0,
-                transform: selectedColor === c.hex ? 'scale(1.2)' : 'scale(1)',
-                transition: 'transform 0.15s',
-              }}
-            />
-          ))}
-          <div style={{ width: 1, height: 20, background: '#475569' }} />
-          <button className="tab-btn" style={{ padding: '4px 8px', fontSize: 11 }} onClick={handleNota} aria-label="Añadir nota"><StickyNote size={13} /></button>
-          <button className="tab-btn" style={{ padding: '4px 8px', fontSize: 11 }} onClick={handleCopy} aria-label="Copiar"><Copy size={13} /></button>
-          <button className="tab-btn" style={{ padding: '4px 8px', fontSize: 11 }} onClick={() => setShareMenu(v => !v)} aria-label="Compartir"><Link2 size={13} /></button>
-          {activeId && (
-            <button className="tab-btn" style={{ padding: '4px 8px', fontSize: 11, background: '#7f1d1d' }}
-              onClick={removeHighlight} aria-label="Quitar resaltado">✕</button>
+          {/* Selector de colores */}
+          <div className="flex items-center gap-1.5 px-1">
+            {COLORS.map(c => (
+              <button
+                key={c.hex}
+                title={c.name}
+                onClick={() => { setSelectedColor(c.hex); aplicarResaltado(c.hex) }}
+                className="w-5 h-5 rounded-full cursor-pointer transition-transform hover:scale-125 border border-white/40"
+                style={{ backgroundColor: c.hex }}
+              />
+            ))}
+          </div>
+
+          <div className="w-[1px] h-5 bg-white/20" />
+
+          {/* Botón Añadir Nota */}
+          <button
+            onClick={abrirModalNota}
+            className="flex items-center gap-1 px-2.5 py-1 rounded-xl text-xs font-semibold bg-amber-500/20 text-amber-300 border border-amber-400/40 hover:bg-amber-500/30 cursor-pointer"
+          >
+            <StickyNote size={13} /> Nota
+          </button>
+
+          {/* Botón Copiar */}
+          <button
+            onClick={() => {
+              navigator.clipboard.writeText(`"${toolbar.text}" — ${cita}`)
+              setToolbar(null)
+              setSaveMsg('Texto copiado')
+              setTimeout(() => setSaveMsg(''), 2000)
+            }}
+            className="p-1.5 rounded-xl text-slate-300 hover:text-white hover:bg-white/10 cursor-pointer"
+            title="Copiar"
+          >
+            <Copy size={14} />
+          </button>
+
+          {/* Si es una anotación existente, opción de borrar */}
+          {toolbar.id && (
+            <button
+              onClick={() => { eliminarAnotacion(toolbar.id!); setToolbar(null) }}
+              className="p-1.5 rounded-xl text-red-400 hover:bg-red-950/60 cursor-pointer"
+              title="Quitar resaltado"
+            >
+              <Trash2 size={14} />
+            </button>
           )}
-          {shareMenu && (
-            <div style={{
-              position: 'absolute', top: '110%', left: 0,
-              background: 'var(--navy-card)', border: '1px solid #334155',
-              borderRadius: 10, padding: 8, zIndex: 10001,
-              display: 'flex', flexDirection: 'column', gap: 4, minWidth: 170,
-            }}>
-              {[
-                { label: 'WhatsApp', Icon: MessageCircle, fn: () => window.open(`https://wa.me/?text=${encodeURIComponent(getTextForAction()+'\n'+shareUrl)}`, '_blank') },
-                { label: 'Copiar link', Icon: Link2, fn: () => { navigator.clipboard.writeText(shareUrl); setSaveMsg('Link copiado'); setTimeout(() => setSaveMsg(''), 2000) } },
-                { label: 'Copiar texto', Icon: Copy, fn: () => { navigator.clipboard.writeText(getTextForAction()); setSaveMsg('Copiado'); setTimeout(() => setSaveMsg(''), 2000) } },
-              ].map(item => (
-                <button key={item.label} className="tab-btn inline-flex items-center gap-2"
-                  style={{ padding: '5px 10px', fontSize: 11, textAlign: 'left' }}
-                  onClick={() => { item.fn(); setShareMenu(false); setToolbar(null) }}>
-                  <item.Icon size={13} />{item.label}
-                </button>
-              ))}
-            </div>
-          )}
+
+          {/* Cerrar */}
+          <button
+            onClick={() => setToolbar(null)}
+            className="p-1 rounded-xl text-slate-400 hover:text-white"
+          >
+            <X size={14} />
+          </button>
         </div>
       )}
 
-      <div className="flex items-center gap-3 mt-4 flex-wrap"
-        style={{ borderTop: '1px solid var(--navy-border)', paddingTop: 12 }}>
-        <button className="btn-secondary inline-flex items-center gap-1" style={{ fontSize: 11, padding: '5px 12px' }}
-          onClick={() => setShowNotes(v => !v)}>
-          <StickyNote size={13} />Notas ({notasConTexto.length})
+      {/* ── BARRA INFERIOR DE NOTAS ── */}
+      <div className="flex items-center gap-3 mt-6 pt-4 border-t border-white/10 flex-wrap">
+        <button 
+          className="btn-glass text-xs py-1.5 px-3.5 flex items-center gap-1.5"
+          onClick={() => setShowNotes(v => !v)}
+        >
+          <StickyNote size={14} className="text-amber-300" />
+          <span>Notas ({notasConTexto.length})</span>
         </button>
-        <span style={{ color: 'var(--green)', fontSize: 11 }}>{saveMsg}</span>
+
+        {saveMsg && (
+          <span className="text-xs text-emerald-400 font-medium animate-fadeIn">
+            ✓ {saveMsg}
+          </span>
+        )}
+
         {anotaciones.length > 0 && (
-          <span style={{ color: 'var(--text-dim)', fontSize: 11, marginLeft: 'auto' }}>
-            {anotaciones.length} resaltado{anotaciones.length !== 1 ? 's' : ''}
+          <span className="text-xs text-slate-400 ml-auto">
+            {anotaciones.length} elemento{anotaciones.length !== 1 ? 's' : ''} resaltado{anotaciones.length !== 1 ? 's' : ''}
           </span>
         )}
       </div>
 
+      {/* ── PANEL EXPANDIBLE DE NOTAS ── */}
       {showNotes && (
-        <div className="mt-3" style={{ animation: 'slideUp 0.3s ease-out' }}>
+        <div className="mt-4 p-4 rounded-2xl bg-black/40 border border-amber-500/20 space-y-3">
+          <div className="flex items-center justify-between mb-2">
+            <h4 className="text-sm font-bold text-amber-300 flex items-center gap-2">
+              <StickyNote size={15} /> Tus Notas y Apuntes
+            </h4>
+            <button
+              onClick={() => {
+                const id = 'an_' + Date.now()
+                setModal({ id, preview: 'Nota general sobre el pasaje', nota: '' })
+              }}
+              className="text-xs text-amber-300 hover:text-amber-200 flex items-center gap-1 bg-amber-500/10 px-2.5 py-1 rounded-lg border border-amber-500/30"
+            >
+              <Plus size={12} /> Nueva nota manual
+            </button>
+          </div>
+
           {notasConTexto.length === 0 ? (
-            <p style={{ color: 'var(--text-dim)', fontSize: 12 }}>
-              Sin notas aún. Resalta texto y toca el ícono de nota para agregar una.
+            <p className="text-xs text-slate-400 italic">
+              No tienes notas aún. Selecciona cualquier palabra o frase del estudio para agregarle una nota.
             </p>
           ) : (
-            <div className="space-y-2">
+            <div className="space-y-2.5">
               {notasConTexto.map(an => (
-                <div key={an.id} style={{
-                  borderLeft: `3px solid ${an.hex}`, background: 'var(--navy-card)',
-                  borderRadius: '0 8px 8px 0', padding: '8px 12px',
-                }}>
-                  <p style={{ color: 'var(--text-dim)', fontSize: 11, fontStyle: 'italic' }}>
-                    &ldquo;{an.fragmento.substring(0, 70)}{an.fragmento.length > 70 ? '...' : ''}&rdquo;
-                  </p>
-                  <p style={{ color: 'var(--text-primary)', fontSize: 13, marginTop: 3 }}>{an.nota}</p>
-                  <p style={{ color: 'var(--text-dim)', fontSize: 10, marginTop: 3 }}>
-                    {new Date(an.fecha).toLocaleDateString('es-ES')}
-                  </p>
+                <div 
+                  key={an.id} 
+                  className="p-3 rounded-xl bg-slate-900/60 border border-white/10 flex items-start justify-between gap-3"
+                  style={{ borderLeft: `4px solid ${an.hex}` }}
+                >
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs text-slate-400 italic">
+                      &ldquo;{an.fragmento}&rdquo;
+                    </p>
+                    <p className="text-sm text-slate-100 mt-1 font-medium whitespace-pre-wrap">
+                      {an.nota}
+                    </p>
+                    <p className="text-[10px] text-slate-500 mt-1">
+                      {new Date(an.fecha).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-1 shrink-0">
+                    <button
+                      onClick={() => setModal({ id: an.id, preview: an.fragmento, nota: an.nota || '' })}
+                      className="p-1.5 text-slate-400 hover:text-amber-300 hover:bg-white/5 rounded-lg"
+                      title="Editar nota"
+                    >
+                      <Edit3 size={13} />
+                    </button>
+                    <button
+                      onClick={() => eliminarAnotacion(an.id)}
+                      className="p-1.5 text-slate-400 hover:text-red-400 hover:bg-red-950/40 rounded-lg"
+                      title="Borrar nota"
+                    >
+                      <Trash2 size={13} />
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -315,38 +336,42 @@ export default function AnnotationReader({ texto, cita }: Props) {
         </div>
       )}
 
+      {/* ── MODAL PARA ESCRIBIR / EDITAR NOTA ── */}
       {modal && (
-        <div style={{
-          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)',
-          zIndex: 20000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16,
-        }}
-          onClick={e => { if (e.target === e.currentTarget) setModal(null) }}>
-          <div style={{
-            background: 'var(--navy-card)', border: '1px solid var(--gold-dim)',
-            borderRadius: 14, padding: 24, width: '100%', maxWidth: 380,
-            animation: 'slideUp 0.2s ease-out',
-          }}>
-            <h3 className="flex items-center gap-2" style={{ color: 'var(--gold)', fontSize: 14, marginBottom: 10 }}><StickyNote size={15} />Nota</h3>
-            <p style={{ color: 'var(--text-dim)', fontSize: 12, fontStyle: 'italic', marginBottom: 10 }}>
-              &ldquo;{modal.preview}{modal.preview.length >= 60 ? '...' : ''}&rdquo;
+        <div 
+          className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[99999] flex items-center justify-center p-4"
+          onClick={e => { if (e.target === e.currentTarget) setModal(null) }}
+        >
+          <div className="bg-[#101420] border border-amber-500/40 rounded-2xl p-6 w-full max-w-md shadow-2xl animate-slideUp">
+            <h3 className="flex items-center gap-2 text-base font-bold text-amber-300 mb-2">
+              <StickyNote size={16} /> Nota de Estudio
+            </h3>
+            
+            <p className="text-xs text-slate-400 italic mb-3 bg-black/30 p-2.5 rounded-xl border border-white/5">
+              &ldquo;{modal.preview}&rdquo;
             </p>
+
             <textarea
               autoFocus
               value={modal.nota}
               onChange={e => setModal({ ...modal, nota: e.target.value })}
-              placeholder="Escribe tu nota aquí..."
-              style={{
-                width: '100%', background: 'var(--navy-mid)', color: 'var(--text-primary)',
-                border: '1px solid var(--navy-border)', borderRadius: 8, padding: 10,
-                fontSize: 13, resize: 'vertical', minHeight: 80,
-                fontFamily: 'DM Sans, sans-serif', outline: 'none',
-              }}
+              placeholder="Escribe tu reflexión, apunte o explicación teológica aquí..."
+              className="w-full bg-slate-950/80 text-slate-100 border border-amber-500/30 rounded-xl p-3 text-sm min-h-[120px] focus:outline-none focus:border-amber-400"
             />
-            <div className="flex gap-2 mt-3 justify-end">
-              <button className="btn-secondary" style={{ fontSize: 12, padding: '7px 14px' }}
-                onClick={() => setModal(null)}>Cancelar</button>
-              <button className="btn-primary" style={{ fontSize: 12, padding: '7px 14px' }}
-                onClick={saveNota}>Guardar</button>
+
+            <div className="flex gap-2.5 mt-4 justify-end">
+              <button 
+                className="btn-glass text-xs"
+                onClick={() => setModal(null)}
+              >
+                Cancelar
+              </button>
+              <button 
+                className="btn-gold text-xs px-4"
+                onClick={guardarNota}
+              >
+                Guardar Nota
+              </button>
             </div>
           </div>
         </div>
