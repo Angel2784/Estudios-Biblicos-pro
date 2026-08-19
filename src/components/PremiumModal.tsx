@@ -179,7 +179,7 @@ export default function PremiumModal({ isOpen, onClose }: Props) {
         {/* ── 3. CONTENEDOR DE PAGO INTERACTIVO ── */}
         <div className="p-4 rounded-2xl mb-4" style={{ background: 'rgba(20, 28, 44, 0.65)', border: '1px solid rgba(255, 215, 80, 0.25)' }}>
           
-          {/* VISTA NEQUI (Centrado perfecto y sin franja morada) */}
+          {/* VISTA NEQUI (Centrado perfecto y completo) */}
           {metodo === 'nequi' && (
             <div className="space-y-3">
               <div className="flex items-center justify-between">
@@ -198,8 +198,8 @@ export default function PremiumModal({ isOpen, onClose }: Props) {
                     alt="QR Nequi" 
                     className="w-full h-full object-cover"
                     style={{ 
-                      objectPosition: 'center 24%', // 👈 Posición exacta
-                      transform: 'scale(1.7)'       // 👈 Zoom limpio para que solo se vea el QR
+                      objectPosition: 'center 37.5%', 
+                      transform: 'scale(1.52)' // 👈 Centrado exacto: esquinas visibles y sin barra morada
                     }}
                     onError={(e) => {
                       (e.target as HTMLElement).style.display = 'none'
