@@ -15,26 +15,26 @@ export const metadata: Metadata = {
 }
 
 export const viewport: Viewport = {
-  themeColor: '#0a0d14',
+  themeColor: '#080a0f',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <ClerkProvider>
       <html lang="es">
-        <body className="min-h-screen relative bg-[#080a0f] text-slate-100 overflow-x-hidden antialiased">
+        <body className="min-h-screen relative bg-[#07090e] text-slate-100 antialiased overflow-x-hidden">
           
-          {/* Luces y resplandores ambientales detrás del cristal (Efecto Imagen 2) */}
-          <div className="fixed inset-0 pointer-events-none z-0">
-            {/* Resplandor dorado superior central */}
-            <div className="absolute top-[-10%] left-1/2 -translate-x-1/2 w-[700px] h-[500px] bg-amber-500/10 rounded-full blur-[140px]" />
-            {/* Resplandor cálido intermedio */}
-            <div className="absolute top-[35%] left-[20%] w-[500px] h-[400px] bg-amber-600/8 rounded-full blur-[160px]" />
-            {/* Tono místico inferior */}
-            <div className="absolute bottom-[-10%] right-[10%] w-[600px] h-[500px] bg-indigo-950/20 rounded-full blur-[150px]" />
+          {/* Fondo místico ambiental con runas y resplandor dorado (Efecto de la imagen) */}
+          <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+            {/* Círculo místico de runas / resplandor central */}
+            <div className="absolute top-[18%] left-1/2 -translate-x-1/2 w-[650px] h-[650px] rounded-full bg-[radial-gradient(circle,_rgba(245,190,80,0.14)_0%,_rgba(215,140,40,0.06)_45%,_transparent_70%)] blur-[70px]" />
+            {/* Resplandor lateral izquierdo (columna) */}
+            <div className="absolute top-[5%] -left-[10%] w-[500px] h-[700px] bg-amber-700/10 rounded-full blur-[140px]" />
+            {/* Resplandor lateral derecho (biblioteca) */}
+            <div className="absolute top-[25%] -right-[10%] w-[500px] h-[700px] bg-amber-900/15 rounded-full blur-[140px]" />
           </div>
 
-          {/* Contenido principal encima de los fondos */}
+          {/* Contenido de la App encima del fondo */}
           <div className="relative z-10">
             {children}
           </div>
