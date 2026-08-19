@@ -1,6 +1,6 @@
 'use client'
 import { useState } from 'react'
-import { X, Copy, Check, MessageCircle, QrCode } from 'lucide-react'
+import { X, Copy, Check, MessageCircle, QrCode, Smartphone } from 'lucide-react'
 import { PRECIO_MENSUAL, PRECIO_ANUAL } from '@/lib/gemini'
 import { useUser } from '@clerk/nextjs'
 
@@ -20,14 +20,14 @@ export default function PremiumModal({ isOpen, onClose }: Props) {
   // ════════════════════════════════════════════════════════════════════════════
   // ⚙️ TUS DATOS DE COBRO REALES (Edita estos valores con tus datos)
   // ════════════════════════════════════════════════════════════════════════════
-  const NOMBRE_TITULAR          = 'Angel Peña'             // 👈 Tu nombre completo
-  const NUMERO_NEQUI            = '322 730 7125'            // 👈 Tu número de Nequi
-  const QR_NEQUI_IMG            = '/qr-nequi.png'           // 👈 Imagen en carpeta /public (o URL directa)
-  const NUMERO_DAVIPLATA        = '322 730 7125'            // 👈 Tu número de Daviplata
-  const QR_DAVIPLATA_IMG        = '/qr-daviplata.png'       // 👈 Imagen en carpeta /public (o URL directa)
-  const LLAVE_BREB              = '322 730 7125'              // 👈 Tu Llave Bre-B (Celular, cédula o alias)
-  const WHATSAPP_VISIBLE        = '+57 322 730 7125'        // 👈 Número visible para el usuario
-  const WHATSAPP_NUMERO_LINK    = '573001234567'            // 👈 Número limpio para wa.me (código de país + número, sin espacios ni signos)
+  const NOMBRE_TITULAR          = 'Angel Perez'             // 👈 Tu nombre completo
+  const NUMERO_NEQUI            = '300 123 4567'            // 👈 Tu número de Nequi
+  const QR_NEQUI_IMG            = '/qr-nequi.jpg'           // 👈 Imagen en /public/qr-nequi.jpg
+  const NUMERO_DAVIPLATA        = '300 123 4567'            // 👈 Tu número de Daviplata (Solo número)
+  const LLAVE_BREB              = '3001234567'              // 👈 Tu Llave Bre-B
+  const QR_BREB_IMG             = '/qr-breb.jpg'            // 👈 Imagen en /public/qr-breb.jpg
+  const WHATSAPP_VISIBLE        = '+57 300 123 4567'        // 👈 Número visible con formato
+  const WHATSAPP_NUMERO_LINK    = '573001234567'            // 👈 Número limpio para wa.me (sin espacios ni signos)
   // ════════════════════════════════════════════════════════════════════════════
 
   if (!isOpen) return null
@@ -179,7 +179,7 @@ export default function PremiumModal({ isOpen, onClose }: Props) {
         {/* ── 3. CONTENEDOR DE PAGO INTERACTIVO ── */}
         <div className="p-4 rounded-2xl mb-4" style={{ background: 'rgba(20, 28, 44, 0.65)', border: '1px solid rgba(255, 215, 80, 0.25)' }}>
           
-          {/* VISTA NEQUI */}
+          {/* VISTA NEQUI (Con QR JPG + Número) */}
           {metodo === 'nequi' && (
             <div className="space-y-3">
               <div className="flex items-center justify-between">
@@ -196,14 +196,14 @@ export default function PremiumModal({ isOpen, onClose }: Props) {
                     className="w-36 h-36 object-contain rounded-lg"
                     onError={(e) => {
                       (e.target as HTMLElement).style.display = 'none'
-                      const fallback = (e.target as HTMLElement).parentElement?.querySelector('.qr-fallback') as HTMLElement
+                      const fallback = (e.target as HTMLElement).parentElement?.querySelector('.qr-fallback-nequi') as HTMLElement
                       if (fallback) fallback.style.display = 'flex'
                     }}
                   />
-                  <div className="qr-fallback hidden w-36 h-36 flex-col items-center justify-center bg-slate-100 rounded-lg text-slate-800 p-2 text-center">
+                  <div className="qr-fallback-nequi hidden w-36 h-36 flex-col items-center justify-center bg-slate-100 rounded-lg text-slate-800 p-2 text-center">
                     <QrCode size={38} className="text-slate-700 mb-1" />
                     <span className="text-[10px] font-bold">QR Nequi</span>
-                    <span className="text-[8.5px] text-slate-600">Sube qr-nequi.png a /public</span>
+                    <span className="text-[8.5px] text-slate-600">Sube qr-nequi.jpg a /public</span>
                   </div>
                 </div>
               </div>
@@ -226,63 +226,69 @@ export default function PremiumModal({ isOpen, onClose }: Props) {
             </div>
           )}
 
-          {/* VISTA DAVIPLATA */}
+          {/* VISTA DAVIPLATA (SOLO NÚMERO Y BOTÓN COPIAR) */}
           {metodo === 'daviplata' && (
-            <div className="space-y-3">
+            <div className="space-y-3 py-1">
               <div className="flex items-center justify-between">
                 <span className="text-xs text-slate-300 font-semibold">Pagar {valorPlan} con Daviplata:</span>
-                <span className="text-[11px] text-amber-300">Escanea o transfiere</span>
+                <span className="text-[11px] text-red-400 font-semibold flex items-center gap-1">
+                  <Smartphone size={13} /> Transferencia directa
+                </span>
               </div>
 
-              {/* QR Daviplata */}
-              <div className="flex justify-center my-2">
-                <div className="p-2.5 bg-white rounded-xl shadow-lg inline-block border-2 border-red-400/40">
-                  <img 
-                    src={QR_DAVIPLATA_IMG} 
-                    alt="QR Daviplata" 
-                    className="w-36 h-36 object-contain rounded-lg"
-                    onError={(e) => {
-                      (e.target as HTMLElement).style.display = 'none'
-                      const fallback = (e.target as HTMLElement).parentElement?.querySelector('.qr-fallback-davi') as HTMLElement
-                      if (fallback) fallback.style.display = 'flex'
-                    }}
-                  />
-                  <div className="qr-fallback-davi hidden w-36 h-36 flex-col items-center justify-center bg-slate-100 rounded-lg text-slate-800 p-2 text-center">
-                    <QrCode size={38} className="text-red-700 mb-1" />
-                    <span className="text-[10px] font-bold">QR Daviplata</span>
-                    <span className="text-[8.5px] text-slate-600">Sube qr-daviplata.png a /public</span>
-                  </div>
-                </div>
-              </div>
+              <p className="text-[11.5px] text-slate-300 leading-relaxed">
+                Abre tu app <strong>Daviplata</strong>, selecciona <strong>"Pasar Plata"</strong> a otro Daviplata y transfiere a este número:
+              </p>
 
-              {/* Número Daviplata */}
-              <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-950/70 border border-slate-700/60">
+              {/* Número Daviplata destacado */}
+              <div className="flex items-center justify-between p-3.5 rounded-xl bg-slate-950/80 border border-red-500/30 my-2 shadow-inner">
                 <div>
-                  <p className="text-[10px] text-slate-400">Número de Daviplata:</p>
-                  <p className="text-sm text-white font-mono font-bold tracking-wider">{NUMERO_DAVIPLATA}</p>
+                  <p className="text-[10px] text-red-300/80 font-medium uppercase tracking-wider">Número de Daviplata</p>
+                  <p className="text-base text-white font-mono font-bold tracking-wider mt-0.5">{NUMERO_DAVIPLATA}</p>
                 </div>
                 <button 
                   onClick={() => handleCopiar(NUMERO_DAVIPLATA, 'daviplata')}
-                  className="btn-secondary text-xs px-3 py-1.5"
+                  className="btn-secondary text-xs px-3.5 py-2 font-medium"
                   type="button"
                 >
-                  {copiado === 'daviplata' ? <Check size={13} className="text-green-400" /> : <Copy size={13} />}
-                  <span>{copiado === 'daviplata' ? 'Copiado' : 'Copiar'}</span>
+                  {copiado === 'daviplata' ? <Check size={14} className="text-green-400" /> : <Copy size={14} />}
+                  <span>{copiado === 'daviplata' ? '¡Copiado!' : 'Copiar número'}</span>
                 </button>
               </div>
             </div>
           )}
 
-          {/* VISTA LLAVE BRE-B */}
+          {/* VISTA LLAVE BRE-B (Con QR JPG + Llave) */}
           {metodo === 'breb' && (
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-xs text-slate-300 font-semibold">Pagar {valorPlan} por Bre-B (Cualquier Banco):</span>
-                <span className="text-[11px] text-amber-300 font-semibold">Interoperable</span>
+                <span className="text-[11px] text-emerald-400 font-semibold">Interoperable</span>
+              </div>
+
+              {/* QR Bre-B */}
+              <div className="flex justify-center my-2">
+                <div className="p-2.5 bg-white rounded-xl shadow-lg inline-block border-2 border-emerald-400/40">
+                  <img 
+                    src={QR_BREB_IMG} 
+                    alt="QR Bre-B" 
+                    className="w-36 h-36 object-contain rounded-lg"
+                    onError={(e) => {
+                      (e.target as HTMLElement).style.display = 'none'
+                      const fallback = (e.target as HTMLElement).parentElement?.querySelector('.qr-fallback-breb') as HTMLElement
+                      if (fallback) fallback.style.display = 'flex'
+                    }}
+                  />
+                  <div className="qr-fallback-breb hidden w-36 h-36 flex-col items-center justify-center bg-slate-100 rounded-lg text-slate-800 p-2 text-center">
+                    <QrCode size={38} className="text-emerald-700 mb-1" />
+                    <span className="text-[10px] font-bold">QR Bre-B</span>
+                    <span className="text-[8.5px] text-slate-600">Sube qr-breb.jpg a /public</span>
+                  </div>
+                </div>
               </div>
 
               <p className="text-[11.5px] text-slate-300 leading-relaxed">
-                Transfiere desde cualquier banco o billetera en Colombia (Bancolombia, Davivienda, Nu, Lulo, Falabella, BBVA, etc.) usando la <strong>Llave Bre-B</strong>:
+                Transfiere desde cualquier banco en Colombia (Bancolombia, Davivienda, Nu, etc.) usando la <strong>Llave Bre-B</strong> o escaneando el QR:
               </p>
 
               {/* Llave Bre-B */}
@@ -303,7 +309,7 @@ export default function PremiumModal({ isOpen, onClose }: Props) {
             </div>
           )}
 
-          {/* Titular */}
+          {/* Titular de la cuenta */}
           <div className="pt-2 mt-2 border-t border-slate-700/40 text-[11px] text-slate-300 flex items-center justify-between">
             <span>Titular de la cuenta:</span>
             <strong className="text-amber-200">{NOMBRE_TITULAR}</strong>
