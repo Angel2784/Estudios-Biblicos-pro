@@ -1,176 +1,120 @@
-@import url('https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400;0,600;0,700;1,500&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,500;0,600;0,700;1,600&family=Inter:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --navy: #0a0d14;
-  --navy-card: #12141d;
-  --navy-mid: #151824;
+  --navy: #080a0f;
+  --navy-card: rgba(16, 20, 30, 0.55);
   --navy-border: rgba(255, 255, 255, 0.12);
-  --navy-hover: #1c2030;
   --gold: #e5a73b;
   --gold-light: #fcd271;
   --gold-dim: rgba(229, 167, 59, 0.25);
-  --gold-border: rgba(240, 180, 75, 0.65);
-  --ember: #c76b3f;
-  --parchment: #f0e6d2;
-  --text-primary: #e2e8f0;
+  --gold-border: rgba(235, 185, 95, 0.75);
+  --text-primary: #f1f5f9;
   --text-secondary: #94a3b8;
-  --text-dim: #8b8599;
-  --green: #4ade80;
-  --red: #ef4444;
+  --text-dim: #64748b;
 }
 
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
 
 body {
-  background: var(--navy);
+  background-color: var(--navy);
   color: var(--text-primary);
   font-family: 'Inter', system-ui, sans-serif;
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
 }
 
+/* Scrollbar fina dorada */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: rgba(0,0,0,0.3); border-radius: 10px; }
+::-webkit-scrollbar-track { background: rgba(0,0,0,0.3); }
 ::-webkit-scrollbar-thumb { background: var(--gold); border-radius: 10px; }
 * { scrollbar-width: thin; scrollbar-color: var(--gold) rgba(0,0,0,0.3); }
 
-.bible-link { color: var(--gold) !important; text-decoration: underline; font-weight: 600; transition: color 0.2s; }
-.bible-link:hover { color: var(--gold-light) !important; text-decoration: none; }
-
-/* ── Resplandor de vela en header ── */
-.brand-glow-wrap { position: relative; display: inline-flex; }
-.brand-glow {
-  position: absolute; left: -10px; top: -10px; width: 60px; height: 60px;
-  background: radial-gradient(circle, rgba(240,168,48,0.4) 0%, rgba(240,168,48,0) 70%);
-  filter: blur(4px); pointer-events: none; z-index: 0;
-}
-
-/* ── Títulos con resplandor dorado ── */
+/* ── Título de Sección ── */
 .section-title {
-  color: var(--gold-light);
+  color: #f6cb68;
   font-family: 'Crimson Pro', serif;
   font-size: 1.35rem;
   font-weight: 700;
   display: flex;
   align-items: center;
-  gap: 10px;
-  text-shadow: 0 2px 10px rgba(240, 168, 48, 0.35);
+  gap: 8px;
+  text-shadow: 0 2px 10px rgba(240, 168, 48, 0.4);
 }
 
-.prose-biblical { font-family: 'Crimson Pro', serif; font-size: 1.1rem; line-height: 1.9; color: var(--text-primary); }
-.prose-biblical p { margin-bottom: 1em; }
-.prose-biblical ul { padding-left: 1.5em; margin-bottom: 1em; }
-.prose-biblical li { margin-bottom: 0.4em; }
-.prose-biblical strong { color: var(--gold); font-weight: 600; }
-.prose-biblical blockquote {
-  font-family: 'Crimson Pro', serif; font-style: italic; font-size: 1.15em; line-height: 1.7;
-  color: var(--parchment); border-left: 2px solid var(--ember); margin: 1.2em 0; padding: 0.2em 0 0.2em 1em;
-}
-
-.hl-yellow { background: #fbbf24; color: #1a1a2e; border-radius: 3px; padding: 1px 2px; }
-.hl-green  { background: #86efac; color: #1a1a2e; border-radius: 3px; padding: 1px 2px; }
-.hl-blue   { background: #93c5fd; color: #1a1a2e; border-radius: 3px; padding: 1px 2px; }
-.hl-pink   { background: #f9a8d4; color: #1a1a2e; border-radius: 3px; padding: 1px 2px; }
-.hl-orange { background: #fdba74; color: #1a1a2e; border-radius: 3px; padding: 1px 2px; }
-
-.shimmer {
-  background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.03) 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
-}
-
-/* ── Píldoras / Botones Rápidos (Estilo Cristal) ── */
-.tab-btn {
-  padding: 6px 14px !important;
-  border-radius: 9999px !important;
-  border: 1px solid rgba(255, 255, 255, 0.15) !important;
-  background: rgba(30, 41, 59, 0.45) !important;
-  backdrop-filter: blur(8px) !important;
-  -webkit-backdrop-filter: blur(8px) !important;
-  color: #93c5fd !important;
-  font-size: 11.5px !important;
-  font-weight: 500 !important;
-  cursor: pointer !important;
-  transition: all 0.2s ease !important;
-  white-space: nowrap !important;
-  font-family: 'Inter', sans-serif !important;
-}
-.tab-btn:hover {
-  background: rgba(45, 60, 85, 0.6) !important;
-  border-color: var(--gold) !important;
-  color: #ffffff !important;
-  transform: translateY(-1px);
-}
-.tab-btn.active {
-  background: rgba(30, 41, 59, 0.8) !important;
-  color: #bae6fd !important;
-  border-color: rgba(56, 189, 248, 0.8) !important;
-  box-shadow: 0 0 10px rgba(56, 189, 248, 0.25) !important;
-}
-
-.tab-panel {
-  background: var(--navy-mid);
-  border: 1px solid var(--navy-border);
-  border-radius: 16px;
-  margin-top: 10px;
-  padding: 28px 32px;
-  max-height: 70vh;
-  overflow-y: auto;
-  overflow-x: hidden;
-  animation: fadeIn 0.3s ease-out;
-}
-
-@media (max-width: 768px) {
-  .tab-panel { padding: 16px 14px; max-height: 65vh; }
-  .tab-btn { font-size: 10.5px !important; padding: 5px 10px !important; }
-}
-
-/* ── Tarjetas Glassmorphism (Segunda Imagen) ── */
+/* ── Tarjetas Glassmorphism ── */
 .card {
   position: relative;
-  background: rgba(18, 20, 29, 0.45);
+  background: rgba(16, 20, 30, 0.52);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: 0 12px 36px 0 rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  transition: all 0.25s ease;
+}
+.card:hover {
+  border-color: rgba(240, 180, 75, 0.35);
+  box-shadow: 0 14px 40px 0 rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+/* ── Banner Superior Glassmorphism ── */
+.banner-card {
+  background: rgba(22, 27, 40, 0.5);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 20px;
-  padding: 24px;
-  box-shadow: 0 10px 30px 0 rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.08);
-  transition: all 0.2s ease;
-}
-.card:hover {
-  border-color: rgba(240, 168, 48, 0.35);
-  box-shadow: 0 12px 35px 0 rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  border-radius: 18px;
+  padding: 16px 20px;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.45);
 }
 
-/* ── Input con Borde Dorado Fino ── */
-.input-field {
+/* ── Inputs con Borde Dorado / Slate ── */
+.input-gold {
   width: 100%;
-  background: rgba(10, 12, 18, 0.55);
+  background: rgba(10, 12, 18, 0.65);
   border: 1.5px solid var(--gold-border);
   border-radius: 14px;
   padding: 13px 18px;
   color: #ffffff;
   font-family: 'Inter', sans-serif;
   font-size: 14px;
-  transition: all 0.2s ease;
   outline: none;
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+  transition: all 0.2s ease;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.4);
 }
-.input-field:focus {
-  border-color: var(--gold-light);
-  box-shadow: 0 0 12px rgba(252, 210, 113, 0.35), inset 0 2px 4px rgba(0, 0, 0, 0.3);
+.input-gold:focus {
+  border-color: #ffd885;
+  box-shadow: 0 0 14px rgba(252, 210, 113, 0.4), inset 0 2px 4px rgba(0, 0, 0, 0.4);
 }
-.input-field::placeholder {
-  color: rgba(148, 163, 184, 0.7);
-}
+.input-gold::placeholder { color: rgba(148, 163, 184, 0.65); }
 
-/* ── Botón Dorado Brillante ── */
-.btn-primary {
+.input-subtle {
+  width: 100%;
+  background: rgba(10, 12, 18, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 14px;
+  padding: 13px 18px;
+  color: #ffffff;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  outline: none;
+  transition: all 0.2s ease;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.4);
+}
+.input-subtle:focus {
+  border-color: var(--gold-border);
+  box-shadow: 0 0 10px rgba(235, 185, 95, 0.3);
+}
+.input-subtle::placeholder { color: rgba(148, 163, 184, 0.65); }
+
+/* ── Botones Dorados Brillantes ── */
+.btn-gold {
   background: linear-gradient(180deg, #fcd271 0%, #e5a73b 100%) !important;
   color: #1a1205 !important;
   border: none !important;
@@ -185,31 +129,26 @@ body {
   justify-content: center !important;
   gap: 8px !important;
   font-family: 'Inter', sans-serif !important;
-  box-shadow: 0 4px 15px rgba(229, 167, 59, 0.35) !important;
+  box-shadow: 0 4px 15px rgba(229, 167, 59, 0.38) !important;
+  white-space: nowrap !important;
 }
-.btn-primary:hover {
+.btn-gold:hover {
   background: linear-gradient(180deg, #ffdc85 0%, #f0b448 100%) !important;
   transform: translateY(-1px) !important;
-  box-shadow: 0 6px 20px rgba(229, 167, 59, 0.5) !important;
+  box-shadow: 0 6px 20px rgba(229, 167, 59, 0.55) !important;
 }
-.btn-primary:active {
-  transform: translateY(0) !important;
-}
-.btn-primary:disabled {
-  opacity: 0.45 !important;
-  cursor: not-allowed !important;
-  transform: none !important;
-  box-shadow: none !important;
-}
+.btn-gold:active { transform: translateY(0) !important; }
+.btn-gold:disabled { opacity: 0.45 !important; cursor: not-allowed !important; transform: none !important; box-shadow: none !important; }
 
-.btn-secondary {
-  background: rgba(30, 41, 59, 0.5) !important;
+/* ── Botones Secundarios Cristal ── */
+.btn-glass {
+  background: rgba(30, 41, 59, 0.55) !important;
   backdrop-filter: blur(8px) !important;
   -webkit-backdrop-filter: blur(8px) !important;
-  color: var(--text-primary) !important;
+  color: #e2e8f0 !important;
   border: 1px solid rgba(255, 255, 255, 0.12) !important;
   border-radius: 12px !important;
-  padding: 9px 16px !important;
+  padding: 8px 14px !important;
   font-weight: 500 !important;
   font-size: 13px !important;
   cursor: pointer !important;
@@ -217,29 +156,51 @@ body {
   display: inline-flex !important;
   align-items: center !important;
   gap: 6px !important;
-  font-family: 'Inter', sans-serif !important;
 }
-.btn-secondary:hover {
-  background: rgba(45, 60, 85, 0.7) !important;
-  border-color: var(--gold) !important;
-  color: var(--gold-light) !important;
-}
-
-.annotation-toolbar {
-  position: fixed; background: var(--navy-card); border: 1px solid var(--navy-border);
-  border-radius: 14px; padding: 10px 12px; z-index: 9999;
-  box-shadow: 0 12px 32px rgba(0,0,0,0.6);
-  display: flex; align-items: center; gap: 8px; flex-wrap: wrap; max-width: 340px;
-  animation: fadeIn 0.15s ease-out;
+.btn-glass:hover {
+  background: rgba(45, 60, 85, 0.75) !important;
+  border-color: rgba(240, 180, 75, 0.5) !important;
+  color: #fff !important;
 }
 
-.map-container { width: 100%; border-radius: 14px; overflow: hidden; border: 1px solid var(--navy-border); margin-top: 16px; }
-.map-container iframe { display: block; width: 100%; height: 380px; border: none; }
+/* ── Píldoras / Chips ── */
+.pill {
+  padding: 5px 14px !important;
+  border-radius: 9999px !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  background: rgba(25, 33, 48, 0.5) !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+  color: #cbd5e1 !important;
+  font-size: 11.5px !important;
+  font-weight: 500 !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  white-space: nowrap !important;
+}
+.pill:hover {
+  background: rgba(40, 52, 75, 0.7) !important;
+  border-color: rgba(240, 180, 75, 0.4) !important;
+  color: #ffffff !important;
+  transform: translateY(-1px);
+}
+.pill-active-blue {
+  background: rgba(30, 45, 70, 0.75) !important;
+  color: #bae6fd !important;
+  border: 1.5px solid rgba(56, 189, 248, 0.75) !important;
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.3) !important;
+}
+.pill-active-purple {
+  background: rgba(48, 28, 75, 0.75) !important;
+  color: #e9d5ff !important;
+  border: 1.5px solid rgba(168, 85, 247, 0.75) !important;
+  box-shadow: 0 0 12px rgba(168, 85, 247, 0.3) !important;
+}
 
-.pwa-banner {
-  background: linear-gradient(135deg, var(--navy-card), var(--navy-mid));
-  border: 1px solid var(--gold-dim); border-radius: 14px; padding: 12px 16px;
-  display: flex; align-items: center; gap: 12px;
+.shimmer {
+  background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.03) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
 }
 
 @keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
