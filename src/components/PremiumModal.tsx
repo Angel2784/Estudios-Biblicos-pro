@@ -18,16 +18,16 @@ export default function PremiumModal({ isOpen, onClose }: Props) {
   const [copiado, setCopiado] = useState<string | null>(null)
 
   // ════════════════════════════════════════════════════════════════════════════
-  // ⚙️ TUS DATOS DE COBRO REALES (Edita estos valores con tus datos)
+  // ⚙️ TUS DATOS DE COBRO REALES
   // ════════════════════════════════════════════════════════════════════════════
-  const NOMBRE_TITULAR          = 'Angel Peña'             // 👈 Tu nombre completo
-  const NUMERO_NEQUI            = '322 730 7125'            // 👈 Tu número de Nequi
-  const QR_NEQUI_IMG            = '/qr-nequi.jpg'           // 👈 Imagen en /public/qr-nequi.jpg
-  const NUMERO_DAVIPLATA        = '322 730 7125'            // 👈 Tu número de Daviplata (Solo número)
-  const LLAVE_BREB              = '322 730 7125'              // 👈 Tu Llave Bre-B
-  const QR_BREB_IMG             = '/qr-breb.jpg'            // 👈 Imagen en /public/qr-breb.jpg
-  const WHATSAPP_VISIBLE        = '+57 322 730 7125'        // 👈 Número visible con formato
-  const WHATSAPP_NUMERO_LINK    = '573001234567'            // 👈 Número limpio para wa.me (sin espacios ni signos)
+  const NOMBRE_TITULAR          = 'Angel Peña'
+  const NUMERO_NEQUI            = '322 730 7125'
+  const QR_NEQUI_IMG            = '/qr-nequi.jpeg'        // 👈 Compatible con .jpeg
+  const NUMERO_DAVIPLATA        = '322 730 7125'
+  const LLAVE_BREB              = '3227307125'
+  const QR_BREB_IMG             = '/qr%20Bre-B.jpeg'      // 👈 Compatible con qr Bre-B.jpeg
+  const WHATSAPP_VISIBLE        = '+57 322 730 7125'
+  const WHATSAPP_NUMERO_LINK    = '573227307125'
   // ════════════════════════════════════════════════════════════════════════════
 
   if (!isOpen) return null
@@ -66,7 +66,7 @@ export default function PremiumModal({ isOpen, onClose }: Props) {
         style={{ 
           position: 'relative', 
           width: '100%', 
-          maxWidth: 520, 
+          maxWidth: 530, 
           maxHeight: '92vh', 
           overflowY: 'auto', 
           zIndex: 1001, 
@@ -179,7 +179,7 @@ export default function PremiumModal({ isOpen, onClose }: Props) {
         {/* ── 3. CONTENEDOR DE PAGO INTERACTIVO ── */}
         <div className="p-4 rounded-2xl mb-4" style={{ background: 'rgba(20, 28, 44, 0.65)', border: '1px solid rgba(255, 215, 80, 0.25)' }}>
           
-          {/* VISTA NEQUI (Con QR JPG + Número) */}
+          {/* VISTA NEQUI (Con Auto-Zoom al QR) */}
           {metodo === 'nequi' && (
             <div className="space-y-3">
               <div className="flex items-center justify-between">
@@ -187,23 +187,30 @@ export default function PremiumModal({ isOpen, onClose }: Props) {
                 <span className="text-[11px] text-amber-300">Escanea o transfiere</span>
               </div>
 
-              {/* QR Nequi */}
-              <div className="flex justify-center my-2">
-                <div className="p-2.5 bg-white rounded-xl shadow-lg inline-block border-2 border-amber-400/40">
+              {/* Contenedor Grande para el QR con Recorte Automático */}
+              <div className="flex justify-center my-3">
+                <div 
+                  className="bg-white rounded-2xl shadow-xl border-2 border-amber-400/50 flex items-center justify-center overflow-hidden"
+                  style={{ width: 230, height: 230 }}
+                >
                   <img 
                     src={QR_NEQUI_IMG} 
                     alt="QR Nequi" 
-                    className="w-36 h-36 object-contain rounded-lg"
+                    className="w-full h-full object-cover"
+                    style={{ 
+                      objectPosition: 'center 34%', 
+                      transform: 'scale(1.7)' // 👈 Hace zoom directo al recuadro blanco del QR
+                    }}
                     onError={(e) => {
                       (e.target as HTMLElement).style.display = 'none'
                       const fallback = (e.target as HTMLElement).parentElement?.querySelector('.qr-fallback-nequi') as HTMLElement
                       if (fallback) fallback.style.display = 'flex'
                     }}
                   />
-                  <div className="qr-fallback-nequi hidden w-36 h-36 flex-col items-center justify-center bg-slate-100 rounded-lg text-slate-800 p-2 text-center">
-                    <QrCode size={38} className="text-slate-700 mb-1" />
-                    <span className="text-[10px] font-bold">QR Nequi</span>
-                    <span className="text-[8.5px] text-slate-600">Sube qr-nequi.jpg a /public</span>
+                  <div className="qr-fallback-nequi hidden w-full h-full flex-col items-center justify-center bg-slate-100 rounded-lg text-slate-800 p-2 text-center">
+                    <QrCode size={44} className="text-slate-700 mb-1" />
+                    <span className="text-xs font-bold">QR Nequi</span>
+                    <span className="text-[9px] text-slate-600">Sube qr-nequi.jpeg a /public</span>
                   </div>
                 </div>
               </div>
@@ -226,7 +233,7 @@ export default function PremiumModal({ isOpen, onClose }: Props) {
             </div>
           )}
 
-          {/* VISTA DAVIPLATA (SOLO NÚMERO Y BOTÓN COPIAR) */}
+          {/* VISTA DAVIPLATA (SOLO NÚMERO) */}
           {metodo === 'daviplata' && (
             <div className="space-y-3 py-1">
               <div className="flex items-center justify-between">
@@ -258,7 +265,7 @@ export default function PremiumModal({ isOpen, onClose }: Props) {
             </div>
           )}
 
-          {/* VISTA LLAVE BRE-B (Con QR JPG + Llave) */}
+          {/* VISTA LLAVE BRE-B (Con Auto-Zoom al QR) */}
           {metodo === 'breb' && (
             <div className="space-y-3">
               <div className="flex items-center justify-between">
@@ -266,29 +273,36 @@ export default function PremiumModal({ isOpen, onClose }: Props) {
                 <span className="text-[11px] text-emerald-400 font-semibold">Interoperable</span>
               </div>
 
-              {/* QR Bre-B */}
-              <div className="flex justify-center my-2">
-                <div className="p-2.5 bg-white rounded-xl shadow-lg inline-block border-2 border-emerald-400/40">
+              {/* Contenedor Grande para el QR con Recorte Automático */}
+              <div className="flex justify-center my-3">
+                <div 
+                  className="bg-white rounded-2xl shadow-xl border-2 border-emerald-400/50 flex items-center justify-center overflow-hidden"
+                  style={{ width: 230, height: 230 }}
+                >
                   <img 
                     src={QR_BREB_IMG} 
                     alt="QR Bre-B" 
-                    className="w-36 h-36 object-contain rounded-lg"
+                    className="w-full h-full object-cover"
+                    style={{ 
+                      objectPosition: 'center 50%', 
+                      transform: 'scale(1.5)' // 👈 Hace zoom directo al QR de Bre-B
+                    }}
                     onError={(e) => {
                       (e.target as HTMLElement).style.display = 'none'
                       const fallback = (e.target as HTMLElement).parentElement?.querySelector('.qr-fallback-breb') as HTMLElement
                       if (fallback) fallback.style.display = 'flex'
                     }}
                   />
-                  <div className="qr-fallback-breb hidden w-36 h-36 flex-col items-center justify-center bg-slate-100 rounded-lg text-slate-800 p-2 text-center">
-                    <QrCode size={38} className="text-emerald-700 mb-1" />
-                    <span className="text-[10px] font-bold">QR Bre-B</span>
-                    <span className="text-[8.5px] text-slate-600">Sube qr-breb.jpg a /public</span>
+                  <div className="qr-fallback-breb hidden w-full h-full flex-col items-center justify-center bg-slate-100 rounded-lg text-slate-800 p-2 text-center">
+                    <QrCode size={44} className="text-emerald-700 mb-1" />
+                    <span className="text-xs font-bold">QR Bre-B</span>
+                    <span className="text-[9px] text-slate-600">Sube qr Bre-B.jpeg a /public</span>
                   </div>
                 </div>
               </div>
 
               <p className="text-[11.5px] text-slate-300 leading-relaxed">
-                Transfiere desde cualquier banco en Colombia (Bancolombia, Davivienda, Nu, etc.) usando la <strong>Llave Bre-B</strong> o escaneando el QR:
+                Transfiere desde cualquier banco en Colombia (Bancolombia, Davivienda, Nu, Lulo, etc.) usando la <strong>Llave Bre-B</strong> o escaneando el QR:
               </p>
 
               {/* Llave Bre-B */}
