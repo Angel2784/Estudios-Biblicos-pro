@@ -1,283 +1,305 @@
-@import url('https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,300;0,400;0,600;0,700;1,400;1,600&family=Fraunces:ital,opsz,wght@1,9..144,500&family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+'use client'
+import { useState, useEffect, useRef } from 'react'
+import { Library, Settings, Flame, Search, X, BookMarked, Key } from 'lucide-react'
+import { UserButton } from '@clerk/nextjs'
+import ApiKeySetup from '@/components/ApiKeySetup'
+import StudySection from '@/components/StudySection'
+import ComparativeSection from '@/components/ComparativeSection'
+import SermonSection from '@/components/SermonSection'
+import LibrarySidebar from '@/components/LibrarySidebar'
+import { obtenerExegesis, obtenerComparado, obtenerSermon, type EstiloSermon, consultarLimite, onRestantesChange, PRECIO_MENSUAL, PRECIO_ANUAL } from '@/lib/gemini'
+import { getApiKey, setApiKey, type EstudioGuardado } from '@/lib/storage'
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+interface StudyResult  { id: string; cita: string; texto: string }
+interface CompResult   { id: string; cita1: string; cita2: string; texto: string }
+interface SermonResult { id: string; cita: string; texto: string; estilo: EstiloSermon }
 
-:root {
-  --gold: #d4a24e;
-  --gold-light: #e6b868;
-  --gold-dim: #d4a24e33;
-  --ember: #c76b3f;
-  --parchment: #f0e6d2;
-  --navy: #0a0d14;
-  --navy-mid: #0f172a;
-  --navy-card: #151321;
-  --navy-border: #2a2440;
-  --navy-hover: #1c1830;
-  --text-primary: #e2e8f0;
-  --text-secondary: #94a3b8;
-  --text-dim: #6b6656;
-  --green: #4ade80;
-  --red: #ef4444;
+const EJEMPLOS       = ['Juan 3:16', 'Salmos 23:1-6', 'Romanos 8:28', 'Filipenses 4:13']
+const COMP_EJEMPLOS  = [['Juan 3:16', 'Romanos 5:8'], ['Salmos 23', 'Juan 10:11'], ['Gálatas 2:20', 'Filipenses 1:21']]
+const SERMON_EJEMPLOS = ['Juan 3:16', 'Mateo 5:1-12', 'Salmos 23', 'Romanos 8:28']
+
+let _uid = 0
+const uid = () => String(++_uid)
+
+function reorder<T>(arr: T[], from: number, to: number): T[] {
+  const next = [...arr]; const [item] = next.splice(from, 1); next.splice(to, 0, item); return next
 }
 
-* { box-sizing: border-box; }
+export default function HomePage() {
+  const [apiKey, setApiKeyState]     = useState<string>('')
+  const [loading, setLoading]        = useState(true)
+  const [showApiKeySetup, setShowApiKeySetup] = useState(false)
+  const [restantes, setRestantes]    = useState<number | null>(null)
+  const [esAdmin, setEsAdmin]        = useState(false)
+  const [esPremium, setEsPremium]    = useState(false)
 
-html { scroll-behavior: smooth; }
+  const [citaInput, setCitaInput]    = useState('')
+  const [estudiando, setEstudiando]  = useState(false)
+  const [errorExeg, setErrorExeg]    = useState('')
+  const [estudios, setEstudios]      = useState<StudyResult[]>([])
 
-body {
-  background:
-    radial-gradient(ellipse 900px 600px at 10% -10%, rgba(199,107,63,0.28), transparent 55%),
-    radial-gradient(ellipse 1000px 700px at 110% 15%, rgba(212,162,78,0.22), transparent 55%),
-    radial-gradient(ellipse 130% 130% at 50% 40%, transparent 35%, rgba(6,7,12,0.75) 100%),
-    linear-gradient(180deg, rgba(8,9,15,0.86), rgba(8,9,15,0.93)),
-    url('https://images.unsplash.com/photo-1472173148041-00294f0814a2?q=80&w=1920&auto=format&fit=crop') center/cover no-repeat;
-  background-attachment: fixed, fixed, fixed, fixed, fixed;
-  color: var(--text-primary);
-  font-family: 'DM Sans', system-ui, sans-serif;
-  min-height: 100vh;
-  -webkit-font-smoothing: antialiased;
-  position: relative;
+  const [cita1, setCita1]            = useState('')
+  const [cita2, setCita2]            = useState('')
+  const [comparando, setComparando]  = useState(false)
+  const [errorComp, setErrorComp]    = useState('')
+  const [comparados, setComparados]  = useState<CompResult[]>([])
+
+  const [citaSermon, setCitaSermon]      = useState('')
+  const [estiloSermon, setEstiloSermon]  = useState<EstiloSermon>('expositivo')
+  const [generando, setGenerando]        = useState(false)
+  const [errorSermon, setErrorSermon]    = useState('')
+  const [sermones, setSermones]          = useState<SermonResult[]>([])
+
+  const [showLibrary, setShowLibrary]    = useState(false)
+  const [showSettings, setShowSettings]  = useState(false)
+
+  const dragEstudio   = useRef<number | null>(null)
+  const dragComparado = useRef<number | null>(null)
+  const dragSermon    = useRef<number | null>(null)
+
+  useEffect(() => { const key = getApiKey(); if (key) setApiKeyState(key); setLoading(false) }, [])
+
+  useEffect(() => { onRestantesChange(setRestantes) }, [])
+
+  useEffect(() => {
+    consultarLimite().then(d => {
+      setRestantes(d.restantes)
+      setEsAdmin(!!d.esAdmin)
+      setEsPremium(!!d.esPremium)
+    })
+  }, [])
+
+  const handleSaveKey = (key: string) => { setApiKey(key); setApiKeyState(key); setShowApiKeySetup(false) }
+  const handleRemoveKey = () => { setApiKey(''); setApiKeyState('') }
+
+  const handleStudy = async () => {
+    if (!citaInput.trim()) return
+    setEstudiando(true); setErrorExeg('')
+    try {
+      const texto = await obtenerExegesis(apiKey, citaInput.trim())
+      setEstudios(prev => [{ id: uid(), cita: citaInput.trim(), texto }, ...prev]); setCitaInput('')
+    } catch (e: unknown) { setErrorExeg(e instanceof Error ? e.message : 'Error desconocido') }
+    finally { setEstudiando(false) }
+  }
+
+  const handleCompare = async () => {
+    if (!cita1.trim() || !cita2.trim()) return
+    setComparando(true); setErrorComp('')
+    try {
+      const texto = await obtenerComparado(apiKey, cita1.trim(), cita2.trim())
+      setComparados(prev => [{ id: uid(), cita1: cita1.trim(), cita2: cita2.trim(), texto }, ...prev])
+      setCita1(''); setCita2('')
+    } catch (e: unknown) { setErrorComp(e instanceof Error ? e.message : 'Error desconocido') }
+    finally { setComparando(false) }
+  }
+
+  const handleSermon = async () => {
+    if (!citaSermon.trim()) return
+    setGenerando(true); setErrorSermon('')
+    try {
+      const texto = await obtenerSermon(apiKey, citaSermon.trim(), estiloSermon)
+      setSermones(prev => [{ id: uid(), cita: citaSermon.trim(), texto, estilo: estiloSermon }, ...prev])
+      setCitaSermon('')
+    } catch (e: unknown) { setErrorSermon(e instanceof Error ? e.message : 'Error desconocido') }
+    finally { setGenerando(false) }
+  }
+
+  const handleSelectEstudio = (estudio: EstudioGuardado) => {
+    setEstudios(prev => [{ id: uid(), cita: estudio.cita, texto: estudio.texto }, ...prev]); setShowLibrary(false)
+  }
+  const handleSelectComparado = (estudio: EstudioGuardado) => {
+    const parts = estudio.cita.split(' vs ')
+    setComparados(prev => [{ id: uid(), cita1: parts[0]||'', cita2: parts[1]||'', texto: estudio.texto }, ...prev])
+    setShowLibrary(false)
+  }
+
+  if (loading) return <div className="min-h-screen flex items-center justify-center"><div className="text-4xl" style={{ animation: 'spin 1s linear infinite' }}>⟳</div></div>
+
+  if (showApiKeySetup) return <ApiKeySetup onSave={handleSaveKey} />
+
+  const sinLimite = esAdmin || esPremium || !!apiKey
+
+  return (
+    <div className="min-h-screen" style={{ background: 'var(--navy)' }}>
+
+      <nav style={{ background: 'var(--navy-card)', borderBottom: '1px solid var(--navy-border)', position: 'sticky', top: 0, zIndex: 100 }}>
+        <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="brand-glow-wrap">
+              <div className="brand-glow"></div>
+              <span className="text-2xl" style={{ position: 'relative', zIndex: 1 }}>📜</span>
+            </div>
+            <div>
+              <h1 className="font-bold text-base leading-tight" style={{ color: 'var(--gold)', fontFamily: 'Crimson Pro, serif' }}>Estudio Bíblico Pro</h1>
+              <p className="text-xs hidden sm:block" style={{ color: 'var(--text-dim)' }}>Exégesis académica</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            {!sinLimite && restantes !== null && (
+              <span className="text-xs px-2 py-1 rounded-full" style={{ background: 'var(--navy-border)', color: 'var(--gold)' }}>
+                {restantes > 0 ? `${restantes} consultas gratis hoy` : 'Límite alcanzado'}
+              </span>
+            )}
+            {esAdmin && <span className="text-xs px-2 py-1 rounded-full" style={{ background: 'var(--navy-border)', color: 'var(--gold)' }}>👑 Admin</span>}
+            {esPremium && <span className="text-xs px-2 py-1 rounded-full" style={{ background: 'var(--navy-border)', color: 'var(--gold)' }}>⭐ Premium</span>}
+            <button className="btn-secondary" style={{ padding: '7px 10px' }} onClick={() => setShowLibrary(!showLibrary)}>
+              <Library size={16} /><span className="hidden sm:inline text-xs">Biblioteca</span>
+            </button>
+            <button className="btn-secondary" style={{ padding: '7px 10px' }} onClick={() => setShowSettings(!showSettings)}>
+              <Settings size={16} />
+            </button>
+            <UserButton afterSignOutUrl="/sign-in" />
+          </div>
+        </div>
+      </nav>
+
+      {showSettings && (
+        <div className="max-w-4xl mx-auto px-4 py-4">
+          <div className="card flex items-center justify-between gap-4 flex-wrap" style={{ animation: 'slideUp 0.3s ease-out' }}>
+            {apiKey ? (
+              <>
+                <div>
+                  <p className="text-sm font-semibold" style={{ color: 'var(--gold)' }}>🔑 Usando tu propia API Key</p>
+                  <p className="text-xs mt-1" style={{ color: 'var(--text-dim)' }}>{apiKey.substring(0, 8)}{'•'.repeat(20)} · Uso ilimitado</p>
+                </div>
+                <button className="btn-secondary" style={{ fontSize: 12 }} onClick={handleRemoveKey}>
+                  <X size={13} /> Quitar API Key
+                </button>
+              </>
+            ) : esPremium ? (
+              <div>
+                <p className="text-sm font-semibold" style={{ color: 'var(--gold)' }}>⭐ Cuenta Premium activa</p>
+                <p className="text-xs mt-1" style={{ color: 'var(--gold)' }}>Uso ilimitado</p>
+              </div>
+            ) : esAdmin ? (
+              <>
+                <div>
+                  <p className="text-sm font-semibold" style={{ color: 'var(--gold)' }}>👑 Cuenta admin</p>
+                  <p className="text-xs mt-1" style={{ color: 'var(--gold)' }}>Conecta tu propia API Key para uso ilimitado.</p>
+                </div>
+                <button className="btn-secondary" style={{ fontSize: 12 }} onClick={() => setShowApiKeySetup(true)}>
+                  <Key size={13} /> Conectar mi API Key
+                </button>
+              </>
+            ) : (
+              <div>
+                <p className="text-sm font-semibold" style={{ color: 'var(--gold)' }}>✨ Usando el servicio gratuito</p>
+                <p className="text-xs mt-1" style={{ color: 'var(--gold)' }}>
+                  {restantes !== null ? `Te quedan ${restantes} consultas gratis hoy. ` : ''}
+                  Hazte premium: {PRECIO_MENSUAL} o {PRECIO_ANUAL}.
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      <main className="max-w-4xl mx-auto px-4 py-6 space-y-8">
+
+        <section>
+          <h2 className="font-bold text-lg mb-4" style={{ fontFamily: 'Crimson Pro, serif', color: 'var(--gold)' }}>📖 Estudio Bíblico</h2>
+          <div className="card">
+            <div className="flex gap-3 flex-col sm:flex-row">
+              <input className="input-field flex-1" placeholder="Referencia bíblica (ej: Juan 3:16)"
+                value={citaInput} onChange={e => setCitaInput(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && handleStudy()} disabled={estudiando} />
+              <button className="btn-primary whitespace-nowrap" onClick={handleStudy} disabled={estudiando || !citaInput.trim()}>
+                {estudiando ? <><span style={{ display: 'inline-block', animation: 'spin 1s linear infinite' }}>⟳</span> Analizando...</> : <><Flame size={16} /> Estudiar</>}
+              </button>
+            </div>
+            <div className="flex gap-2 mt-3 flex-wrap">
+              {EJEMPLOS.map(ej => <button key={ej} className="tab-btn" style={{ fontSize: 11 }} onClick={() => setCitaInput(ej)}>{ej}</button>)}
+            </div>
+            {errorExeg && <div className="mt-3 p-3 rounded-lg text-xs" style={{ background: '#7f1d1d33', color: '#ef4444', border: '1px solid #7f1d1d' }}>⚠️ {errorExeg}</div>}
+            {estudiando && <div className="mt-4 space-y-3">{[90,70,80].map((w,i) => <div key={i} className="shimmer rounded-lg" style={{ height:16, width:`${w}%` }} />)}<p className="text-xs" style={{ color: 'var(--text-dim)' }}>✨ Generando exégesis académica...</p></div>}
+          </div>
+          {estudios.map((e, i) => (
+            <div key={e.id} draggable onDragStart={() => { dragEstudio.current = i }} onDragOver={ev => ev.preventDefault()} onDrop={() => { if (dragEstudio.current !== null) { setEstudios(p => reorder(p, dragEstudio.current!, i)); dragEstudio.current = null } }} style={{ cursor: 'grab' }}>
+              <StudySection cita={e.cita} texto={e.texto} apiKey={apiKey} onClear={() => setEstudios(prev => prev.filter(x => x.id !== e.id))} />
+            </div>
+          ))}
+        </section>
+
+        <section>
+          <div className="flex items-center gap-2 mb-4">
+            <h2 className="font-bold text-lg" style={{ fontFamily: 'Crimson Pro, serif', color: 'var(--gold)' }}>⚖️ Estudio Comparado</h2>           
+          </div>
+          <div className="card">
+            <p className="text-sm mb-4" style={{ color: 'var(--text-secondary)' }}>Compara dos pasajes con análisis teológico profundo</p>
+            <div className="flex gap-3 flex-col sm:flex-row">
+              <input className="input-field flex-1" placeholder="Pasaje A (ej: Juan 3:16)" value={cita1} onChange={e => setCita1(e.target.value)} disabled={comparando} />
+              <input className="input-field flex-1" placeholder="Pasaje B (ej: Romanos 5:8)" value={cita2} onChange={e => setCita2(e.target.value)} disabled={comparando} onKeyDown={e => e.key === 'Enter' && handleCompare()} />
+              <button className="btn-primary whitespace-nowrap" onClick={handleCompare} disabled={comparando || !cita1.trim() || !cita2.trim()}>
+                {comparando ? <><span style={{ display: 'inline-block', animation: 'spin 1s linear infinite' }}>⟳</span> Comparando...</> : <><Search size={15} /> Comparar</>}
+              </button>
+            </div>
+            <div className="flex gap-2 mt-3 flex-wrap">
+              {COMP_EJEMPLOS.map(([c1,c2]) => <button key={`${c1}-${c2}`} className="tab-btn" style={{ fontSize: 11 }} onClick={() => { setCita1(c1); setCita2(c2) }}>{c1} vs {c2}</button>)}
+            </div>
+            {errorComp && <div className="mt-3 p-3 rounded-lg text-xs" style={{ background: '#7f1d1d33', color: '#ef4444', border: '1px solid #7f1d1d' }}>⚠️ {errorComp}</div>}
+            {comparando && <div className="mt-4 space-y-3">{[85,65,75].map((w,i) => <div key={i} className="shimmer rounded-lg" style={{ height:16, width:`${w}%` }} />)}<p className="text-xs" style={{ color: 'var(--text-dim)' }}>🔍 Generando análisis comparativo...</p></div>}
+          </div>
+          {comparados.map((c, i) => (
+            <div key={c.id} draggable onDragStart={() => { dragComparado.current = i }} onDragOver={ev => ev.preventDefault()} onDrop={() => { if (dragComparado.current !== null) { setComparados(p => reorder(p, dragComparado.current!, i)); dragComparado.current = null } }} style={{ cursor: 'grab' }}>
+              <ComparativeSection cita1={c.cita1} cita2={c.cita2} texto={c.texto} apiKey={apiKey} onRemove={() => setComparados(prev => prev.filter(x => x.id !== c.id))} />
+            </div>
+          ))}
+        </section>
+
+        <section>
+          <div className="flex items-center gap-2 mb-4">
+            <h2 className="font-bold text-lg" style={{ fontFamily: 'Crimson Pro, serif', color: 'var(--gold)' }}>📝 Sermón / Devocional</h2>            
+          </div>
+          <div className="card">
+            <p className="text-sm mb-4" style={{ color: 'var(--text-secondary)' }}>Genera un sermón expositivo, devocional basado en un pasaje</p>
+
+            <div className="flex gap-2 mb-3 flex-wrap">
+              {([['expositivo','📖 Sermón expositivo'],['devocional','🌅 Devocional breve']] as [EstiloSermon,string][]).map(([val,label]) => (
+                <button key={val} onClick={() => setEstiloSermon(val)}
+                  className="tab-btn"
+                  style={{ fontSize: 12, outline: estiloSermon === val ? '2px solid #a78bfa' : 'none', color: estiloSermon === val ? '#a78bfa' : undefined }}>
+                  {label}
+                </button>
+              ))}
+            </div>
+
+            <div className="flex gap-3 flex-col sm:flex-row">
+              <input className="input-field flex-1" placeholder="Pasaje bíblico (ej: Juan 3:16)"
+                value={citaSermon} onChange={e => setCitaSermon(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && handleSermon()} disabled={generando} />
+              <button className="btn-primary whitespace-nowrap" onClick={handleSermon} disabled={generando || !citaSermon.trim()}
+                style={{ background: generando ? undefined : 'linear-gradient(135deg, #7c3aed, #a78bfa)' }}>
+                {generando ? <><span style={{ display: 'inline-block', animation: 'spin 1s linear infinite' }}>⟳</span> Generando...</> : <><BookMarked size={16} /> Generar</>}
+              </button>
+            </div>
+            <div className="flex gap-2 mt-3 flex-wrap">
+              {SERMON_EJEMPLOS.map(ej => <button key={ej} className="tab-btn" style={{ fontSize: 11 }} onClick={() => setCitaSermon(ej)}>{ej}</button>)}
+            </div>
+            {errorSermon && <div className="mt-3 p-3 rounded-lg text-xs" style={{ background: '#7f1d1d33', color: '#ef4444', border: '1px solid #7f1d1d' }}>⚠️ {errorSermon}</div>}
+            {generando && <div className="mt-4 space-y-3">{[85,65,75].map((w,i) => <div key={i} className="shimmer rounded-lg" style={{ height:16, width:`${w}%` }} />)}<p className="text-xs" style={{ color: 'var(--text-dim)' }}>✍️ Preparando el mensaje...</p></div>}
+          </div>
+          {sermones.map((s, i) => (
+            <div key={s.id} draggable onDragStart={() => { dragSermon.current = i }} onDragOver={ev => ev.preventDefault()} onDrop={() => { if (dragSermon.current !== null) { setSermones(p => reorder(p, dragSermon.current!, i)); dragSermon.current = null } }} style={{ cursor: 'grab' }}>
+              <SermonSection cita={s.cita} texto={s.texto} estilo={s.estilo} onRemove={() => setSermones(prev => prev.filter(x => x.id !== s.id))} />
+            </div>
+          ))}
+        </section>
+
+      </main>
+
+      {showLibrary && (
+        <>
+          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 999 }} onClick={() => setShowLibrary(false)} />
+          <LibrarySidebar onSelectEstudio={handleSelectEstudio} onSelectComparado={handleSelectComparado} onClose={() => setShowLibrary(false)} />
+        </>
+      )}
+
+      <footer className="text-center py-8 mt-8" style={{ borderTop: '1px solid var(--navy-border)', color: 'var(--text-dim)', fontSize: 12 }}>
+        <p>📜 Estudio Bíblico Pro</p>
+        <p className="mt-1">Powered by Google Gemini</p>
+      </footer>
+
+      <style>{`@keyframes spin { from { transform: rotate(0deg) } to { transform: rotate(360deg) } }`}</style>
+    </div>
+  )
 }
-
-/* ── Subtle grain, for texture without muddying colors ── */
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  opacity: 0.045;
-  mix-blend-mode: overlay;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
-  background-size: 180px 180px;
-}
-
-/* keeps real content above the texture/glow layers */
-#__next, body > div { position: relative; z-index: 1; }
-
-/* ── Scrollbar ── */
-::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: var(--navy-border); border-radius: 10px; }
-::-webkit-scrollbar-thumb { background: var(--gold); border-radius: 10px; }
-* { scrollbar-width: thin; scrollbar-color: var(--gold) var(--navy-border); }
-
-/* ── Bible links ── */
-.bible-link {
-  color: var(--gold) !important;
-  text-decoration: underline;
-  font-weight: 600;
-  transition: color 0.2s;
-}
-.bible-link:hover { color: var(--gold-light) !important; text-decoration: none; }
-
-/* ── Section titles ── */
-.section-title {
-  color: var(--gold);
-  font-family: 'Crimson Pro', serif;
-  font-size: 1.4rem;
-  font-weight: 600;
-  margin: 1.2em 0 0.5em;
-  padding-bottom: 6px;
-  border-bottom: 1px solid var(--navy-border);
-}
-
-/* ── Prose content ── */
-.prose-biblical {
-  font-family: 'Crimson Pro', serif;
-  font-size: 1.1rem;
-  line-height: 1.9;
-  color: var(--text-primary);
-}
-.prose-biblical p { margin-bottom: 1em; }
-.prose-biblical ul { padding-left: 1.5em; margin-bottom: 1em; }
-.prose-biblical li { margin-bottom: 0.4em; }
-.prose-biblical strong { color: var(--gold); font-weight: 600; }
-.prose-biblical blockquote {
-  font-family: 'Fraunces', serif;
-  font-style: italic;
-  font-size: 1.15em;
-  line-height: 1.7;
-  color: var(--parchment);
-  border-left: 2px solid var(--ember);
-  border-radius: 0;
-  margin: 1.2em 0;
-  padding: 0.2em 0 0.2em 1em;
-}
-
-/* ── Highlight colors ── */
-.hl-yellow { background: #fbbf24; color: #1a1a2e; border-radius: 3px; padding: 1px 2px; }
-.hl-green  { background: #86efac; color: #1a1a2e; border-radius: 3px; padding: 1px 2px; }
-.hl-blue   { background: #93c5fd; color: #1a1a2e; border-radius: 3px; padding: 1px 2px; }
-.hl-pink   { background: #f9a8d4; color: #1a1a2e; border-radius: 3px; padding: 1px 2px; }
-.hl-orange { background: #fdba74; color: #1a1a2e; border-radius: 3px; padding: 1px 2px; }
-
-/* ── Loading shimmer ── */
-.shimmer {
-  background: linear-gradient(90deg, var(--navy-card) 25%, var(--navy-hover) 50%, var(--navy-card) 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
-}
-
-/* ── Tab styles ── */
-.tab-bar {
-  display: flex;
-  gap: 4px;
-  flex-wrap: wrap;
-  padding: 10px;
-  background: var(--navy-card);
-  border-radius: 12px;
-}
-.tab-btn {
-  padding: 5px 12px !important;
-  border-radius: 20px !important;
-  border: 1px solid rgba(212, 162, 78, 0.3) !important;
-  background: transparent !important;
-  color: var(--gold) !important;
-  font-size: 12px !important;
-  font-weight: 500 !important;
-  cursor: pointer !important;
-  transition: all 0.2s !important;
-  white-space: nowrap !important;
-  font-family: 'DM Sans', sans-serif !important;
-}
-.tab-btn:hover { background: rgba(212, 162, 78, 0.1) !important; border-color: var(--gold) !important; }
-.tab-btn.active { background: var(--gold) !important; color: #241a08 !important; border-color: var(--gold) !important; font-weight: 700 !important; }
-
-/* ── Tab panel ── */
-.tab-panel {
-  background: var(--navy-mid);
-  border: 1px solid var(--navy-border);
-  border-radius: 15px;
-  margin-top: 10px;
-  padding: 28px 32px;
-  max-height: 70vh;
-  overflow-y: auto;
-  overflow-x: hidden;
-  animation: fadeIn 0.3s ease-out;
-}
-
-@media (max-width: 768px) {
-  .tab-panel { padding: 16px 14px; max-height: 65vh; }
-  .tab-btn { font-size: 10px !important; padding: 5px 10px !important; }
-}
-
-/* ── Cards ── */
-.card {
-  position: relative;
-  background: rgba(212, 162, 78, 0.05);
-  border: 1px solid rgba(212, 162, 78, 0.22);
-  border-radius: 14px;
-  padding: 24px;
-  box-shadow: 0 20px 60px -20px rgba(0,0,0,0.5), 0 0 40px -20px rgba(212,162,78,0.18);
-  transition: border-color 0.2s, box-shadow 0.2s;
-}
-.card::before {
-  content: '';
-  position: absolute;
-  top: -1px; left: -1px; right: -1px;
-  height: 2px;
-  border-radius: 14px 14px 0 0;
-  background: linear-gradient(90deg, transparent, var(--ember) 20%, var(--gold) 50%, var(--ember) 80%, transparent);
-  opacity: 0.55;
-}
-.card:hover { border-color: rgba(212, 162, 78, 0.4); }
-
-/* ── Input ── */
-.input-field {
-  width: 100%;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(212, 162, 78, 0.22);
-  border-radius: 10px;
-  padding: 12px 16px;
-  color: var(--text-primary);
-  font-family: 'DM Sans', sans-serif;
-  font-size: 15px;
-  transition: border-color 0.2s, box-shadow 0.2s;
-  outline: none;
-}
-.input-field:focus {
-  border-color: var(--gold);
-  box-shadow: 0 0 0 3px var(--gold-dim);
-}
-.input-field::placeholder { color: var(--text-dim); }
-
-/* ── Buttons ── */
-.btn-primary {
-  background: linear-gradient(180deg, var(--gold-light), var(--gold)) !important;
-  color: #241a08 !important;
-  border: none !important;
-  border-radius: 10px !important;
-  padding: 12px 24px !important;
-  font-weight: 700 !important;
-  font-size: 14px !important;
-  cursor: pointer !important;
-  transition: all 0.2s !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  gap: 8px !important;
-  font-family: 'DM Sans', sans-serif !important;
-}
-.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(226,185,111,0.3); }
-.btn-primary:active { transform: translateY(0); }
-.btn-primary:disabled { opacity: 0.5 !important; cursor: not-allowed !important; transform: none !important; }
-
-.btn-secondary {
-  background: var(--navy-hover) !important;
-  color: #a8d8ea !important;
-  border: 1px solid var(--navy-border) !important;
-  border-radius: 10px !important;
-  padding: 10px 20px !important;
-  font-weight: 500 !important;
-  font-size: 13px !important;
-  cursor: pointer !important;
-  transition: all 0.2s !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  gap: 6px !important;
-  font-family: 'DM Sans', sans-serif !important;
-}
-.btn-secondary:hover { background: var(--gold) !important; color: var(--navy-card) !important; border-color: var(--gold) !important; }
-
-/* ── Annotation toolbar ── */
-.annotation-toolbar {
-  position: fixed;
-  background: var(--navy-card);
-  border: 1px solid #334155;
-  border-radius: 14px;
-  padding: 10px 12px;
-  z-index: 9999;
-  box-shadow: 0 12px 32px rgba(0,0,0,0.6);
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-  max-width: 340px;
-  animation: fadeIn 0.15s ease-out;
-}
-
-/* ── Map iframe ── */
-.map-container {
-  width: 100%;
-  border-radius: 12px;
-  overflow: hidden;
-  border: 1px solid var(--navy-border);
-  margin-top: 16px;
-}
-.map-container iframe { display: block; width: 100%; height: 380px; border: none; }
-
-/* ── PWA install banner ── */
-.pwa-banner {
-  background: linear-gradient(135deg, var(--navy-card), #16213e);
-  border: 1px solid var(--gold-dim);
-  border-radius: 12px;
-  padding: 12px 16px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-@keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
-@keyframes slideUp { from { opacity: 0; transform: translateY(16px) } to { opacity: 1; transform: translateY(0) } }
-@keyframes shimmer { 0% { background-position: -200% 0 } 100% { background-position: 200% 0 } }
