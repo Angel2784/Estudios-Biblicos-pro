@@ -175,8 +175,8 @@ export default function ComparativeSection({ cita1, cita2, texto, onRemove, apiK
           </div>
         </div>
       )}
-      {/* ── Chat con el pasaje ── */}
-      <ChatPanel cita={citaKey} texto={texto} apiKey={apiKey} />
+      {/* ── Chat con el pasaje corregido a cita1 ── */}
+      <ChatPanel cita={citaKey} textoPasaje={texto} apiKey={apiKey} />
 
     </div>
   )
