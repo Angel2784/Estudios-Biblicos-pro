@@ -16,7 +16,6 @@
   --navy-border: rgba(255, 215, 80, 0.25);
   --green: #4ade80;
   --red: #ef4444;
-  /* Tamaño dinámico de lectura bíblica */
   --biblical-font-size: 1.15rem;
 }
 
@@ -58,7 +57,7 @@ body {
 .bible-link { color: #fed25c !important; text-decoration: underline; font-weight: 600; }
 .bible-link:hover { color: #fff5c2 !important; text-decoration: none; }
 
-/* ── Títulos y Cabecera con Resplandor Dorado Radiante ── */
+/* ── Títulos y Cabecera ── */
 .section-title, .header-brand-title {
   color: #fff0b3 !important;
   font-family: 'Crimson Pro', serif !important;
@@ -70,21 +69,29 @@ body {
   text-shadow: 0 0 16px rgba(255, 212, 104, 0.85), 0 0 32px rgba(245, 168, 29, 0.45) !important;
 }
 
-/* ── Formato de Texto Bíblico con Tamaño Dinámico ── */
-.prose-biblical { 
-  font-family: 'Crimson Pro', serif; 
-  font-size: var(--biblical-font-size, 1.15rem); 
-  line-height: 1.9; 
+/* ── Formato de Texto Bíblico y Tamaño Dinámico en Tiempo Real ── */
+.prose-biblical,
+.prose-biblical p,
+.prose-biblical div,
+.prose-biblical li,
+.prose-biblical span,
+.tab-panel,
+.tab-panel p,
+.tab-panel li { 
+  font-family: 'Crimson Pro', serif !important;
+  font-size: var(--biblical-font-size, 1.15rem) !important; 
+  line-height: 1.85 !important; 
   color: var(--text-primary); 
 }
+
 .prose-biblical p { margin-bottom: 1em; }
 .prose-biblical ul { padding-left: 1.5em; margin-bottom: 1em; }
 .prose-biblical li { margin-bottom: 0.4em; }
 .prose-biblical strong { color: #fde38c; font-weight: 600; }
 .prose-biblical blockquote {
-  font-family: 'Crimson Pro', serif;
+  font-family: 'Crimson Pro', serif !important;
   font-style: italic;
-  font-size: 1.15em;
+  font-size: calc(var(--biblical-font-size, 1.15rem) * 1.05) !important;
   line-height: 1.7;
   color: #f0e6d2;
   border-left: 3px solid #fed25c;
@@ -96,7 +103,7 @@ body {
   padding: 0.5em 0.8em 0.5em 1.2em;
 }
 
-/* ── Tarjetas con Borde Dorado y Fondo Translúcido ── */
+/* ── Tarjetas Translúcidas ── */
 .card {
   position: relative;
   background: rgba(14, 18, 30, 0.45) !important;
@@ -113,7 +120,7 @@ body {
   box-shadow: 0 14px 44px 0 rgba(0, 0, 0, 0.7), 0 0 20px rgba(255, 212, 104, 0.25), inset 0 1px 0 rgba(255, 240, 180, 0.35) !important;
 }
 
-/* ── Inputs con Borde Dorado Fino ── */
+/* ── Inputs ── */
 .input-gold, .input-subtle, .input-field {
   width: 100%;
   background: rgba(6, 8, 14, 0.7) !important;
@@ -135,7 +142,7 @@ body {
   color: rgba(180, 195, 220, 0.65) !important; 
 }
 
-/* ── BOTONES: ESTADO NORMAL ── */
+/* ── Botones Principales ── */
 .btn-gold, .btn-primary {
   background: linear-gradient(180deg, #c29334 0%, #a2721f 50%, #80540e 100%) !important;
   color: #1a1102 !important;
@@ -154,7 +161,6 @@ body {
   white-space: nowrap !important;
 }
 
-/* ── BOTONES: HOVER / ACTIVAR ── */
 .btn-gold:hover, .btn-primary:hover,
 .btn-gold:focus, .btn-primary:focus,
 .btn-gold:active, .btn-primary:active,
@@ -195,7 +201,7 @@ body {
   box-shadow: 0 0 12px rgba(254, 212, 104, 0.4) !important;
 }
 
-/* ── Píldoras Rápidas (Tabs) ── */
+/* ── Píldoras / Tabs ── */
 .pill, .tab-btn {
   padding: 5px 15px !important;
   border-radius: 9999px !important;
@@ -227,7 +233,7 @@ body {
   box-shadow: 0 0 14px rgba(192, 132, 252, 0.5) !important;
 }
 
-/* ── Panel de Pestañas (Contenedor Translúcido) ── */
+/* ── Panel de Pestañas (Respuesta Translúcida) ── */
 .tab-panel {
   background: rgba(20, 28, 44, 0.5) !important;
   backdrop-filter: blur(14px) !important;
