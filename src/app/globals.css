@@ -5,90 +5,134 @@
 @tailwind utilities;
 
 :root {
-  --navy: #06070a;
-  --text-primary: #f1f5f9;
-  --text-secondary: #94a3b8;
+  --gold-glow: #ffc107;
+  --gold-light: #ffe57f;
+  --gold-bright: #ffb300;
+  --gold-deep: #ff8f00;
+  --text-primary: #ffffff;
+  --text-secondary: #cbd5e1;
 }
 
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
 
+/* ── Fondo de Biblioteca Mística con Luces Cálidas ── */
 body {
-  background-color: #06070a;
-  color: #f1f5f9;
+  background-color: #05070a;
+  background-image: 
+    radial-gradient(circle at 50% 28%, rgba(255, 185, 45, 0.22) 0%, rgba(230, 130, 20, 0.1) 32%, transparent 65%),
+    radial-gradient(circle at 15% 20%, rgba(255, 160, 30, 0.15) 0%, transparent 45%),
+    radial-gradient(circle at 85% 35%, rgba(255, 175, 40, 0.16) 0%, transparent 45%),
+    linear-gradient(180deg, rgba(6, 8, 14, 0.72) 0%, rgba(6, 8, 14, 0.88) 100%),
+    url('https://images.unsplash.com/photo-1507842229451-79b1be8d62ee?q=80&w=2000&auto=format&fit=crop');
+  background-size: cover;
+  background-position: center top;
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+  color: var(--text-primary);
   font-family: 'Inter', system-ui, sans-serif;
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
 }
 
-/* ── Título de Sección ── */
+/* ── Scrollbar DORADO BRILLANTE ULTRA LUMINOSO (Como el pergamino) ── */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: rgba(5, 7, 12, 0.85); }
+::-webkit-scrollbar-thumb { 
+  background: linear-gradient(180deg, #ffe57f 0%, #ffc107 50%, #ff8f00 100%);
+  border-radius: 10px;
+  box-shadow: 0 0 12px rgba(255, 193, 7, 0.85), inset 0 1px 1px rgba(255, 255, 255, 0.9);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #fff2a8 0%, #ffd54f 50%, #ffa000 100%);
+  box-shadow: 0 0 16px rgba(255, 213, 79, 1);
+}
+* { scrollbar-width: thin; scrollbar-color: #ffc107 rgba(5, 7, 12, 0.85); }
+
+/* ── Títulos con Resplandor Dorado Pergamino ── */
 .section-title {
-  color: #fcd271;
+  color: #ffe57f !important;
   font-family: 'Crimson Pro', serif;
-  font-size: 1.4rem;
+  font-size: 1.45rem;
   font-weight: 700;
   display: flex;
   align-items: center;
   gap: 8px;
-  text-shadow: 0 2px 12px rgba(245, 180, 60, 0.4);
+  text-shadow: 0 0 14px rgba(255, 193, 7, 0.65), 0 0 28px rgba(255, 143, 0, 0.35);
 }
 
-/* ── Tarjetas Cristal Translúcido ── */
+/* ── Tarjetas Glassmorphism (Cristal Translúcido Real) ── */
 .card {
   position: relative;
-  background: rgba(18, 22, 34, 0.42) !important;
-  backdrop-filter: blur(20px) !important;
-  -webkit-backdrop-filter: blur(20px) !important;
-  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  background: rgba(14, 18, 30, 0.45) !important;
+  backdrop-filter: blur(18px) !important;
+  -webkit-backdrop-filter: blur(18px) !important;
+  border: 1px solid rgba(255, 215, 64, 0.22) !important;
   border-radius: 20px !important;
   padding: 24px !important;
-  box-shadow: 0 12px 36px 0 rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.12) !important;
+  box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 235, 150, 0.2) !important;
+  transition: all 0.25s ease;
+}
+.card:hover {
+  border-color: rgba(255, 215, 64, 0.45) !important;
+  box-shadow: 0 14px 44px 0 rgba(0, 0, 0, 0.7), 0 0 15px rgba(255, 193, 7, 0.15), inset 0 1px 0 rgba(255, 235, 150, 0.3) !important;
 }
 
-/* ── Input con Borde Dorado Fino ── */
+/* ── Banner Superior Glassmorphism ── */
+.banner-card {
+  background: rgba(18, 22, 36, 0.5) !important;
+  backdrop-filter: blur(18px) !important;
+  -webkit-backdrop-filter: blur(18px) !important;
+  border: 1px solid rgba(255, 215, 64, 0.25) !important;
+  border-radius: 18px !important;
+  padding: 16px 20px !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255, 235, 150, 0.15) !important;
+}
+
+/* ── Input con Borde Dorado Pergamino Brillante ── */
 .input-gold {
   width: 100%;
-  background: rgba(8, 10, 15, 0.55) !important;
-  border: 1.5px solid rgba(235, 185, 95, 0.85) !important;
+  background: rgba(6, 8, 14, 0.6) !important;
+  border: 1.5px solid #ffc107 !important;
   border-radius: 14px !important;
   padding: 14px 18px !important;
   color: #ffffff !important;
   font-family: 'Inter', sans-serif !important;
   font-size: 14px !important;
   outline: none !important;
-  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.4) !important;
+  box-shadow: 0 0 10px rgba(255, 193, 7, 0.25), inset 0 2px 4px rgba(0, 0, 0, 0.5) !important;
   transition: all 0.2s ease !important;
 }
 .input-gold:focus {
-  border-color: #ffe08a !important;
-  box-shadow: 0 0 16px rgba(252, 210, 113, 0.45), inset 0 2px 5px rgba(0, 0, 0, 0.4) !important;
+  border-color: #ffe57f !important;
+  box-shadow: 0 0 18px rgba(255, 213, 79, 0.6), inset 0 2px 4px rgba(0, 0, 0, 0.5) !important;
 }
-.input-gold::placeholder { color: rgba(160, 175, 200, 0.65) !important; }
+.input-gold::placeholder { color: rgba(180, 195, 220, 0.65) !important; }
 
 .input-subtle {
   width: 100%;
-  background: rgba(8, 10, 15, 0.55) !important;
-  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  background: rgba(6, 8, 14, 0.6) !important;
+  border: 1px solid rgba(255, 255, 255, 0.16) !important;
   border-radius: 14px !important;
   padding: 14px 18px !important;
   color: #ffffff !important;
   font-family: 'Inter', sans-serif !important;
   font-size: 14px !important;
   outline: none !important;
-  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.4) !important;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5) !important;
   transition: all 0.2s ease !important;
 }
 .input-subtle:focus {
-  border-color: rgba(235, 185, 95, 0.75) !important;
-  box-shadow: 0 0 12px rgba(235, 185, 95, 0.35) !important;
+  border-color: #ffc107 !important;
+  box-shadow: 0 0 12px rgba(255, 193, 7, 0.4) !important;
 }
-.input-subtle::placeholder { color: rgba(160, 175, 200, 0.65) !important; }
+.input-subtle::placeholder { color: rgba(180, 195, 220, 0.65) !important; }
 
-/* ── Botones Dorado Oro Brillante (Idéntico a la imagen) ── */
+/* ── Botones Dorado Oro Ultra Brillante (Como el Pergamino) ── */
 .btn-gold {
-  background: linear-gradient(180deg, #fee085 0%, #f5b738 50%, #df961e 100%) !important;
-  color: #1a1205 !important;
-  border: 1px solid rgba(255, 235, 160, 0.5) !important;
+  background: linear-gradient(180deg, #ffe88c 0%, #ffc107 45%, #ff8f00 100%) !important;
+  color: #120a00 !important;
+  border: 1px solid rgba(255, 245, 190, 0.7) !important;
   border-radius: 14px !important;
   padding: 13px 26px !important;
   font-weight: 700 !important;
@@ -99,23 +143,48 @@ body {
   align-items: center !important;
   justify-content: center !important;
   gap: 8px !important;
-  box-shadow: 0 4px 18px rgba(245, 183, 56, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.6) !important;
+  box-shadow: 0 4px 20px rgba(255, 180, 0, 0.55), inset 0 1px 1px rgba(255, 255, 255, 0.9) !important;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.4) !important;
   white-space: nowrap !important;
 }
 .btn-gold:hover {
-  background: linear-gradient(180deg, #ffebaa 0%, #fac653 50%, #e9a62c 100%) !important;
-  box-shadow: 0 6px 24px rgba(245, 183, 56, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.8) !important;
+  background: linear-gradient(180deg, #fff2a8 0%, #ffd54f 45%, #ffa000 100%) !important;
+  box-shadow: 0 6px 26px rgba(255, 193, 7, 0.75), inset 0 1px 1px rgba(255, 255, 255, 1) !important;
   transform: translateY(-1px) !important;
 }
 .btn-gold:active { transform: translateY(0) !important; }
 .btn-gold:disabled { opacity: 0.5 !important; cursor: not-allowed !important; transform: none !important; box-shadow: none !important; }
 
-/* ── Píldoras Rápidas ── */
+/* ── Botones Cristal Secundarios ── */
+.btn-glass {
+  background: rgba(25, 33, 50, 0.6) !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  border-radius: 12px !important;
+  padding: 8px 14px !important;
+  font-weight: 500 !important;
+  font-size: 13px !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+}
+.btn-glass:hover {
+  background: rgba(45, 60, 90, 0.8) !important;
+  border-color: #ffc107 !important;
+  color: #ffe57f !important;
+  box-shadow: 0 0 10px rgba(255, 193, 7, 0.3) !important;
+}
+
+/* ── Píldoras ── */
 .pill {
   padding: 5px 15px !important;
   border-radius: 9999px !important;
-  border: 1px solid rgba(255, 255, 255, 0.14) !important;
-  background: rgba(25, 33, 48, 0.55) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  background: rgba(20, 28, 44, 0.6) !important;
   backdrop-filter: blur(8px) !important;
   -webkit-backdrop-filter: blur(8px) !important;
   color: #cbd5e1 !important;
@@ -125,19 +194,29 @@ body {
   transition: all 0.2s ease !important;
 }
 .pill:hover {
-  background: rgba(45, 58, 85, 0.8) !important;
-  border-color: rgba(240, 180, 75, 0.5) !important;
+  background: rgba(35, 48, 75, 0.85) !important;
+  border-color: #ffc107 !important;
   color: #ffffff !important;
 }
 .pill-active-blue {
-  background: rgba(30, 50, 80, 0.8) !important;
+  background: rgba(20, 45, 75, 0.85) !important;
   color: #bae6fd !important;
-  border: 1.5px solid rgba(56, 189, 248, 0.85) !important;
-  box-shadow: 0 0 14px rgba(56, 189, 248, 0.35) !important;
+  border: 1.5px solid #38bdf8 !important;
+  box-shadow: 0 0 14px rgba(56, 189, 248, 0.45) !important;
 }
 .pill-active-purple {
-  background: rgba(55, 30, 90, 0.8) !important;
+  background: rgba(45, 25, 75, 0.85) !important;
   color: #f3e8ff !important;
-  border: 1.5px solid rgba(192, 132, 252, 0.85) !important;
-  box-shadow: 0 0 14px rgba(192, 132, 252, 0.35) !important;
+  border: 1.5px solid #c084fc !important;
+  box-shadow: 0 0 14px rgba(192, 132, 252, 0.45) !important;
 }
+
+.shimmer {
+  background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.03) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
+@keyframes slideUp { from { opacity: 0; transform: translateY(16px) } to { opacity: 1; transform: translateY(0) } }
+@keyframes shimmer { 0% { background-position: -200% 0 } 100% { background-position: 200% 0 } }
