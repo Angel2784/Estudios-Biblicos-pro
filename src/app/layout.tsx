@@ -1,24 +1,22 @@
-import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
+import type { Metadata, Viewport } from 'next'
 import { ClerkProvider } from '@clerk/nextjs'
 import './globals.css'
 
-const inter = Inter({ subsets: ['latin'] })
-
 export const metadata: Metadata = {
   title: 'Estudio Bíblico Pro',
-  description: 'Plataforma de estudios bíblicos y recursos',
+  description: 'Exégesis académica y teológica profunda.',
+  manifest: '/manifest.json',
 }
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export const viewport: Viewport = {
+  themeColor: '#05070a',
+}
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <ClerkProvider>
       <html lang="es">
-        <body className={inter.className}>
+        <body className="min-h-screen relative text-slate-100 antialiased overflow-x-hidden">
           {children}
         </body>
       </html>
