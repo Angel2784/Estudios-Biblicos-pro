@@ -22,10 +22,10 @@ export default function PremiumModal({ isOpen, onClose }: Props) {
   // ════════════════════════════════════════════════════════════════════════════
   const NOMBRE_TITULAR          = 'Angel Peña'
   const NUMERO_NEQUI            = '322 730 7125'
-  const QR_NEQUI_IMG            = '/qr-nequi.jpeg'        // 👈 Compatible con .jpeg
+  const QR_NEQUI_IMG            = '/qr-nequi.jpg'        // 👈 Coincide con public/qr-nequi.jpg
   const NUMERO_DAVIPLATA        = '322 730 7125'
   const LLAVE_BREB              = '3227307125'
-  const QR_BREB_IMG             = '/qr%20Bre-B.jpeg'      // 👈 Compatible con qr Bre-B.jpeg
+  const QR_BREB_IMG             = '/qr-breb.jpg'         // 👈 Coincide con public/qr-breb.jpg
   const WHATSAPP_VISIBLE        = '+57 322 730 7125'
   const WHATSAPP_NUMERO_LINK    = '573227307125'
   // ════════════════════════════════════════════════════════════════════════════
@@ -187,7 +187,7 @@ export default function PremiumModal({ isOpen, onClose }: Props) {
                 <span className="text-[11px] text-amber-300">Escanea o transfiere</span>
               </div>
 
-              {/* Contenedor Grande para el QR con Recorte Automático */}
+              {/* Contenedor Grande con Auto-Zoom */}
               <div className="flex justify-center my-3">
                 <div 
                   className="bg-white rounded-2xl shadow-xl border-2 border-amber-400/50 flex items-center justify-center overflow-hidden"
@@ -199,7 +199,7 @@ export default function PremiumModal({ isOpen, onClose }: Props) {
                     className="w-full h-full object-cover"
                     style={{ 
                       objectPosition: 'center 34%', 
-                      transform: 'scale(1.7)' // 👈 Hace zoom directo al recuadro blanco del QR
+                      transform: 'scale(1.7)' // 👈 Zoom directo al QR de Nequi
                     }}
                     onError={(e) => {
                       (e.target as HTMLElement).style.display = 'none'
@@ -210,7 +210,7 @@ export default function PremiumModal({ isOpen, onClose }: Props) {
                   <div className="qr-fallback-nequi hidden w-full h-full flex-col items-center justify-center bg-slate-100 rounded-lg text-slate-800 p-2 text-center">
                     <QrCode size={44} className="text-slate-700 mb-1" />
                     <span className="text-xs font-bold">QR Nequi</span>
-                    <span className="text-[9px] text-slate-600">Sube qr-nequi.jpeg a /public</span>
+                    <span className="text-[9px] text-slate-600">Sube qr-nequi.jpg a /public</span>
                   </div>
                 </div>
               </div>
@@ -273,7 +273,7 @@ export default function PremiumModal({ isOpen, onClose }: Props) {
                 <span className="text-[11px] text-emerald-400 font-semibold">Interoperable</span>
               </div>
 
-              {/* Contenedor Grande para el QR con Recorte Automático */}
+              {/* Contenedor Grande con Auto-Zoom */}
               <div className="flex justify-center my-3">
                 <div 
                   className="bg-white rounded-2xl shadow-xl border-2 border-emerald-400/50 flex items-center justify-center overflow-hidden"
@@ -285,7 +285,7 @@ export default function PremiumModal({ isOpen, onClose }: Props) {
                     className="w-full h-full object-cover"
                     style={{ 
                       objectPosition: 'center 50%', 
-                      transform: 'scale(1.5)' // 👈 Hace zoom directo al QR de Bre-B
+                      transform: 'scale(1.5)' // 👈 Zoom directo al QR de Bre-B
                     }}
                     onError={(e) => {
                       (e.target as HTMLElement).style.display = 'none'
@@ -296,13 +296,13 @@ export default function PremiumModal({ isOpen, onClose }: Props) {
                   <div className="qr-fallback-breb hidden w-full h-full flex-col items-center justify-center bg-slate-100 rounded-lg text-slate-800 p-2 text-center">
                     <QrCode size={44} className="text-emerald-700 mb-1" />
                     <span className="text-xs font-bold">QR Bre-B</span>
-                    <span className="text-[9px] text-slate-600">Sube qr Bre-B.jpeg a /public</span>
+                    <span className="text-[9px] text-slate-600">Sube qr-breb.jpg a /public</span>
                   </div>
                 </div>
               </div>
 
               <p className="text-[11.5px] text-slate-300 leading-relaxed">
-                Transfiere desde cualquier banco en Colombia (Bancolombia, Davivienda, Nu, Lulo, etc.) usando la <strong>Llave Bre-B</strong> o escaneando el QR:
+                Transfiere desde cualquier banco en Colombia (Bancolombia, Davivienda, Nu, etc.) usando la <strong>Llave Bre-B</strong> o escaneando el QR:
               </p>
 
               {/* Llave Bre-B */}
