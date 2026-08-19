@@ -20,13 +20,13 @@ export default function PremiumModal({ isOpen, onClose }: Props) {
   // ════════════════════════════════════════════════════════════════════════════
   // ⚙️ TUS DATOS DE COBRO REALES (Edita estos valores con tus datos)
   // ════════════════════════════════════════════════════════════════════════════
-  const NOMBRE_TITULAR          = 'Angel Perez'             // 👈 Tu nombre completo
-  const NUMERO_NEQUI            = '300 123 4567'            // 👈 Tu número de Nequi
+  const NOMBRE_TITULAR          = 'Angel Peña'             // 👈 Tu nombre completo
+  const NUMERO_NEQUI            = '322 730 7125'            // 👈 Tu número de Nequi
   const QR_NEQUI_IMG            = '/qr-nequi.jpg'           // 👈 Imagen en /public/qr-nequi.jpg
-  const NUMERO_DAVIPLATA        = '300 123 4567'            // 👈 Tu número de Daviplata (Solo número)
-  const LLAVE_BREB              = '3001234567'              // 👈 Tu Llave Bre-B
+  const NUMERO_DAVIPLATA        = '322 730 7125'            // 👈 Tu número de Daviplata (Solo número)
+  const LLAVE_BREB              = '322 730 7125'              // 👈 Tu Llave Bre-B
   const QR_BREB_IMG             = '/qr-breb.jpg'            // 👈 Imagen en /public/qr-breb.jpg
-  const WHATSAPP_VISIBLE        = '+57 300 123 4567'        // 👈 Número visible con formato
+  const WHATSAPP_VISIBLE        = '+57 322 730 7125'        // 👈 Número visible con formato
   const WHATSAPP_NUMERO_LINK    = '573001234567'            // 👈 Número limpio para wa.me (sin espacios ni signos)
   // ════════════════════════════════════════════════════════════════════════════
 
