@@ -120,7 +120,7 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-transparent">
 
-      {/* ── BARRA SUPERIOR (CON EL MISMO TÍTULO DORADO RADIANTE) ── */}
+      {/* ── BARRA SUPERIOR ── */}
       <nav className="sticky top-0 z-50 bg-[#080b12]/80 backdrop-blur-xl border-b border-amber-500/20">
         <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -176,7 +176,7 @@ export default function HomePage() {
                 disabled={estudiando} 
               />
               <button 
-                className="btn-gold w-full sm:w-auto" 
+                className={`btn-gold w-full sm:w-auto ${citaInput.trim() ? 'active' : ''}`}
                 onClick={handleStudy} 
                 disabled={estudiando}
               >
@@ -188,7 +188,6 @@ export default function HomePage() {
               </button>
             </div>
             
-            {/* Píldoras con borde azul en la primera */}
             <div className="flex gap-2.5 mt-4 flex-wrap">
               {EJEMPLOS.map((ej, index) => (
                 <button 
@@ -234,7 +233,7 @@ export default function HomePage() {
                 onKeyDown={e => e.key === 'Enter' && handleCompare()} 
               />
               <button 
-                className="btn-gold w-full sm:w-auto" 
+                className={`btn-gold w-full sm:w-auto ${(cita1.trim() && cita2.trim()) ? 'active' : ''}`}
                 onClick={handleCompare} 
                 disabled={comparando}
               >
@@ -297,7 +296,7 @@ export default function HomePage() {
                 disabled={generando} 
               />
               <button 
-                className="btn-gold w-full sm:w-auto" 
+                className={`btn-gold w-full sm:w-auto ${citaSermon.trim() ? 'active' : ''}`}
                 onClick={handleSermon} 
                 disabled={generando}
               >
