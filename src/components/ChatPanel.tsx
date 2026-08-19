@@ -1,254 +1,183 @@
 'use client'
-import { useState, useRef, useEffect } from 'react'
-import { MessageCircle, Send, X, ChevronDown, ChevronUp, Bot, User } from 'lucide-react'
-import { obtenerRespuestaChat, type MensajeChat } from '@/lib/gemini'
-import { convertirEnlacesBiblicos } from '@/lib/parser'
+import { useState } from 'react'
+import { GitCompare, Download, Library, ChevronDown, ChevronUp, X } from 'lucide-react'
+import AnnotationReader from './AnnotationReader'
+import { extraerSeccion, convertirEnlacesBiblicos } from '@/lib/parser'
+import { guardarComparado } from '@/lib/storage'
+import { exportarComoWord } from '@/lib/exportDocx'
+import ChatPanel from './ChatPanel'
+
+const TABS_COMP = [
+  { label: '📋 Todo' },
+  { label: '📖 Textos',       seccion: 1 },
+  { label: '🤝 Similitudes',  seccion: 2 },
+  { label: '↔️ Diferencias',  seccion: 3 },
+  { label: '🏛️ Contexto',     seccion: 4 },
+  { label: '🔡 Lingüística',  seccion: 5 },
+  { label: '📈 Progresión',   seccion: 6 },
+  { label: '⚡ Tensiones',    seccion: 7 },
+  { label: '🧩 Síntesis',     seccion: 8 },
+  { label: '💡 Aplicación',   seccion: 9 },
+  { label: '🏁 Conclusión',   seccion: 10 },
+]
 
 interface Props {
-  cita:        string
-  textoPasaje: string
-  apiKey:      string
+  cita1: string
+  cita2: string
+  texto: string
+  onRemove: () => void
+  apiKey: string
 }
 
-function renderMarkdownConTablas(texto: string): string {
-  let html = texto
-  const lineas = html.split('\n')
-  const resultado: string[] = []
-  let enTabla = false
-  let tablaHtml = ''
+export default function ComparativeSection({ cita1, cita2, texto, onRemove, apiKey }: Props) {
+  const [expanded, setExpanded]       = useState(true)
+  const [saved, setSaved]             = useState(false)
+  const [downloading, setDownloading] = useState(false)
+  const citaKey = `${cita1} vs ${cita2}`
 
-  for (let i = 0; i < lineas.length; i++) {
-    const linea = lineas[i].trim()
-    if (linea.startsWith('|') && linea.endsWith('|')) {
-      if (/^\|[\s\-:|]+\|$/.test(linea)) continue
-      
-      const celdas = linea.split('|').slice(1, -1).map(c => c.trim())
-      
-      if (!enTabla) {
-        enTabla = true
-        tablaHtml = '<div style="overflow-x:auto; margin: 12px 0; border-radius: 10px; border: 1px solid var(--navy-border); background: var(--navy);"><table style="width:100%; font-size: 12px; text-align: left; border-collapse: collapse;"><thead><tr style="background: rgba(240,168,48,0.15); border-bottom: 1px solid var(--navy-border); color: var(--gold-light);">'
-        celdas.forEach(c => {
-          tablaHtml += `<th style="padding: 8px 10px; font-weight: 600;">${c.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')}</th>`
-        })
-        tablaHtml += '</tr></thead><tbody>'
-      } else {
-        tablaHtml += '<tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">'
-        celdas.forEach(c => {
-          tablaHtml += `<td style="padding: 8px 10px; color: var(--text-primary);">${c.replace(/\*\*(.*?)\*\*/g, '<strong style="color: var(--gold);">$1</strong>')}</td>`
-        })
-        tablaHtml += '</tr>'
-      }
-    } else {
-      if (enTabla) {
-        tablaHtml += '</tbody></table></div>'
-        resultado.push(tablaHtml)
-        enTabla = false
-        tablaHtml = ''
-      }
-      resultado.push(lineas[i])
-    }
+  // ── Tabs con orden arrastrable ──────────────────────────────────────────────
+  const [tabOrder, setTabOrder]           = useState(() => TABS_COMP.map((_, i) => i))
+  const [activeOrigIdx, setActiveOrigIdx] = useState(0)
+  const [dragTabIdx, setDragTabIdx]       = useState<number | null>(null)
+  const [dragOverTabIdx, setDragOverTabIdx] = useState<number | null>(null)
+
+  const handleTabDragStart = (origIdx: number) => setDragTabIdx(origIdx)
+  const handleTabDragOver  = (e: React.DragEvent, origIdx: number) => {
+    e.preventDefault()
+    setDragOverTabIdx(origIdx)
   }
-  if (enTabla) {
-    tablaHtml += '</tbody></table></div>'
-    resultado.push(tablaHtml)
+  const handleTabDrop = (targetOrigIdx: number) => {
+    if (dragTabIdx === null || dragTabIdx === targetOrigIdx) return
+    setTabOrder(prev => {
+      const next    = [...prev]
+      const fromPos = next.indexOf(dragTabIdx)
+      const toPos   = next.indexOf(targetOrigIdx)
+      next.splice(fromPos, 1)
+      next.splice(toPos, 0, dragTabIdx)
+      return next
+    })
+    setDragTabIdx(null)
+    setDragOverTabIdx(null)
   }
 
-  html = resultado.join('\n')
-  html = html.replace(/\*\*(.*?)\*\*/g, '<strong style="color: var(--gold); font-weight: 600;">$1</strong>')
-  html = html.replace(/^\s*[-*]\s+(.*)$/gm, '<li style="margin-left: 18px; margin-top: 4px; margin-bottom: 4px; color: var(--text-primary);">$1</li>')
-  html = convertirEnlacesBiblicos(html)
-  html = html.replace(/\n(?!<\/?(table|thead|tbody|tr|th|td|div|li|ul)>)/g, '<br/>')
-
-  return html
-}
-
-export default function ChatPanel({ cita, textoPasaje, apiKey }: Props) {
-  const [open, setOpen]           = useState(false)
-  const [input, setInput]         = useState('')
-  const [mensajes, setMensajes]   = useState<MensajeChat[]>([])
-  const [cargando, setCargando]   = useState(false)
-  const [error, setError]         = useState('')
-  const bottomRef                 = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    if (open) bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [mensajes, open])
-
-  const enviar = async () => {
-    const texto = input.trim()
-    if (!texto || cargando) return
-    setInput(''); setError('')
-
-    const nuevosConPregunta: MensajeChat[] = [...mensajes, { role: 'user', content: texto }]
-    setMensajes(nuevosConPregunta)
-    setCargando(true)
-    try {
-      const respuesta = await obtenerRespuestaChat(apiKey, cita, textoPasaje, nuevosConPregunta)
-      setMensajes(prev => [...prev, { role: 'assistant', content: respuesta }])
-    } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : 'Error desconocido')
-    } finally { setCargando(false) }
+  const handleSave = () => {
+    guardarComparado({ cita: citaKey, texto, fecha: new Date().toISOString(), anotaciones: [] })
+    setSaved(true)
+    setTimeout(() => setSaved(false), 2500)
   }
 
-  const limpiar = () => { setMensajes([]); setError('') }
+  const handleDownload = async () => {
+    setDownloading(true)
+    try { await exportarComoWord(citaKey, texto) }
+    finally { setDownloading(false) }
+  }
 
-  const SUGERENCIAS = [
-    '¿Cuál es el mensaje principal?',
-    '¿Qué significa en el contexto original?',
-    '¿Cómo aplicarlo hoy?',
-    '¿Qué dice sobre Jesús?',
-  ]
+  const getSeccionTexto = (origIdx: number): string => {
+    const tab = TABS_COMP[origIdx]
+    if (!tab.seccion) return texto
+    return extraerSeccion(texto, tab.seccion, tab.seccion + 1)
+  }
 
   return (
-    <div className="card mt-3" style={{ padding: 0, overflow: 'hidden' }}>
+    <div className="card mt-4" style={{ animation: 'slideUp 0.4s ease-out', borderColor: 'var(--gold-dim)' }}>
 
-      <button
-        onClick={() => setOpen(o => !o)}
-        className="w-full flex items-center justify-between px-4 py-3"
-        style={{ background: 'transparent', border: 'none', cursor: 'pointer' }}
-      >
-        <div className="flex items-center gap-2">
-          <MessageCircle size={15} style={{ color: 'var(--gold)' }} />
-          <span className="text-sm font-medium" style={{ color: 'var(--gold-light)' }}>
-            Chat con el pasaje
-          </span>
-          {mensajes.length > 0 && (
-            <span style={{
-              background: 'var(--navy-border)', color: 'var(--gold)',
-              fontSize: 10, fontWeight: 700, padding: '1px 7px', borderRadius: 20,
-            }}>
-              {Math.floor(mensajes.length / 2)} preguntas
-            </span>
-          )}
+      {/* Header */}
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-lg" style={{ background: 'var(--gold-dim)' }}>
+            <GitCompare size={18} style={{ color: 'var(--gold)' }} />
+          </div>
+          <div>
+            <h2 className="font-semibold text-base" style={{ color: 'var(--gold)' }}>
+              {cita1} <span style={{ color: 'var(--text-dim)' }}>vs</span> {cita2}
+            </h2>
+            <p className="text-xs" style={{ color: 'var(--text-dim)' }}>Estudio comparativo</p>
+          </div>
         </div>
+
         <div className="flex items-center gap-2">
-          {mensajes.length > 0 && (
-            <button
-              onClick={e => { e.stopPropagation(); limpiar() }}
-              style={{ color: 'var(--text-dim)', background: 'none', border: 'none', cursor: 'pointer', padding: '2px 4px' }}
-              title="Limpiar conversación"
-            >
-              <X size={13} />
-            </button>
-          )}
-          {open ? <ChevronUp size={15} style={{ color: 'var(--text-dim)' }} /> : <ChevronDown size={15} style={{ color: 'var(--text-dim)' }} />}
+          <button className="btn-secondary" style={{ fontSize: 12, padding: '7px 12px' }} onClick={handleSave}>
+            <Library size={13} />
+            {saved ? '✅ Guardado' : 'Guardar'}
+          </button>
+          <button
+            className="btn-secondary"
+            style={{ fontSize: 12, padding: '7px 12px', opacity: downloading ? 0.7 : 1 }}
+            onClick={handleDownload}
+            disabled={downloading}
+          >
+            <Download size={13} />
+            {downloading ? 'Generando...' : 'Descargar .docx'}
+          </button>
+          <button onClick={() => setExpanded(!expanded)} className="btn-secondary" style={{ padding: '7px 10px' }}>
+            {expanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+          </button>
+          {/* ── X para cerrar esta tarjeta ── */}
+          <button
+            onClick={onRemove}
+            className="btn-secondary"
+            style={{ padding: '7px 10px' }}
+            title="Cerrar este estudio comparado"
+          >
+            <X size={16} />
+          </button>
         </div>
-      </button>
+      </div>
 
-      {open && (
-        <div style={{ borderTop: '1px solid var(--navy-border)' }}>
+      {/* Content */}
+      {expanded && (
+        <div className="mt-5" style={{ animation: 'slideUp 0.3s ease-out' }}>
 
-          <div style={{ maxHeight: 380, overflowY: 'auto', padding: '12px 16px' }}>
-            {mensajes.length === 0 && (
-              <div>
-                <p className="text-xs mb-3" style={{ color: 'var(--text-dim)' }}>
-                  Haz preguntas sobre <strong style={{ color: 'var(--gold)' }}>{cita}</strong>
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  {SUGERENCIAS.map(s => (
-                    <button 
-                      key={s} 
-                      className="tab-btn" 
-                      style={{ fontSize: 11 }}
-                      onClick={() => setInput(s)}
-                    >
-                      {s}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {mensajes.map((m, i) => (
-              <div key={i} className={`flex gap-2 mb-3 ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-
-                {m.role === 'assistant' && (
-                  <div style={{
-                    flexShrink: 0, width: 26, height: 26, borderRadius: '50%',
-                    background: 'var(--navy-border)', display: 'flex', alignItems: 'center',
-                    justifyContent: 'center', marginTop: 2,
-                  }}>
-                    <Bot size={13} style={{ color: 'var(--gold)' }} />
-                  </div>
-                )}
-
-                <div 
+          {/* Tab bar — arrastrable */}
+          <div className="tab-bar" style={{ flexWrap: 'wrap' }}>
+            {tabOrder.map(origIdx => {
+              const tab        = TABS_COMP[origIdx]
+              const isDragging = dragTabIdx === origIdx
+              const isDragOver = dragOverTabIdx === origIdx
+              return (
+                <button
+                  key={origIdx}
+                  draggable
+                  onDragStart={() => handleTabDragStart(origIdx)}
+                  onDragOver={e => handleTabDragOver(e, origIdx)}
+                  onDrop={() => handleTabDrop(origIdx)}
+                  onDragEnd={() => { setDragTabIdx(null); setDragOverTabIdx(null) }}
+                  className={`tab-btn ${activeOrigIdx === origIdx ? 'active' : ''}`}
+                  onClick={() => setActiveOrigIdx(origIdx)}
                   style={{
-                    maxWidth: '85%',
-                    padding: '10px 14px',
-                    borderRadius: m.role === 'user' ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
-                    background: m.role === 'user' ? 'var(--gold-dim)' : 'var(--navy-mid)',
-                    border: '1px solid var(--navy-border)',
-                    color: m.role === 'user' ? 'var(--gold-light)' : 'var(--text-primary)',
+                    opacity:    isDragging ? 0.4 : 1,
+                    outline:    isDragOver ? '2px solid var(--gold)' : 'none',
+                    cursor:     'grab',
+                    userSelect: 'none',
                   }}
                 >
-                  {m.role === 'assistant' ? (
-                    <div
-                      dangerouslySetInnerHTML={{ __html: renderMarkdownConTablas(m.content) }}
-                      className="prose-biblical"
-                      style={{ fontSize: '0.95rem', lineHeight: 1.6 }}
-                    />
-                  ) : (
-                    <span style={{ whiteSpace: 'pre-wrap', fontSize: 13 }}>{m.content}</span>
-                  )}
-                </div>
-
-                {m.role === 'user' && (
-                  <div style={{
-                    flexShrink: 0, width: 26, height: 26, borderRadius: '50%',
-                    background: 'var(--gold-dim)', display: 'flex', alignItems: 'center',
-                    justifyContent: 'center', marginTop: 2,
-                  }}>
-                    <User size={13} style={{ color: 'var(--gold)' }} />
-                  </div>
-                )}
-              </div>
-            ))}
-
-            {cargando && (
-              <div className="flex gap-2 items-center">
-                <div style={{
-                  flexShrink: 0, width: 26, height: 26, borderRadius: '50%',
-                  background: 'var(--navy-border)', display: 'flex', alignItems: 'center',
-                  justifyContent: 'center',
-                }}>
-                  <Bot size={13} style={{ color: 'var(--gold)' }} />
-                </div>
-                <div style={{ padding: '8px 12px', borderRadius: '12px', background: 'var(--navy-mid)', fontSize: 12, color: 'var(--gold)' }}>
-                  <span style={{ display: 'inline-block', animation: 'spin 1s linear infinite', marginRight: 6 }}>⟳</span> Analizando pasaje...
-                </div>
-              </div>
-            )}
-
-            {error && (
-              <p className="text-xs p-2 rounded" style={{ color: '#ef4444', background: '#7f1d1d33', border: '1px solid #7f1d1d' }}>
-                ⚠️ {error}
-              </p>
-            )}
-            <div ref={bottomRef} />
+                  {tab.label}
+                </button>
+              )
+            })}
           </div>
 
-          <div className="flex gap-2 px-3 pb-3" style={{ borderTop: '1px solid var(--navy-border)', paddingTop: 10 }}>
-            <input
-              className="input-field flex-1"
-              style={{ fontSize: 13, padding: '8px 12px' }}
-              placeholder="Pregunta sobre el pasaje..."
-              value={input}
-              onChange={e => setInput(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && !e.shiftKey && enviar()}
-              disabled={cargando}
-            />
-            <button
-              className="btn-primary"
-              style={{ padding: '8px 14px' }}
-              onClick={enviar}
-              disabled={cargando || !input.trim()}
-            >
-              <Send size={14} />
-            </button>
+          {/* Tab content */}
+          <div className="tab-panel">
+            {activeOrigIdx === 0 ? (
+              <AnnotationReader texto={texto} cita={citaKey} />
+            ) : (
+              <div
+                className="prose-biblical"
+                dangerouslySetInnerHTML={{
+                  __html: (() => {
+                    const seccionTexto = getSeccionTexto(activeOrigIdx)
+                    return convertirEnlacesBiblicos(seccionTexto).replace(/\n/g, '<br/>')
+                  })()
+                }}
+              />
+            )}
           </div>
         </div>
       )}
+      {/* ── Chat con el pasaje ── */}
+      <ChatPanel cita={citaKey} textoPasaje={texto} apiKey={apiKey} />
+
     </div>
   )
 }
