@@ -340,10 +340,11 @@ export default function HomePage() {
         </>
       )}
 
-      {/* Footer */}
+      {/* ── FOOTER CON COPYRIGHT ── */}
       <footer className="text-center py-8 mt-12 border-t border-amber-500/20 text-slate-400 text-xs">
-        <p className="text-amber-200/80 font-medium">Estudio Bíblico Pro</p>
-        <p className="mt-1">Powered by Google Gemini</p>
+        <p className="text-amber-200/80 font-medium">
+          © {new Date().getFullYear()} Estudio Bíblico Pro · Todos los derechos reservados.
+        </p>
       </footer>
 
       <style>{`@keyframes spin { from { transform: rotate(0deg) } to { transform: rotate(360deg) } }`}</style>
