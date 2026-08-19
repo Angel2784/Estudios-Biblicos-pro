@@ -1,6 +1,6 @@
 'use client'
 import { useState } from 'react'
-import { X, Copy, Check, MessageCircle, QrCode, Smartphone, Key } from 'lucide-react'
+import { X, Copy, Check, MessageCircle, QrCode } from 'lucide-react'
 import { PRECIO_MENSUAL, PRECIO_ANUAL } from '@/lib/gemini'
 import { useUser } from '@clerk/nextjs'
 
@@ -18,16 +18,16 @@ export default function PremiumModal({ isOpen, onClose }: Props) {
   const [copiado, setCopiado] = useState<string | null>(null)
 
   // ════════════════════════════════════════════════════════════════════════════
-  // ⚙️ TUS DATOS DE COBRO (Edita estos valores con tus datos reales)
+  // ⚙️ TUS DATOS DE COBRO REALES (Edita estos valores con tus datos)
   // ════════════════════════════════════════════════════════════════════════════
-  const NOMBRE_TITULAR          = 'Angel Perez'             // 👈 Nombre del titular de la cuenta
+  const NOMBRE_TITULAR          = 'Angel Perez'             // 👈 Tu nombre completo
   const NUMERO_NEQUI            = '300 123 4567'            // 👈 Tu número de Nequi
   const QR_NEQUI_IMG            = '/qr-nequi.png'           // 👈 Imagen en carpeta /public (o URL directa)
   const NUMERO_DAVIPLATA        = '300 123 4567'            // 👈 Tu número de Daviplata
   const QR_DAVIPLATA_IMG        = '/qr-daviplata.png'       // 👈 Imagen en carpeta /public (o URL directa)
   const LLAVE_BREB              = '3001234567'              // 👈 Tu Llave Bre-B (Celular, cédula o alias)
   const WHATSAPP_VISIBLE        = '+57 300 123 4567'        // 👈 Número visible para el usuario
-  const WHATSAPP_NUMERO_LINK    = '573001234567'            // 👈 Número limpio para el enlace wa.me
+  const WHATSAPP_NUMERO_LINK    = '573001234567'            // 👈 Número limpio para wa.me (código de país + número, sin espacios ni signos)
   // ════════════════════════════════════════════════════════════════════════════
 
   if (!isOpen) return null
@@ -54,24 +54,39 @@ export default function PremiumModal({ isOpen, onClose }: Props) {
 
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
-      {/* Fondo oscuro translúcido */}
+      {/* Fondo oscuro translúcido con desenfoque */}
       <div 
         onClick={onClose} 
-        style={{ position: 'absolute', inset: 0, background: 'rgba(5, 7, 12, 0.8)', backdropFilter: 'blur(12px)' }} 
+        style={{ position: 'absolute', inset: 0, background: 'rgba(5, 7, 12, 0.85)', backdropFilter: 'blur(12px)' }} 
       />
 
       {/* Ventana Modal */}
       <div 
         className="card" 
-        style={{ position: 'relative', width: '100%', maxWidth: 520, maxHeight: '92vh', overflowY: 'auto', zIndex: 1001, animation: 'slideUp 0.25s ease-out' }}
+        style={{ 
+          position: 'relative', 
+          width: '100%', 
+          maxWidth: 520, 
+          maxHeight: '92vh', 
+          overflowY: 'auto', 
+          zIndex: 1001, 
+          animation: 'slideUp 0.25s ease-out' 
+        }}
       >
         {/* Cabecera */}
         <div className="flex items-center justify-between pb-3 border-b border-amber-500/20 mb-4">
           <div>
-            <span className="pill text-[10.5px] px-2.5 py-0.5 text-amber-300 border-amber-400/40">Acceso Ilimitado</span>
+            <span className="pill text-[10.5px] px-2.5 py-0.5 text-amber-300 border-amber-400/40 font-semibold">
+              Acceso Ilimitado
+            </span>
             <h2 className="section-title m-0 text-2xl mt-1">Hazte Premium</h2>
           </div>
-          <button onClick={onClose} className="btn-glass p-2" style={{ borderRadius: '50%' }}>
+          <button 
+            onClick={onClose} 
+            className="btn-glass p-2" 
+            style={{ borderRadius: '50%' }}
+            title="Cerrar"
+          >
             <X size={16} />
           </button>
         </div>
@@ -88,7 +103,7 @@ export default function PremiumModal({ isOpen, onClose }: Props) {
           </div>
           <div className="flex items-center gap-2">
             <span className="w-4 h-4 rounded-full bg-amber-400/20 text-amber-300 flex items-center justify-center font-bold text-[10px]">✓</span>
-            <span>Exportación en Word y soporte prioritario continuo.</span>
+            <span>Exportación en Word (.docx) y soporte prioritario.</span>
           </div>
         </div>
 
@@ -98,26 +113,38 @@ export default function PremiumModal({ isOpen, onClose }: Props) {
           <button 
             type="button"
             onClick={() => setPlan('anual')}
-            className={`p-3.5 rounded-2xl text-left transition-all relative ${plan === 'anual' ? 'border-amber-400 bg-amber-500/15 shadow-[0_0_16px_rgba(255,212,104,0.2)]' : 'border-slate-700 bg-slate-900/40'}`}
+            className={`p-3.5 rounded-2xl text-left transition-all relative ${
+              plan === 'anual' 
+                ? 'border-amber-400 bg-amber-500/15 shadow-[0_0_16px_rgba(255,212,104,0.2)]' 
+                : 'border-slate-700 bg-slate-900/40 hover:border-slate-600'
+            }`}
             style={{ border: '1.5px solid' }}
           >
             <span className="absolute -top-2.5 right-3 bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 text-[9px] font-bold px-2 py-0.5 rounded-full">
               MÁS POPULAR
             </span>
             <p className="text-xs text-slate-300 font-medium">Plan Anual</p>
-            <p className="text-amber-300 font-bold text-base mt-1">$149.000 <span className="text-[10px] text-slate-400 font-normal">COP</span></p>
-            <p className="text-[10px] text-green-400 mt-1">Ahorras 2 meses</p>
+            <p className="text-amber-300 font-bold text-base mt-1">
+              $149.000 <span className="text-[10px] text-slate-400 font-normal">COP</span>
+            </p>
+            <p className="text-[10px] text-green-400 mt-1 font-medium">Ahorras 2 meses</p>
           </button>
 
           {/* Plan Mensual */}
           <button 
             type="button"
             onClick={() => setPlan('mensual')}
-            className={`p-3.5 rounded-2xl text-left transition-all ${plan === 'mensual' ? 'border-amber-400 bg-amber-500/15 shadow-[0_0_16px_rgba(255,212,104,0.2)]' : 'border-slate-700 bg-slate-900/40'}`}
+            className={`p-3.5 rounded-2xl text-left transition-all ${
+              plan === 'mensual' 
+                ? 'border-amber-400 bg-amber-500/15 shadow-[0_0_16px_rgba(255,212,104,0.2)]' 
+                : 'border-slate-700 bg-slate-900/40 hover:border-slate-600'
+            }`}
             style={{ border: '1.5px solid' }}
           >
             <p className="text-xs text-slate-300 font-medium">Plan Mensual</p>
-            <p className="text-amber-300 font-bold text-base mt-1">$14.900 <span className="text-[10px] text-slate-400 font-normal">COP</span></p>
+            <p className="text-amber-300 font-bold text-base mt-1">
+              $14.900 <span className="text-[10px] text-slate-400 font-normal">COP</span>
+            </p>
             <p className="text-[10px] text-slate-400 mt-1">Cancela cuando quieras</p>
           </button>
         </div>
@@ -168,7 +195,6 @@ export default function PremiumModal({ isOpen, onClose }: Props) {
                     alt="QR Nequi" 
                     className="w-36 h-36 object-contain rounded-lg"
                     onError={(e) => {
-                      // Fallback si la imagen no se ha subido aún
                       (e.target as HTMLElement).style.display = 'none'
                       const fallback = (e.target as HTMLElement).parentElement?.querySelector('.qr-fallback') as HTMLElement
                       if (fallback) fallback.style.display = 'flex'
@@ -191,6 +217,7 @@ export default function PremiumModal({ isOpen, onClose }: Props) {
                 <button 
                   onClick={() => handleCopiar(NUMERO_NEQUI, 'nequi')}
                   className="btn-secondary text-xs px-3 py-1.5"
+                  type="button"
                 >
                   {copiado === 'nequi' ? <Check size={13} className="text-green-400" /> : <Copy size={13} />}
                   <span>{copiado === 'nequi' ? 'Copiado' : 'Copiar'}</span>
@@ -237,6 +264,7 @@ export default function PremiumModal({ isOpen, onClose }: Props) {
                 <button 
                   onClick={() => handleCopiar(NUMERO_DAVIPLATA, 'daviplata')}
                   className="btn-secondary text-xs px-3 py-1.5"
+                  type="button"
                 >
                   {copiado === 'daviplata' ? <Check size={13} className="text-green-400" /> : <Copy size={13} />}
                   <span>{copiado === 'daviplata' ? 'Copiado' : 'Copiar'}</span>
@@ -266,6 +294,7 @@ export default function PremiumModal({ isOpen, onClose }: Props) {
                 <button 
                   onClick={() => handleCopiar(LLAVE_BREB, 'breb')}
                   className="btn-secondary text-xs px-3 py-1.5"
+                  type="button"
                 >
                   {copiado === 'breb' ? <Check size={13} className="text-green-400" /> : <Copy size={13} />}
                   <span>{copiado === 'breb' ? 'Copiada' : 'Copiar'}</span>
@@ -299,7 +328,7 @@ export default function PremiumModal({ isOpen, onClose }: Props) {
           </a>
         </div>
 
-        <p className="text-center text-[10.5px] text-slate-400">
+        <p className="text-center text-[10.5px] text-slate-400 m-0">
           Tu cuenta registrada (<strong>{emailUsuario}</strong>) se activará inmediatamente tras validar el comprobante.
         </p>
       </div>
