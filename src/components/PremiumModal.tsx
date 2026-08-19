@@ -22,10 +22,10 @@ export default function PremiumModal({ isOpen, onClose }: Props) {
   // ════════════════════════════════════════════════════════════════════════════
   const NOMBRE_TITULAR          = 'Angel Peña'
   const NUMERO_NEQUI            = '322 730 7125'
-  const QR_NEQUI_IMG            = '/qr-nequi.jpg'        // 👈 Coincide con public/qr-nequi.jpg
+  const QR_NEQUI_IMG            = '/qr-nequi.jpeg'       // 👈 Cambiado a .jpeg
   const NUMERO_DAVIPLATA        = '322 730 7125'
   const LLAVE_BREB              = '3227307125'
-  const QR_BREB_IMG             = '/qr-breb.jpg'         // 👈 Coincide con public/qr-breb.jpg
+  const QR_BREB_IMG             = '/qr%20Bre-B.jpeg'     // 👈 Con el espacio y .jpeg
   const WHATSAPP_VISIBLE        = '+57 322 730 7125'
   const WHATSAPP_NUMERO_LINK    = '573227307125'
   // ════════════════════════════════════════════════════════════════════════════
