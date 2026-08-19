@@ -1,13 +1,14 @@
 'use client'
 import { useState, useEffect, useRef } from 'react'
-import { Settings, X } from 'lucide-react'
+import { Settings } from 'lucide-react'
 import { UserButton, useUser, SignInButton } from '@clerk/nextjs'
 import ApiKeySetup from '@/components/ApiKeySetup'
 import StudySection from '@/components/StudySection'
 import ComparativeSection from '@/components/ComparativeSection'
 import SermonSection from '@/components/SermonSection'
 import LibrarySidebar from '@/components/LibrarySidebar'
-import { obtenerExegesis, obtenerComparado, obtenerSermon, type EstiloSermon, consultarLimite, onRestantesChange, PRECIO_MENSUAL, PRECIO_ANUAL } from '@/lib/gemini'
+import SettingsModal from '@/components/SettingsModal'
+import { obtenerExegesis, obtenerComparado, obtenerSermon, type EstiloSermon, consultarLimite, onRestantesChange } from '@/lib/gemini'
 import { getApiKey, setApiKey, type EstudioGuardado } from '@/lib/storage'
 
 interface StudyResult  { id: string; cita: string; texto: string }
@@ -141,7 +142,7 @@ export default function HomePage() {
             <button className="btn-glass" onClick={() => setShowLibrary(!showLibrary)}>
               <span className="text-xs">Biblioteca</span>
             </button>
-            <button className="btn-glass p-2" onClick={() => setShowSettings(!showSettings)}>
+            <button className="btn-glass p-2" onClick={() => setShowSettings(true)} title="Ajustes">
               <Settings size={15} />
             </button>
 
@@ -340,7 +341,19 @@ export default function HomePage() {
         </>
       )}
 
-      {/* ── FOOTER CON COPYRIGHT ── */}
+      {/* Modal de Ajustes */}
+      <SettingsModal 
+        isOpen={showSettings}
+        onClose={() => setShowSettings(false)}
+        apiKey={apiKey}
+        onSaveApiKey={handleSaveKey}
+        onRemoveApiKey={handleRemoveKey}
+        restantes={restantes}
+        esAdmin={esAdmin}
+        esPremium={esPremium}
+      />
+
+      {/* Footer */}
       <footer className="text-center py-8 mt-12 border-t border-amber-500/20 text-slate-400 text-xs">
         <p className="text-amber-200/80 font-medium">
           © {new Date().getFullYear()} Estudio Bíblico Pro · Todos los derechos reservados.
