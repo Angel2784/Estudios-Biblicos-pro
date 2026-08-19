@@ -11,8 +11,9 @@
   --text-primary: #ffffff;
   --text-secondary: #94a3b8;
   --text-dim: #64748b;
-  --navy: #05070a;
-  --navy-card: rgba(14, 18, 30, 0.6);
+  /* Contenedores y fondos translúcidos en lugar de negro sólido */
+  --navy: rgba(14, 20, 34, 0.55);
+  --navy-card: rgba(20, 28, 44, 0.5);
   --navy-border: rgba(255, 215, 80, 0.25);
   --green: #4ade80;
   --red: #ef4444;
@@ -75,21 +76,30 @@ body {
 .prose-biblical li { margin-bottom: 0.4em; }
 .prose-biblical strong { color: #fde38c; font-weight: 600; }
 .prose-biblical blockquote {
-  font-family: 'Crimson Pro', serif; font-style: italic; font-size: 1.15em; line-height: 1.7;
-  color: #f0e6d2; border-left: 3px solid #fed25c; background: rgba(245, 183, 56, 0.08);
-  border-radius: 0 10px 10px 0; margin: 1.2em 0; padding: 0.5em 0.8em 0.5em 1.2em;
+  font-family: 'Crimson Pro', serif;
+  font-style: italic;
+  font-size: 1.15em;
+  line-height: 1.7;
+  color: #f0e6d2;
+  border-left: 3px solid #fed25c;
+  background: rgba(245, 183, 56, 0.08);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-radius: 0 10px 10px 0;
+  margin: 1.2em 0;
+  padding: 0.5em 0.8em 0.5em 1.2em;
 }
 
-/* ── Tarjetas con Borde Dorado ── */
+/* ── Tarjetas con Borde Dorado y Fondo Translúcido ── */
 .card {
   position: relative;
-  background: rgba(14, 18, 30, 0.55) !important;
-  backdrop-filter: blur(18px) !important;
-  -webkit-backdrop-filter: blur(18px) !important;
-  border: 1.5px solid rgba(255, 215, 80, 0.35) !important;
+  background: rgba(14, 18, 30, 0.45) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  border: 1.5px solid rgba(255, 215, 80, 0.3) !important;
   border-radius: 20px !important;
   padding: 24px !important;
-  box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 240, 180, 0.25) !important;
+  box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 240, 180, 0.2) !important;
   transition: all 0.25s ease;
 }
 .card:hover {
@@ -119,7 +129,7 @@ body {
   color: rgba(180, 195, 220, 0.65) !important; 
 }
 
-/* ── BOTONES: ESTADO NORMAL (MÁS OSCURO / BRONCE ELEGANTE) ── */
+/* ── BOTONES: ESTADO NORMAL (BRONCE ELEGANTE) ── */
 .btn-gold, .btn-primary {
   background: linear-gradient(180deg, #c29334 0%, #a2721f 50%, #80540e 100%) !important;
   color: #1a1102 !important;
@@ -138,7 +148,7 @@ body {
   white-space: nowrap !important;
 }
 
-/* ── BOTONES: AL DAR CLICK / HOVER / ACTIVAR (SE ENCIENDE RADIANTE) ── */
+/* ── BOTONES: HOVER / ACTIVAR ── */
 .btn-gold:hover, .btn-primary:hover,
 .btn-gold:focus, .btn-primary:focus,
 .btn-gold:active, .btn-primary:active,
@@ -179,7 +189,7 @@ body {
   box-shadow: 0 0 12px rgba(254, 212, 104, 0.4) !important;
 }
 
-/* ── Píldoras Rápidas ── */
+/* ── Píldoras Rápidas (Tabs / Botones de pestañas) ── */
 .pill, .tab-btn {
   padding: 5px 15px !important;
   border-radius: 9999px !important;
@@ -211,16 +221,19 @@ body {
   box-shadow: 0 0 14px rgba(192, 132, 252, 0.5) !important;
 }
 
-/* ── Panel de Pestañas ── */
+/* ── Panel de Pestañas (Contenedor de Respuesta / Texto Bíblico Translúcido) ── */
 .tab-panel {
-  background: rgba(14, 18, 30, 0.7) !important;
-  border: 1px solid rgba(255, 215, 80, 0.3) !important;
+  background: rgba(20, 28, 44, 0.5) !important;
+  backdrop-filter: blur(14px) !important;
+  -webkit-backdrop-filter: blur(14px) !important;
+  border: 1px solid rgba(255, 215, 80, 0.25) !important;
   border-radius: 18px !important;
   margin-top: 12px;
   padding: 24px 28px;
   max-height: 70vh;
   overflow-y: auto;
   overflow-x: hidden;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37), inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
   animation: fadeIn 0.3s ease-out;
 }
 
