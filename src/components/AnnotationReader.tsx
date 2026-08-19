@@ -1,376 +1,199 @@
-'use client'
-import { useEffect, useRef, useState, useCallback } from 'react'
-import { Check, Copy, PenLine, Link2, MessageCircle, StickyNote, Plus, Trash2, Edit3, X } from 'lucide-react'
-import { getAnotaciones, guardarAnotaciones } from '@/lib/storage'
-import type { Anotacion } from '@/lib/storage'
-import { convertirEnlacesBiblicos } from '@/lib/parser'
+"use client";
+import { useState } from "react";
+import { testApiKey } from "@/lib/gemini";
 
-const COLORS = [
-  { hex: '#fbbf24', name: 'Amarillo' },
-  { hex: '#86efac', name: 'Verde' },
-  { hex: '#93c5fd', name: 'Azul' },
-  { hex: '#f9a8d4', name: 'Rosa' },
-  { hex: '#fdba74', name: 'Naranja' },
-]
+interface Props {
+  onSave: (key: string) => void;
+}
 
-interface Props { texto: string; cita: string }
+// ─── Componente: instrucciones para obtener la API Key ───────────────────────
+function HowToGetKey() {
+  const [open, setOpen] = useState(false);
 
-export default function AnnotationReader({ texto, cita }: Props) {
-  const contentRef = useRef<HTMLDivElement>(null)
-  const [anotaciones, setAnotaciones] = useState<Anotacion[]>([])
-  const [toolbar, setToolbar]         = useState<{ x: number; y: number; text: string; id?: string } | null>(null)
-  const [selectedColor, setSelectedColor] = useState('#fbbf24')
-  const [modal, setModal]             = useState<{ id: string; preview: string; nota: string } | null>(null)
-  const [saveMsg, setSaveMsg]         = useState('')
-  const [showNotes, setShowNotes]     = useState(false)
-
-  useEffect(() => { setAnotaciones(getAnotaciones(cita)) }, [cita])
-  useEffect(() => { guardarAnotaciones(cita, anotaciones) }, [anotaciones, cita])
-
-  const handleSelection = () => {
-    const sel = window.getSelection()
-    if (!sel || sel.isCollapsed || !contentRef.current) return
-    const text = sel.toString().trim()
-    if (text.length >= 1) {
-      try {
-        const range = sel.getRangeAt(0)
-        const rect = range.getBoundingClientRect()
-        setToolbar({
-          x: rect.left + rect.width / 2,
-          y: rect.top - 10,
-          text: text,
-        })
-      } catch {
-        // Fallback
-      }
-    }
-  }
-
-  const buildHtml = useCallback((): string => {
-    const lineas = texto.split('\n')
-    const bloques: string[] = []
-    let citaBuffer: string[] = []
-    const flushCita = () => {
-      if (citaBuffer.length) {
-        bloques.push(`<blockquote>${citaBuffer.join('<br/>')}</blockquote>`)
-        citaBuffer = []
-      }
-    }
-    lineas.forEach(linea => {
-      const m = linea.match(/^\s*>\s?(.*)$/)
-      if (m) { citaBuffer.push(m[1]) }
-      else { flushCita(); bloques.push(linea) }
-    })
-    flushCita()
-
-    let html = convertirEnlacesBiblicos(bloques.join('\n')).replace(/\n(?!<\/?blockquote>)/g, '<br/>')
-    
-    anotaciones.forEach(an => {
-      const escaped = an.fragmento.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-      const notaIndicator = an.nota ? ' 📝' : ''
-      html = html.replace(
-        new RegExp(escaped, 'g'),
-        `<mark id="hl-${an.id}" data-id="${an.id}" data-color="${an.hex}" ` +
-        `style="background:${an.hex}40; color:#fff; border-bottom: 2px solid ${an.hex}; border-radius:3px; padding:1px 3px; cursor:pointer">` +
-        `${an.fragmento}${notaIndicator}</mark>`
-      )
-    })
-    return html
-  }, [texto, anotaciones])
-
-  const aplicarResaltado = (hexColor: string) => {
-    if (!toolbar?.text) return
-    const id = 'an_' + Date.now()
-    const nueva: Anotacion = {
-      id,
-      fragmento: toolbar.text,
-      color: hexColor,
-      hex: hexColor,
-      nota: '',
-      fecha: new Date().toISOString(),
-    }
-    setAnotaciones(prev => [...prev, nueva])
-    setToolbar(null)
-    window.getSelection()?.removeAllRanges()
-    setSaveMsg('Resaltado guardado')
-    setTimeout(() => setSaveMsg(''), 2000)
-  }
-
-  const abrirModalNota = () => {
-    if (!toolbar) return
-    let id = toolbar.id
-    let fragmento = toolbar.text
-    let notaExistente = ''
-
-    if (id) {
-      const encontrada = anotaciones.find(a => a.id === id)
-      if (encontrada) {
-        fragmento = encontrada.fragmento
-        notaExistente = encontrada.nota || ''
-      }
-    } else {
-      id = 'an_' + Date.now()
-      const nueva: Anotacion = {
-        id,
-        fragmento,
-        color: selectedColor,
-        hex: selectedColor,
-        nota: '',
-        fecha: new Date().toISOString(),
-      }
-      setAnotaciones(prev => [...prev, nueva])
-    }
-
-    setModal({ id, preview: fragmento, nota: notaExistente })
-    setToolbar(null)
-    window.getSelection()?.removeAllRanges()
-  }
-
-  const guardarNota = () => {
-    if (!modal) return
-    setAnotaciones(prev => prev.map(a => a.id === modal.id ? { ...a, nota: modal.nota } : a))
-    setModal(null)
-    setSaveMsg('Nota guardada')
-    setTimeout(() => setSaveMsg(''), 2500)
-  }
-
-  const eliminarAnotacion = (id: string) => {
-    setAnotaciones(prev => prev.filter(a => a.id !== id))
-    setSaveMsg('Eliminado')
-    setTimeout(() => setSaveMsg(''), 2000)
-  }
-
-  const handleClickContenido = (e: React.MouseEvent) => {
-    const el = (e.target as HTMLElement).closest('[data-id]') as HTMLElement | null
-    if (el && el.dataset.id) {
-      const anId = el.dataset.id
-      const an = anotaciones.find(a => a.id === anId)
-      if (an) {
-        const rect = el.getBoundingClientRect()
-        setToolbar({
-          x: rect.left + rect.width / 2,
-          y: rect.top - 10,
-          text: an.fragmento,
-          id: an.id,
-        })
-      }
-    }
-  }
-
-  const notasConTexto = anotaciones.filter(a => a.nota)
+  const steps = [
+    {
+      icon: "🌐",
+      text: (
+        <>
+          Ve a{" "}
+          <a
+            href="https://aistudio.google.com/apikey"
+            target="_blank"
+            rel="noopener"
+            className="text-yellow-400 underline hover:text-yellow-300 font-medium"
+          >
+            aistudio.google.com/apikey
+          </a>
+        </>
+      ),
+    },
+    { icon: "🔐", text: "Inicia sesión con tu cuenta de Google (es gratis)." },
+    { icon: "➕", text: 'Haz clic en "Create API key" y selecciona un proyecto.' },
+    { icon: "📋", text: 'Copia la key que empieza con "AIza..." y pégala arriba.' },
+    { icon: "✅", text: "¡Listo! La key se guarda solo en tu dispositivo." },
+  ];
 
   return (
-    <div className="relative">
-      <p className="text-xs mb-3 flex items-center gap-1" style={{ color: 'var(--text-dim)' }}>
-        <PenLine size={12} /> Selecciona cualquier fragmento para resaltar, anotar y compartir
-      </p>
+    <div className="mt-4">
+      {/* Encabezado clickeable */}
+      <button
+        onClick={() => setOpen(!open)}
+        className="w-full flex items-center justify-between text-xs text-gray-400 hover:text-yellow-400 transition-colors px-1"
+      >
+        <span className="flex items-center gap-1">
+          <span>❓</span>
+          <span>¿Cómo obtengo mi API Key?</span>
+        </span>
+        <span
+          className="transition-transform duration-300"
+          style={{ display: "inline-block", transform: open ? "rotate(180deg)" : "rotate(0deg)" }}
+        >
+          ▼
+        </span>
+      </button>
 
-      <div
-        ref={contentRef}
-        className="prose-biblical select-text cursor-text"
-        onMouseUp={handleSelection}
-        onTouchEnd={handleSelection}
-        onClick={handleClickContenido}
-        dangerouslySetInnerHTML={{ __html: buildHtml() }}
-      />
-
-      {toolbar && (
+      {/* Pasos desplegables */}
+      {open && (
         <div
-          className="annotation-toolbar"
-          style={{
-            position: 'fixed',
-            left: Math.max(150, Math.min(toolbar.x, typeof window !== 'undefined' ? window.innerWidth - 150 : 500)),
-            top: Math.max(60, toolbar.y),
-            transform: 'translate(-50%, -100%)',
-            zIndex: 99999,
-          }}
+          className="mt-3 rounded-xl p-4 border border-yellow-900/30 text-xs space-y-3"
+          style={{ background: "rgba(10, 22, 50, 0.7)" }}
         >
-          <div className="flex items-center gap-1.5 px-1">
-            {COLORS.map(c => (
-              <button
-                key={c.hex}
-                title={c.name}
-                onClick={() => { setSelectedColor(c.hex); aplicarResaltado(c.hex) }}
-                style={{
-                  width: 20, height: 20, borderRadius: '50%',
-                  backgroundColor: c.hex, border: '2px solid rgba(255,255,255,0.4)',
-                  cursor: 'pointer', flexShrink: 0
-                }}
-              />
-            ))}
-          </div>
-
-          <div style={{ width: 1, height: 18, background: 'var(--navy-border)' }} />
-
-          <button
-            onClick={abrirModalNota}
-            className="tab-btn"
-            style={{ padding: '4px 8px', fontSize: 11 }}
-          >
-            <StickyNote size={13} /> Nota
-          </button>
-
-          <button
-            onClick={() => {
-              navigator.clipboard.writeText(`"${toolbar.text}" — ${cita}`)
-              setToolbar(null)
-              setSaveMsg('Copiado')
-              setTimeout(() => setSaveMsg(''), 2000)
-            }}
-            className="tab-btn"
-            style={{ padding: '4px 8px', fontSize: 11 }}
-            title="Copiar"
-          >
-            <Copy size={13} />
-          </button>
-
-          {toolbar.id && (
-            <button
-              onClick={() => { eliminarAnotacion(toolbar.id!); setToolbar(null) }}
-              className="tab-btn"
-              style={{ padding: '4px 8px', fontSize: 11, background: '#7f1d1d33', color: '#ef4444' }}
-              title="Borrar"
-            >
-              <Trash2 size={13} />
-            </button>
-          )}
-
-          <button
-            onClick={() => setToolbar(null)}
-            style={{ color: 'var(--text-dim)', background: 'none', border: 'none', cursor: 'pointer', padding: '2px 4px' }}
-          >
-            <X size={13} />
-          </button>
-        </div>
-      )}
-
-      <div className="flex items-center gap-3 mt-4 pt-3 flex-wrap" style={{ borderTop: '1px solid var(--navy-border)' }}>
-        <button 
-          className="btn-secondary" 
-          style={{ fontSize: 11, padding: '5px 12px' }}
-          onClick={() => setShowNotes(v => !v)}
-        >
-          <StickyNote size={13} /> Notas ({notasConTexto.length})
-        </button>
-
-        {saveMsg && <span style={{ color: 'var(--green)', fontSize: 11 }}>✓ {saveMsg}</span>}
-
-        {anotaciones.length > 0 && (
-          <span style={{ color: 'var(--text-dim)', fontSize: 11, marginLeft: 'auto' }}>
-            {anotaciones.length} resaltado{anotaciones.length !== 1 ? 's' : ''}
-          </span>
-        )}
-      </div>
-
-      {showNotes && (
-        <div className="mt-3 p-4 rounded-xl" style={{ background: 'var(--navy-card)', border: '1px solid var(--navy-border)' }}>
-          <div className="flex items-center justify-between mb-3">
-            <h4 style={{ color: 'var(--gold)', fontSize: 13, fontWeight: 600 }}>
-              Notas guardadas
-            </h4>
-            <button
-              onClick={() => {
-                const id = 'an_' + Date.now()
-                setModal({ id, preview: 'Nota general sobre el pasaje', nota: '' })
-              }}
-              className="tab-btn"
-              style={{ fontSize: 10, padding: '3px 8px' }}
-            >
-              <Plus size={11} /> Nueva nota
-            </button>
-          </div>
-
-          {notasConTexto.length === 0 ? (
-            <p style={{ color: 'var(--text-dim)', fontSize: 12, fontStyle: 'italic' }}>
-              Sin notas aún. Selecciona texto y toca el ícono de nota para agregar una.
-            </p>
-          ) : (
-            <div className="space-y-2">
-              {notasConTexto.map(an => (
-                <div 
-                  key={an.id} 
-                  style={{
-                    borderLeft: `3px solid ${an.hex}`,
-                    background: 'var(--navy-mid)',
-                    borderRadius: '0 8px 8px 0',
-                    padding: '8px 12px',
-                    display: 'flex',
-                    alignItems: 'flex-start',
-                    justifyContent: 'space-between',
-                    gap: 8,
-                  }}
-                >
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <p style={{ color: 'var(--text-dim)', fontSize: 11, fontStyle: 'italic' }}>
-                      &ldquo;{an.fragmento}&rdquo;
-                    </p>
-                    <p style={{ color: 'var(--text-primary)', fontSize: 13, marginTop: 3 }}>
-                      {an.nota}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <button
-                      onClick={() => setModal({ id: an.id, preview: an.fragmento, nota: an.nota || '' })}
-                      style={{ color: 'var(--text-dim)', background: 'none', border: 'none', cursor: 'pointer', padding: 3 }}
-                      title="Editar"
-                    >
-                      <Edit3 size={13} />
-                    </button>
-                    <button
-                      onClick={() => eliminarAnotacion(an.id)}
-                      style={{ color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer', padding: 3 }}
-                      title="Borrar"
-                    >
-                      <Trash2 size={13} />
-                    </button>
-                  </div>
-                </div>
-              ))}
+          <p className="text-yellow-400 font-semibold mb-1">📖 Pasos para obtener tu API Key gratuita:</p>
+          {steps.map((step, i) => (
+            <div key={i} className="flex items-start gap-3">
+              {/* Número */}
+              <span
+                className="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center font-bold text-xs"
+                style={{ background: "linear-gradient(135deg, #d4a017, #f0c040)", color: "#0a1628" }}
+              >
+                {i + 1}
+              </span>
+              {/* Texto */}
+              <p className="text-gray-300 leading-relaxed">
+                <span className="mr-1">{step.icon}</span>
+                {step.text}
+              </p>
             </div>
-          )}
-        </div>
-      )}
+          ))}
 
-      {modal && (
-        <div 
-          style={{
-            position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)',
-            zIndex: 99999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16,
-          }}
-          onClick={e => { if (e.target === e.currentTarget) setModal(null) }}
-        >
-          <div style={{
-            background: 'var(--navy-card)', border: '1px solid var(--gold-dim)',
-            borderRadius: 14, padding: 20, width: '100%', maxWidth: 380, animation: 'slideUp 0.2s ease-out',
-          }}>
-            <h3 style={{ color: 'var(--gold)', fontSize: 14, fontWeight: 600, marginBottom: 8 }}>
-              📝 Nota de Estudio
-            </h3>
-            <p style={{ color: 'var(--text-dim)', fontSize: 12, fontStyle: 'italic', marginBottom: 10 }}>
-              &ldquo;{modal.preview}&rdquo;
-            </p>
-            <textarea
-              autoFocus
-              value={modal.nota}
-              onChange={e => setModal({ ...modal, nota: e.target.value })}
-              placeholder="Escribe tu nota aquí..."
-              style={{
-                width: '100%', background: 'var(--navy-mid)', color: 'var(--text-primary)',
-                border: '1px solid var(--navy-border)', borderRadius: 8, padding: 10,
-                fontSize: 13, minHeight: 90, outline: 'none',
-              }}
-            />
-            <div className="flex gap-2 mt-3 justify-end">
-              <button className="btn-secondary" style={{ fontSize: 12, padding: '6px 12px' }} onClick={() => setModal(null)}>
-                Cancelar
-              </button>
-              <button className="btn-primary" style={{ fontSize: 12, padding: '6px 14px' }} onClick={guardarNota}>
-                Guardar
-              </button>
-            </div>
+          {/* Nota final */}
+          <div className="mt-2 bg-yellow-900/20 border border-yellow-800/30 rounded-lg px-3 py-2 text-yellow-300/80">
+            💡 <strong> Google ofrece 1,500 requests/día sin costo ni tarjeta de crédito. </strong> 
           </div>
         </div>
       )}
     </div>
-  )
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+export default function ApiKeySetup({ onSave }: Props) {
+  const [key, setKey] = useState("");
+  const [show, setShow] = useState(false);
+  const [status, setStatus] = useState<"idle" | "testing" | "ok" | "error">("idle");
+  const [statusMsg, setStatusMsg] = useState("");
+
+  const handleTest = async () => {
+    if (!key.trim()) return;
+    setStatus("testing");
+    setStatusMsg("Probando modelos disponibles...");
+
+    const result = await testApiKey(key.trim());
+
+    if (result.ok) {
+      setStatus("ok");
+      setStatusMsg(`✅ Conectado con "${result.model}"`);
+      localStorage.setItem("gemini_api_key", key.trim());
+      localStorage.setItem("gemini_active_model", result.model);
+      setTimeout(() => onSave(key.trim()), 800);
+    } else {
+      setStatus("error");
+      setStatusMsg(
+        result.error?.includes("Cuota agotada")
+          ? "⚠️ Cuota agotada en todos los modelos. Espera unas horas o genera una nueva API Key."
+          : `❌ Error: ${result.error}`
+      );
+    }
+  };
+
+  return (
+    // ✅ CAMBIO 1: fondo azul oscuro + dorado en degradado
+    <div
+      className="min-h-screen flex items-center justify-center p-4"
+      style={{
+        background:
+          "linear-gradient(135deg, #0a1628 0%, #0f2347 35%, #1a3a6b 55%, #2c1f06 80%, #3d2a08 100%)",
+      }}
+    >
+      {/* ✅ CAMBIO 2: card con fondo semitransparente azul oscuro */}
+      <div
+        className="rounded-2xl p-8 w-full max-w-md shadow-2xl border border-yellow-900/30"
+        style={{ background: "rgba(10, 22, 50, 0.85)", backdropFilter: "blur(10px)" }}
+      >
+        {/* Ícono */}
+        <div className="text-center mb-6">
+          <div className="text-6xl mb-3">📜</div>
+          <h1 className="text-2xl font-bold text-yellow-400">Estudio Bíblico Pro</h1>
+          <p className="text-gray-400 text-sm mt-1">Exégesis académica con inteligencia artificial</p>
+        </div>
+
+        {/* Card API Key */}
+        <div className="bg-white/5 border border-white/10 rounded-xl p-5">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="bg-yellow-900/40 p-2 rounded-lg text-xl">🔑</div>
+            <div>
+              <p className="font-semibold text-white">Conecta tu API Key de Gemini</p>
+              <p className="text-xs text-gray-400">Gratis · Se guarda solo en tu dispositivo</p>
+            </div>
+          </div>
+
+          {/* Input */}
+          <div className="relative mb-3">
+            <input
+              type={show ? "text" : "password"}
+              value={key}
+              onChange={(e) => { setKey(e.target.value); setStatus("idle"); }}
+              onKeyDown={(e) => e.key === "Enter" && handleTest()}
+              placeholder="AIza..."
+              className="w-full bg-white/10 text-white rounded-lg px-4 py-3 pr-10 outline-none focus:ring-2 focus:ring-yellow-400 text-sm placeholder-gray-500"
+            />
+            <button
+              onClick={() => setShow(!show)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
+            >
+              {show ? "🙈" : "👁️"}
+            </button>
+          </div>
+
+          {/* Status */}
+          {status !== "idle" && (
+            <div className={`text-xs rounded-lg px-3 py-2 mb-3 ${
+              status === "ok"    ? "bg-green-900 text-green-300" :
+              status === "error" ? "bg-red-900 text-red-300" :
+                                   "bg-blue-900 text-blue-300"
+            }`}>
+              {statusMsg}
+            </div>
+          )}
+
+          {/* Botón */}
+          <button
+            onClick={handleTest}
+            disabled={!key.trim() || status === "testing"}
+            className="w-full font-semibold rounded-lg py-3 text-sm transition-all"
+            style={
+              !key.trim() || status === "testing"
+                ? { background: "#4b5563", color: "#9ca3af", cursor: "not-allowed" }
+                : { background: "#f0c040", color: "#0a1628", cursor: "pointer", boxShadow: "0 0 14px rgba(240,192,64,0.5)" }
+            }
+          >
+            {status === "testing" ? "Probando modelos..." : "Conectar"}
+          </button>
+        </div>
+
+        {/* Sección: Cómo obtener la API Key */}
+        <HowToGetKey />
+      </div>
+    </div>
+  );
 }
