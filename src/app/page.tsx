@@ -8,6 +8,7 @@ import ComparativeSection from '@/components/ComparativeSection'
 import SermonSection from '@/components/SermonSection'
 import LibrarySidebar from '@/components/LibrarySidebar'
 import SettingsModal from '@/components/SettingsModal'
+import PremiumModal from '@/components/PremiumModal' // 👈 Importado
 import { obtenerExegesis, obtenerComparado, obtenerSermon, type EstiloSermon, consultarLimite, onRestantesChange } from '@/lib/gemini'
 import { getApiKey, setApiKey, type EstudioGuardado } from '@/lib/storage'
 
@@ -31,6 +32,7 @@ export default function HomePage() {
   const [apiKey, setApiKeyState]     = useState<string>('')
   const [loading, setLoading]        = useState(true)
   const [showApiKeySetup, setShowApiKeySetup] = useState(false)
+  const [showPremiumModal, setShowPremiumModal] = useState(false) // 👈 Estado del modal
   const [restantes, setRestantes]    = useState<number | null>(null)
   const [esAdmin, setEsAdmin]        = useState(false)
   const [esPremium, setEsPremium]    = useState(false)
@@ -67,7 +69,6 @@ export default function HomePage() {
       setEsAdmin(!!d.esAdmin)
       setEsPremium(!!d.esPremium)
     })
-    // Cargar tamaño de fuente guardado en todo el documento
     const savedSize = localStorage.getItem('ebp_fontSize') || '1.15rem'
     document.documentElement.style.setProperty('--biblical-font-size', savedSize)
     document.body.style.setProperty('--biblical-font-size', savedSize)
@@ -75,13 +76,24 @@ export default function HomePage() {
 
   const handleSaveKey = (key: string) => { setApiKey(key); setApiKeyState(key); setShowApiKeySetup(false) }
 
+  // Función auxiliar para detectar si se acabó el límite y abrir el modal
+  const checkErrorLimite = (err: unknown) => {
+    const msg = err instanceof Error ? err.message : 'Error desconocido'
+    if (msg.toLowerCase().includes('límite') || msg.toLowerCase().includes('premium') || msg.includes('429')) {
+      setShowPremiumModal(true)
+    }
+    return msg
+  }
+
   const handleStudy = async () => {
     if (!citaInput.trim()) return
     setEstudiando(true); setErrorExeg('')
     try {
       const texto = await obtenerExegesis(apiKey, citaInput.trim())
       setEstudios(prev => [{ id: uid(), cita: citaInput.trim(), texto }, ...prev]); setCitaInput('')
-    } catch (e: unknown) { setErrorExeg(e instanceof Error ? e.message : 'Error desconocido') }
+    } catch (e: unknown) { 
+      setErrorExeg(checkErrorLimite(e))
+    }
     finally { setEstudiando(false) }
   }
 
@@ -92,7 +104,9 @@ export default function HomePage() {
       const texto = await obtenerComparado(apiKey, cita1.trim(), cita2.trim())
       setComparados(prev => [{ id: uid(), cita1: cita1.trim(), cita2: cita2.trim(), texto }, ...prev])
       setCita1(''); setCita2('')
-    } catch (e: unknown) { setErrorComp(e instanceof Error ? e.message : 'Error desconocido') }
+    } catch (e: unknown) { 
+      setErrorComp(checkErrorLimite(e))
+    }
     finally { setComparando(false) }
   }
 
@@ -103,7 +117,9 @@ export default function HomePage() {
       const texto = await obtenerSermon(apiKey, citaSermon.trim(), estiloSermon)
       setSermones(prev => [{ id: uid(), cita: citaSermon.trim(), texto, estilo: estiloSermon }, ...prev])
       setCitaSermon('')
-    } catch (e: unknown) { setErrorSermon(e instanceof Error ? e.message : 'Error desconocido') }
+    } catch (e: unknown) { 
+      setErrorSermon(checkErrorLimite(e))
+    }
     finally { setGenerando(false) }
   }
 
@@ -116,7 +132,7 @@ export default function HomePage() {
     setShowLibrary(false)
   }
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center bg-transparent"><div className="text-4xl text-amber-300" style={{ animation: 'spin 1s linear infinite' }}>⟳</div></div>
+  if (loading) return <div className="min-h-screen flex items-center justify-center bg-transparent"><div className="text-4xl text-amber-300" style={{ animation: 'spin 1s linear infinite' }}>⏳</div></div>
   if (showApiKeySetup) return <ApiKeySetup onSave={handleSaveKey} />
 
   const sinLimite = esAdmin || esPremium || !!apiKey
@@ -124,7 +140,7 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-transparent">
 
-      {/* ── BARRA SUPERIOR ── */}
+      {/* BARRA SUPERIOR */}
       <nav className="sticky top-0 z-50 bg-[#080b12]/80 backdrop-blur-xl border-b border-amber-500/20">
         <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -134,11 +150,27 @@ export default function HomePage() {
           </div>
 
           <div className="flex items-center gap-2.5">
+            {/* Botón de consultas restantes (clickeable para abrir modal de pago) */}
             {!sinLimite && restantes !== null && (
-              <span className="pill text-xs px-3 py-1">
-                {restantes > 0 ? `${restantes} consultas gratis hoy` : 'Límite alcanzado'}
-              </span>
+              <button 
+                onClick={() => setShowPremiumModal(true)}
+                className="pill text-xs px-3 py-1 hover:border-amber-400 cursor-pointer transition-colors"
+                title="Haz clic para ver planes Premium"
+              >
+                {restantes > 0 ? `${restantes} consultas gratis hoy` : '⚠️ Límite alcanzado'}
+              </button>
             )}
+
+            {/* Botón directo Hazte Premium para usuarios estándar */}
+            {!sinLimite && (
+              <button 
+                onClick={() => setShowPremiumModal(true)}
+                className="btn-gold text-xs px-3 py-1.5 flex items-center gap-1 shadow-md font-semibold"
+              >
+                👑 Hazte Premium
+              </button>
+            )}
+
             {esAdmin && <span className="pill text-xs px-3 py-1 text-amber-300 border-amber-400/50 shadow-[0_0_10px_rgba(255,193,7,0.3)]">Admin</span>}
             {esPremium && <span className="pill text-xs px-3 py-1 text-amber-300 border-amber-400/50 shadow-[0_0_10px_rgba(255,193,7,0.3)]">Premium</span>}
             
@@ -162,10 +194,10 @@ export default function HomePage() {
         </div>
       </nav>
 
-      {/* ── CONTENIDO PRINCIPAL ── */}
+      {/* CONTENIDO PRINCIPAL */}
       <main className="max-w-4xl mx-auto px-4 py-8 space-y-10">
 
-        {/* ── 1. ESTUDIO BÍBLICO ── */}
+        {/* 1. ESTUDIO BÍBLICO */}
         <section>
           <h2 className="section-title mb-3">Estudio Bíblico</h2>
           <div className="card">
@@ -184,7 +216,7 @@ export default function HomePage() {
                 disabled={estudiando}
               >
                 {estudiando ? (
-                  <><span style={{ display: 'inline-block', animation: 'spin 1s linear infinite' }}>⟳</span> Analizando...</>
+                  <><span style={{ display: 'inline-block', animation: 'spin 1s linear infinite' }}>⏳</span> Analizando...</>
                 ) : (
                   <>Estudiar</>
                 )}
@@ -214,7 +246,7 @@ export default function HomePage() {
           ))}
         </section>
 
-        {/* ── 2. ESTUDIO COMPARADO ── */}
+        {/* 2. ESTUDIO COMPARADO */}
         <section>
           <h2 className="section-title mb-3">Estudio Comparado</h2>
           <div className="card">
@@ -241,7 +273,7 @@ export default function HomePage() {
                 disabled={comparando}
               >
                 {comparando ? (
-                  <><span style={{ display: 'inline-block', animation: 'spin 1s linear infinite' }}>⟳</span> Comparando...</>
+                  <><span style={{ display: 'inline-block', animation: 'spin 1s linear infinite' }}>⏳</span> Comparando...</>
                 ) : (
                   <>Comparar</>
                 )}
@@ -271,7 +303,7 @@ export default function HomePage() {
           ))}
         </section>
 
-        {/* ── 3. SERMÓN / DEVOCIONAL ── */}
+        {/* 3. SERMÓN / DEVOCIONAL */}
         <section>
           <h2 className="section-title mb-3">Sermón / Devocional</h2>
           <div className="card">
@@ -304,7 +336,7 @@ export default function HomePage() {
                 disabled={generando}
               >
                 {generando ? (
-                  <><span style={{ display: 'inline-block', animation: 'spin 1s linear infinite' }}>⟳</span> Generando...</>
+                  <><span style={{ display: 'inline-block', animation: 'spin 1s linear infinite' }}>⏳</span> Generando...</>
                 ) : (
                   <>Generar</>
                 )}
@@ -353,7 +385,13 @@ export default function HomePage() {
         esPremium={esPremium}
       />
 
-      {/* Footer con Copyright */}
+      {/* 👈 Modal de Pagos Premium */}
+      <PremiumModal 
+        isOpen={showPremiumModal}
+        onClose={() => setShowPremiumModal(false)}
+      />
+
+      {/* Footer */}
       <footer className="text-center py-8 mt-12 border-t border-amber-500/20 text-slate-400 text-xs">
         <p className="text-amber-200/80 font-medium">
           © {new Date().getFullYear()} Estudio Bíblico Pro · Todos los derechos reservados.
