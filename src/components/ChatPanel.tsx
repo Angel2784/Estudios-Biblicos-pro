@@ -9,16 +9,16 @@ import ChatPanel from './ChatPanel'
 
 const TABS_COMP = [
   { label: '📋 Todo' },
-  { label: '📖 Textos',       seccion: 1 },
+  { label: '📖 Textos',        seccion: 1 },
   { label: '🤝 Similitudes',  seccion: 2 },
   { label: '↔️ Diferencias',  seccion: 3 },
-  { label: '🏛️ Contexto',     seccion: 4 },
+  { label: '🏛️ Contexto',      seccion: 4 },
   { label: '🔡 Lingüística',  seccion: 5 },
-  { label: '📈 Progresión',   seccion: 6 },
+  { label: '📈 Progresión',    seccion: 6 },
   { label: '⚡ Tensiones',    seccion: 7 },
-  { label: '🧩 Síntesis',     seccion: 8 },
-  { label: '💡 Aplicación',   seccion: 9 },
-  { label: '🏁 Conclusión',   seccion: 10 },
+  { label: '🧩 Síntesis',      seccion: 8 },
+  { label: '💡 Aplicación',    seccion: 9 },
+  { label: '🏁 Conclusión',    seccion: 10 },
 ]
 
 interface Props {
@@ -175,8 +175,8 @@ export default function ComparativeSection({ cita1, cita2, texto, onRemove, apiK
           </div>
         </div>
       )}
-      {/* ── Chat con el pasaje ── */}
-      <ChatPanel cita={citaKey} textoPasaje={texto} apiKey={apiKey} />
+      {/* ── Chat con el pasaje corregido a cita1 ── */}
+      <ChatPanel cita1={citaKey} textoPasaje={texto} apiKey={apiKey} />
 
     </div>
   )
