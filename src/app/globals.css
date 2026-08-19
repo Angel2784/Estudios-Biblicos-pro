@@ -5,25 +5,23 @@
 @tailwind utilities;
 
 :root {
-  --gold-glow: #ffc107;
-  --gold-light: #ffe57f;
-  --gold-bright: #ffb300;
-  --gold-deep: #ff8f00;
+  --gold-glow: #ffd468;
+  --gold-light: #fff0b3;
+  --gold-bright: #fed468;
   --text-primary: #ffffff;
-  --text-secondary: #cbd5e1;
 }
 
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
 
-/* ── Fondo de Biblioteca Mística con Luces Cálidas ── */
+/* ── Fondo con Luz Cálida y Textura ── */
 body {
   background-color: #05070a;
   background-image: 
-    radial-gradient(circle at 50% 28%, rgba(255, 185, 45, 0.22) 0%, rgba(230, 130, 20, 0.1) 32%, transparent 65%),
-    radial-gradient(circle at 15% 20%, rgba(255, 160, 30, 0.15) 0%, transparent 45%),
-    radial-gradient(circle at 85% 35%, rgba(255, 175, 40, 0.16) 0%, transparent 45%),
-    linear-gradient(180deg, rgba(6, 8, 14, 0.72) 0%, rgba(6, 8, 14, 0.88) 100%),
+    radial-gradient(circle at 50% 25%, rgba(255, 205, 80, 0.28) 0%, rgba(230, 140, 30, 0.12) 35%, transparent 70%),
+    radial-gradient(circle at 10% 20%, rgba(255, 180, 50, 0.18) 0%, transparent 50%),
+    radial-gradient(circle at 90% 40%, rgba(255, 190, 60, 0.18) 0%, transparent 50%),
+    linear-gradient(180deg, rgba(6, 8, 14, 0.7) 0%, rgba(6, 8, 14, 0.88) 100%),
     url('https://images.unsplash.com/photo-1507842229451-79b1be8d62ee?q=80&w=2000&auto=format&fit=crop');
   background-size: cover;
   background-position: center top;
@@ -35,104 +33,87 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* ── Scrollbar DORADO BRILLANTE ULTRA LUMINOSO (Como el pergamino) ── */
+/* ── Scrollbar Dorado Brillante ── */
 ::-webkit-scrollbar { width: 8px; height: 8px; }
 ::-webkit-scrollbar-track { background: rgba(5, 7, 12, 0.85); }
 ::-webkit-scrollbar-thumb { 
-  background: linear-gradient(180deg, #ffe57f 0%, #ffc107 50%, #ff8f00 100%);
+  background: linear-gradient(180deg, #fff5c2 0%, #fed25c 50%, #f3a81d 100%);
   border-radius: 10px;
-  box-shadow: 0 0 12px rgba(255, 193, 7, 0.85), inset 0 1px 1px rgba(255, 255, 255, 0.9);
+  box-shadow: 0 0 14px rgba(255, 210, 90, 0.9), inset 0 1px 1px #ffffff;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(180deg, #fff2a8 0%, #ffd54f 50%, #ffa000 100%);
-  box-shadow: 0 0 16px rgba(255, 213, 79, 1);
+  background: #fff5c2;
+  box-shadow: 0 0 20px rgba(255, 230, 120, 1);
 }
-* { scrollbar-width: thin; scrollbar-color: #ffc107 rgba(5, 7, 12, 0.85); }
+* { scrollbar-width: thin; scrollbar-color: #fed25c rgba(5, 7, 12, 0.85); }
 
 /* ── Títulos con Resplandor Dorado Pergamino ── */
 .section-title {
-  color: #ffe57f !important;
+  color: #fff0b3 !important;
   font-family: 'Crimson Pro', serif;
   font-size: 1.45rem;
   font-weight: 700;
   display: flex;
   align-items: center;
   gap: 8px;
-  text-shadow: 0 0 14px rgba(255, 193, 7, 0.65), 0 0 28px rgba(255, 143, 0, 0.35);
+  text-shadow: 0 0 16px rgba(255, 212, 104, 0.8), 0 0 32px rgba(245, 168, 29, 0.45);
 }
 
-/* ── Tarjetas Glassmorphism (Cristal Translúcido Real) ── */
+/* ── Tarjetas Glassmorphism ── */
 .card {
   position: relative;
   background: rgba(14, 18, 30, 0.45) !important;
   backdrop-filter: blur(18px) !important;
   -webkit-backdrop-filter: blur(18px) !important;
-  border: 1px solid rgba(255, 215, 64, 0.22) !important;
+  border: 1px solid rgba(255, 215, 80, 0.3) !important;
   border-radius: 20px !important;
   padding: 24px !important;
-  box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 235, 150, 0.2) !important;
+  box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 240, 180, 0.25) !important;
   transition: all 0.25s ease;
 }
 .card:hover {
-  border-color: rgba(255, 215, 64, 0.45) !important;
-  box-shadow: 0 14px 44px 0 rgba(0, 0, 0, 0.7), 0 0 15px rgba(255, 193, 7, 0.15), inset 0 1px 0 rgba(255, 235, 150, 0.3) !important;
+  border-color: rgba(255, 215, 80, 0.5) !important;
+  box-shadow: 0 14px 44px 0 rgba(0, 0, 0, 0.7), 0 0 20px rgba(255, 212, 104, 0.2), inset 0 1px 0 rgba(255, 240, 180, 0.35) !important;
 }
 
-/* ── Banner Superior Glassmorphism ── */
+/* ── Banner Superior ── */
 .banner-card {
   background: rgba(18, 22, 36, 0.5) !important;
   backdrop-filter: blur(18px) !important;
   -webkit-backdrop-filter: blur(18px) !important;
-  border: 1px solid rgba(255, 215, 64, 0.25) !important;
+  border: 1px solid rgba(255, 215, 80, 0.3) !important;
   border-radius: 18px !important;
   padding: 16px 20px !important;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255, 235, 150, 0.15) !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255, 240, 180, 0.2) !important;
 }
 
-/* ── Input con Borde Dorado Pergamino Brillante ── */
-.input-gold {
+/* ── Inputs con Borde Dorado Fino ── */
+.input-gold, .input-subtle, .input-field {
   width: 100%;
-  background: rgba(6, 8, 14, 0.6) !important;
-  border: 1.5px solid #ffc107 !important;
+  background: rgba(6, 8, 14, 0.65) !important;
+  border: 1.5px solid rgba(254, 212, 104, 0.75) !important;
   border-radius: 14px !important;
   padding: 14px 18px !important;
   color: #ffffff !important;
   font-family: 'Inter', sans-serif !important;
   font-size: 14px !important;
   outline: none !important;
-  box-shadow: 0 0 10px rgba(255, 193, 7, 0.25), inset 0 2px 4px rgba(0, 0, 0, 0.5) !important;
+  box-shadow: 0 0 12px rgba(255, 212, 104, 0.2), inset 0 2px 4px rgba(0, 0, 0, 0.5) !important;
   transition: all 0.2s ease !important;
 }
-.input-gold:focus {
-  border-color: #ffe57f !important;
-  box-shadow: 0 0 18px rgba(255, 213, 79, 0.6), inset 0 2px 4px rgba(0, 0, 0, 0.5) !important;
+.input-gold:focus, .input-subtle:focus, .input-field:focus {
+  border-color: #fff0b3 !important;
+  box-shadow: 0 0 20px rgba(255, 212, 104, 0.6), inset 0 2px 4px rgba(0, 0, 0, 0.5) !important;
 }
-.input-gold::placeholder { color: rgba(180, 195, 220, 0.65) !important; }
+.input-gold::placeholder, .input-subtle::placeholder, .input-field::placeholder { 
+  color: rgba(180, 195, 220, 0.65) !important; 
+}
 
-.input-subtle {
-  width: 100%;
-  background: rgba(6, 8, 14, 0.6) !important;
-  border: 1px solid rgba(255, 255, 255, 0.16) !important;
-  border-radius: 14px !important;
-  padding: 14px 18px !important;
-  color: #ffffff !important;
-  font-family: 'Inter', sans-serif !important;
-  font-size: 14px !important;
-  outline: none !important;
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5) !important;
-  transition: all 0.2s ease !important;
-}
-.input-subtle:focus {
-  border-color: #ffc107 !important;
-  box-shadow: 0 0 12px rgba(255, 193, 7, 0.4) !important;
-}
-.input-subtle::placeholder { color: rgba(180, 195, 220, 0.65) !important; }
-
-/* ── Botones Dorado Oro Ultra Brillante (Como el Pergamino) ── */
-.btn-gold {
-  background: linear-gradient(180deg, #ffe88c 0%, #ffc107 45%, #ff8f00 100%) !important;
-  color: #120a00 !important;
-  border: 1px solid rgba(255, 245, 190, 0.7) !important;
+/* ── BOTONES DORADOS BRILLANTES COMO LAS LETRAS (ESTUDIAR / COMPARAR / GENERAR) ── */
+.btn-gold, .btn-primary {
+  background: linear-gradient(180deg, #fff5c2 0%, #fed25c 45%, #f3a81d 100%) !important;
+  color: #140b00 !important;
+  border: 1px solid rgba(255, 255, 255, 0.9) !important;
   border-radius: 14px !important;
   padding: 13px 26px !important;
   font-weight: 700 !important;
@@ -143,25 +124,31 @@ body {
   align-items: center !important;
   justify-content: center !important;
   gap: 8px !important;
-  box-shadow: 0 4px 20px rgba(255, 180, 0, 0.55), inset 0 1px 1px rgba(255, 255, 255, 0.9) !important;
-  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.4) !important;
+  box-shadow: 0 0 24px rgba(254, 212, 104, 0.65), 0 4px 14px rgba(243, 168, 29, 0.5), inset 0 1px 2px #ffffff !important;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5) !important;
   white-space: nowrap !important;
 }
-.btn-gold:hover {
-  background: linear-gradient(180deg, #fff2a8 0%, #ffd54f 45%, #ffa000 100%) !important;
-  box-shadow: 0 6px 26px rgba(255, 193, 7, 0.75), inset 0 1px 1px rgba(255, 255, 255, 1) !important;
-  transform: translateY(-1px) !important;
+.btn-gold:hover, .btn-primary:hover {
+  background: linear-gradient(180deg, #ffffff 0%, #ffe082 45%, #ffb300 100%) !important;
+  box-shadow: 0 0 35px rgba(255, 220, 100, 0.9), 0 6px 18px rgba(243, 168, 29, 0.7), inset 0 1px 2px #ffffff !important;
+  transform: translateY(-2px) !important;
 }
-.btn-gold:active { transform: translateY(0) !important; }
-.btn-gold:disabled { opacity: 0.5 !important; cursor: not-allowed !important; transform: none !important; box-shadow: none !important; }
+.btn-gold:active, .btn-primary:active { 
+  transform: translateY(0) !important; 
+}
+.btn-gold:disabled, .btn-primary:disabled { 
+  opacity: 0.55 !important; 
+  cursor: not-allowed !important; 
+  transform: none !important; 
+}
 
-/* ── Botones Cristal Secundarios ── */
-.btn-glass {
+/* ── Botones Cristal Secundarios (Biblioteca / Config) ── */
+.btn-glass, .btn-secondary {
   background: rgba(25, 33, 50, 0.6) !important;
   backdrop-filter: blur(10px) !important;
   -webkit-backdrop-filter: blur(10px) !important;
   color: #ffffff !important;
-  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  border: 1px solid rgba(255, 255, 255, 0.16) !important;
   border-radius: 12px !important;
   padding: 8px 14px !important;
   font-weight: 500 !important;
@@ -172,18 +159,18 @@ body {
   align-items: center !important;
   gap: 6px !important;
 }
-.btn-glass:hover {
+.btn-glass:hover, .btn-secondary:hover {
   background: rgba(45, 60, 90, 0.8) !important;
-  border-color: #ffc107 !important;
-  color: #ffe57f !important;
-  box-shadow: 0 0 10px rgba(255, 193, 7, 0.3) !important;
+  border-color: #fed25c !important;
+  color: #fff0b3 !important;
+  box-shadow: 0 0 12px rgba(254, 212, 104, 0.4) !important;
 }
 
 /* ── Píldoras ── */
-.pill {
+.pill, .tab-btn {
   padding: 5px 15px !important;
   border-radius: 9999px !important;
-  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  border: 1px solid rgba(255, 255, 255, 0.16) !important;
   background: rgba(20, 28, 44, 0.6) !important;
   backdrop-filter: blur(8px) !important;
   -webkit-backdrop-filter: blur(8px) !important;
@@ -193,12 +180,12 @@ body {
   cursor: pointer !important;
   transition: all 0.2s ease !important;
 }
-.pill:hover {
+.pill:hover, .tab-btn:hover {
   background: rgba(35, 48, 75, 0.85) !important;
-  border-color: #ffc107 !important;
+  border-color: #fed25c !important;
   color: #ffffff !important;
 }
-.pill-active-blue {
+.pill-active-blue, .tab-btn.active {
   background: rgba(20, 45, 75, 0.85) !important;
   color: #bae6fd !important;
   border: 1.5px solid #38bdf8 !important;
