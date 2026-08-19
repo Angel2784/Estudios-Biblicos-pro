@@ -1,6 +1,6 @@
 'use client'
 import { useState, useEffect, useRef } from 'react'
-import { Library, Settings, Flame, Search, X, BookMarked, Key } from 'lucide-react'
+import { Settings, X } from 'lucide-react'
 import { UserButton, useUser, SignInButton } from '@clerk/nextjs'
 import ApiKeySetup from '@/components/ApiKeySetup'
 import StudySection from '@/components/StudySection'
@@ -124,7 +124,6 @@ export default function HomePage() {
       <nav className="sticky top-0 z-50 bg-[#080b12]/80 backdrop-blur-xl border-b border-amber-500/20">
         <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <span className="text-2xl drop-shadow-[0_0_12px_rgba(255,193,7,0.7)]">📜</span>
             <h1 className="header-brand-title m-0">
               Estudio Bíblico Pro
             </h1>
@@ -136,11 +135,11 @@ export default function HomePage() {
                 {restantes > 0 ? `${restantes} consultas gratis hoy` : 'Límite alcanzado'}
               </span>
             )}
-            {esAdmin && <span className="pill text-xs px-3 py-1 text-amber-300 border-amber-400/50 shadow-[0_0_10px_rgba(255,193,7,0.3)]">👑 Admin</span>}
-            {esPremium && <span className="pill text-xs px-3 py-1 text-amber-300 border-amber-400/50 shadow-[0_0_10px_rgba(255,193,7,0.3)]">⭐ Premium</span>}
+            {esAdmin && <span className="pill text-xs px-3 py-1 text-amber-300 border-amber-400/50 shadow-[0_0_10px_rgba(255,193,7,0.3)]">Admin</span>}
+            {esPremium && <span className="pill text-xs px-3 py-1 text-amber-300 border-amber-400/50 shadow-[0_0_10px_rgba(255,193,7,0.3)]">Premium</span>}
             
             <button className="btn-glass" onClick={() => setShowLibrary(!showLibrary)}>
-              <Library size={15} /><span className="hidden sm:inline text-xs">Biblioteca</span>
+              <span className="text-xs">Biblioteca</span>
             </button>
             <button className="btn-glass p-2" onClick={() => setShowSettings(!showSettings)}>
               <Settings size={15} />
@@ -164,7 +163,7 @@ export default function HomePage() {
 
         {/* ── 1. ESTUDIO BÍBLICO ── */}
         <section>
-          <h2 className="section-title mb-3">📖 Estudio Bíblico</h2>
+          <h2 className="section-title mb-3">Estudio Bíblico</h2>
           <div className="card">
             <div className="flex gap-3 flex-col sm:flex-row items-center">
               <input 
@@ -183,7 +182,7 @@ export default function HomePage() {
                 {estudiando ? (
                   <><span style={{ display: 'inline-block', animation: 'spin 1s linear infinite' }}>⟳</span> Analizando...</>
                 ) : (
-                  <><Flame size={16} /> Estudiar</>
+                  <>Estudiar</>
                 )}
               </button>
             </div>
@@ -200,8 +199,8 @@ export default function HomePage() {
               ))}
             </div>
 
-            {errorExeg && <div className="mt-3 p-3 rounded-xl text-xs bg-red-950/40 text-red-400 border border-red-800/60">⚠️ {errorExeg}</div>}
-            {estudiando && <div className="mt-4 space-y-3">{[90,70,80].map((w,i) => <div key={i} className="shimmer rounded-lg" style={{ height:16, width:`${w}%` }} />)}<p className="text-xs text-amber-200/90">✨ Generando exégesis académica...</p></div>}
+            {errorExeg && <div className="mt-3 p-3 rounded-xl text-xs bg-red-950/40 text-red-400 border border-red-800/60">{errorExeg}</div>}
+            {estudiando && <div className="mt-4 space-y-3">{[90,70,80].map((w,i) => <div key={i} className="shimmer rounded-lg" style={{ height:16, width:`${w}%` }} />)}<p className="text-xs text-amber-200/90">Generando exégesis académica...</p></div>}
           </div>
 
           {estudios.map((e, i) => (
@@ -213,7 +212,7 @@ export default function HomePage() {
 
         {/* ── 2. ESTUDIO COMPARADO ── */}
         <section>
-          <h2 className="section-title mb-3">⚖️ Estudio Comparado</h2>
+          <h2 className="section-title mb-3">Estudio Comparado</h2>
           <div className="card">
             <p className="text-sm mb-4 text-slate-300">Compara dos pasajes con análisis teológico profundo</p>
             <div className="flex gap-3 flex-col sm:flex-row items-center">
@@ -240,7 +239,7 @@ export default function HomePage() {
                 {comparando ? (
                   <><span style={{ display: 'inline-block', animation: 'spin 1s linear infinite' }}>⟳</span> Comparando...</>
                 ) : (
-                  <><Search size={15} /> Comparar</>
+                  <>Comparar</>
                 )}
               </button>
             </div>
@@ -257,8 +256,8 @@ export default function HomePage() {
               ))}
             </div>
 
-            {errorComp && <div className="mt-3 p-3 rounded-xl text-xs bg-red-950/40 text-red-400 border border-red-800/60">⚠️ {errorComp}</div>}
-            {comparando && <div className="mt-4 space-y-3">{[85,65,75].map((w,i) => <div key={i} className="shimmer rounded-lg" style={{ height:16, width:`${w}%` }} />)}<p className="text-xs text-amber-200/90">🔍 Generando análisis comparativo...</p></div>}
+            {errorComp && <div className="mt-3 p-3 rounded-xl text-xs bg-red-950/40 text-red-400 border border-red-800/60">{errorComp}</div>}
+            {comparando && <div className="mt-4 space-y-3">{[85,65,75].map((w,i) => <div key={i} className="shimmer rounded-lg" style={{ height:16, width:`${w}%` }} />)}<p className="text-xs text-amber-200/90">Generando análisis comparativo...</p></div>}
           </div>
 
           {comparados.map((c, i) => (
@@ -270,12 +269,12 @@ export default function HomePage() {
 
         {/* ── 3. SERMÓN / DEVOCIONAL ── */}
         <section>
-          <h2 className="section-title mb-3">📝 Sermón / Devocional</h2>
+          <h2 className="section-title mb-3">Sermón / Devocional</h2>
           <div className="card">
-            <p className="text-sm mb-4 text-slate-300">Genera un sermón expositivo, devocional basado en un pasaje</p>
+            <p className="text-sm mb-4 text-slate-300">Genera un sermón expositivo o devocional basado en un pasaje</p>
 
             <div className="flex gap-2.5 mb-4 flex-wrap">
-              {([['expositivo','📖 Sermón expositivo'],['devocional','🌅 Devocional breve']] as [EstiloSermon,string][]).map(([val,label]) => (
+              {([['expositivo','Sermón expositivo'],['devocional','Devocional breve']] as [EstiloSermon,string][]).map(([val,label]) => (
                 <button 
                   key={val} 
                   onClick={() => setEstiloSermon(val)}
@@ -303,7 +302,7 @@ export default function HomePage() {
                 {generando ? (
                   <><span style={{ display: 'inline-block', animation: 'spin 1s linear infinite' }}>⟳</span> Generando...</>
                 ) : (
-                  <><BookMarked size={16} /> Generar</>
+                  <>Generar</>
                 )}
               </button>
             </div>
@@ -320,8 +319,8 @@ export default function HomePage() {
               ))}
             </div>
 
-            {errorSermon && <div className="mt-3 p-3 rounded-xl text-xs bg-red-950/40 text-red-400 border border-red-800/60">⚠️ {errorSermon}</div>}
-            {generando && <div className="mt-4 space-y-3">{[85,65,75].map((w,i) => <div key={i} className="shimmer rounded-lg" style={{ height:16, width:`${w}%` }} />)}<p className="text-xs text-amber-200/90">✍️ Preparando el mensaje...</p></div>}
+            {errorSermon && <div className="mt-3 p-3 rounded-xl text-xs bg-red-950/40 text-red-400 border border-red-800/60">{errorSermon}</div>}
+            {generando && <div className="mt-4 space-y-3">{[85,65,75].map((w,i) => <div key={i} className="shimmer rounded-lg" style={{ height:16, width:`${w}%` }} />)}<p className="text-xs text-amber-200/90">Preparando el mensaje...</p></div>}
           </div>
 
           {sermones.map((s, i) => (
@@ -343,7 +342,7 @@ export default function HomePage() {
 
       {/* Footer */}
       <footer className="text-center py-8 mt-12 border-t border-amber-500/20 text-slate-400 text-xs">
-        <p className="text-amber-200/80 font-medium">📜 Estudio Bíblico Pro</p>
+        <p className="text-amber-200/80 font-medium">Estudio Bíblico Pro</p>
         <p className="mt-1">Powered by Google Gemini</p>
       </footer>
 
