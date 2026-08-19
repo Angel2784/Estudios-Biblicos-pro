@@ -120,12 +120,12 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-transparent">
 
-      {/* ── BARRA SUPERIOR ── */}
+      {/* ── BARRA SUPERIOR (CON EL MISMO TÍTULO DORADO RADIANTE) ── */}
       <nav className="sticky top-0 z-50 bg-[#080b12]/80 backdrop-blur-xl border-b border-amber-500/20">
         <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <span className="text-2xl drop-shadow-[0_0_12px_rgba(255,193,7,0.7)]">📜</span>
-            <h1 className="font-bold text-lg tracking-wide" style={{ color: '#ffe57f', fontFamily: 'Crimson Pro, serif', textShadow: '0 0 12px rgba(255,193,7,0.6)' }}>
+            <h1 className="header-brand-title m-0">
               Estudio Bíblico Pro
             </h1>
           </div>
@@ -178,7 +178,7 @@ export default function HomePage() {
               <button 
                 className="btn-gold w-full sm:w-auto" 
                 onClick={handleStudy} 
-                disabled={estudiando || !citaInput.trim()}
+                disabled={estudiando}
               >
                 {estudiando ? (
                   <><span style={{ display: 'inline-block', animation: 'spin 1s linear infinite' }}>⟳</span> Analizando...</>
@@ -236,7 +236,7 @@ export default function HomePage() {
               <button 
                 className="btn-gold w-full sm:w-auto" 
                 onClick={handleCompare} 
-                disabled={comparando || !cita1.trim() || !cita2.trim()}
+                disabled={comparando}
               >
                 {comparando ? (
                   <><span style={{ display: 'inline-block', animation: 'spin 1s linear infinite' }}>⟳</span> Comparando...</>
@@ -275,7 +275,6 @@ export default function HomePage() {
           <div className="card">
             <p className="text-sm mb-4 text-slate-300">Genera un sermón expositivo, devocional basado en un pasaje</p>
 
-            {/* Píldora morada activa */}
             <div className="flex gap-2.5 mb-4 flex-wrap">
               {([['expositivo','📖 Sermón expositivo'],['devocional','🌅 Devocional breve']] as [EstiloSermon,string][]).map(([val,label]) => (
                 <button 
@@ -300,7 +299,7 @@ export default function HomePage() {
               <button 
                 className="btn-gold w-full sm:w-auto" 
                 onClick={handleSermon} 
-                disabled={generando || !citaSermon.trim()}
+                disabled={generando}
               >
                 {generando ? (
                   <><span style={{ display: 'inline-block', animation: 'spin 1s linear infinite' }}>⟳</span> Generando...</>
