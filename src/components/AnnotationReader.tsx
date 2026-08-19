@@ -165,7 +165,6 @@ export default function AnnotationReader({ texto, cita }: Props) {
         <PenLine size={12} /> Selecciona cualquier fragmento para resaltar, anotar y compartir
       </p>
 
-      {/* Contenido interactivo */}
       <div
         ref={contentRef}
         className="prose-biblical select-text cursor-text"
@@ -175,7 +174,6 @@ export default function AnnotationReader({ texto, cita }: Props) {
         dangerouslySetInnerHTML={{ __html: buildHtml() }}
       />
 
-      {/* Toolbar Flotante */}
       {toolbar && (
         <div
           className="annotation-toolbar"
@@ -187,7 +185,6 @@ export default function AnnotationReader({ texto, cita }: Props) {
             zIndex: 99999,
           }}
         >
-          {/* Selector de colores */}
           <div className="flex items-center gap-1.5 px-1">
             {COLORS.map(c => (
               <button
@@ -205,7 +202,6 @@ export default function AnnotationReader({ texto, cita }: Props) {
 
           <div style={{ width: 1, height: 18, background: 'var(--navy-border)' }} />
 
-          {/* Botón Nota */}
           <button
             onClick={abrirModalNota}
             className="tab-btn"
@@ -214,7 +210,6 @@ export default function AnnotationReader({ texto, cita }: Props) {
             <StickyNote size={13} /> Nota
           </button>
 
-          {/* Botón Copiar */}
           <button
             onClick={() => {
               navigator.clipboard.writeText(`"${toolbar.text}" — ${cita}`)
@@ -249,7 +244,6 @@ export default function AnnotationReader({ texto, cita }: Props) {
         </div>
       )}
 
-      {/* Botón de Notas inferior */}
       <div className="flex items-center gap-3 mt-4 pt-3 flex-wrap" style={{ borderTop: '1px solid var(--navy-border)' }}>
         <button 
           className="btn-secondary" 
@@ -268,7 +262,6 @@ export default function AnnotationReader({ texto, cita }: Props) {
         )}
       </div>
 
-      {/* Panel desplegable de Notas */}
       {showNotes && (
         <div className="mt-3 p-4 rounded-xl" style={{ background: 'var(--navy-card)', border: '1px solid var(--navy-border)' }}>
           <div className="flex items-center justify-between mb-3">
@@ -338,7 +331,6 @@ export default function AnnotationReader({ texto, cita }: Props) {
         </div>
       )}
 
-      {/* Modal para escribir nota */}
       {modal && (
         <div 
           style={{
