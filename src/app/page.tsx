@@ -67,10 +67,13 @@ export default function HomePage() {
       setEsAdmin(!!d.esAdmin)
       setEsPremium(!!d.esPremium)
     })
+    // Cargar tamaño de fuente guardado en todo el documento
+    const savedSize = localStorage.getItem('ebp_fontSize') || '1.15rem'
+    document.documentElement.style.setProperty('--biblical-font-size', savedSize)
+    document.body.style.setProperty('--biblical-font-size', savedSize)
   }, [])
 
   const handleSaveKey = (key: string) => { setApiKey(key); setApiKeyState(key); setShowApiKeySetup(false) }
-  const handleRemoveKey = () => { setApiKey(''); setApiKeyState('') }
 
   const handleStudy = async () => {
     if (!citaInput.trim()) return
@@ -345,15 +348,12 @@ export default function HomePage() {
       <SettingsModal 
         isOpen={showSettings}
         onClose={() => setShowSettings(false)}
-        apiKey={apiKey}
-        onSaveApiKey={handleSaveKey}
-        onRemoveApiKey={handleRemoveKey}
         restantes={restantes}
         esAdmin={esAdmin}
         esPremium={esPremium}
       />
 
-      {/* Footer */}
+      {/* Footer con Copyright */}
       <footer className="text-center py-8 mt-12 border-t border-amber-500/20 text-slate-400 text-xs">
         <p className="text-amber-200/80 font-medium">
           © {new Date().getFullYear()} Estudio Bíblico Pro · Todos los derechos reservados.
