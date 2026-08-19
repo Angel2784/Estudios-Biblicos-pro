@@ -24,15 +24,12 @@ export default function AnnotationReader({ texto, cita }: Props) {
   const [saveMsg, setSaveMsg]         = useState('')
   const [showNotes, setShowNotes]     = useState(false)
 
-  // Cargar anotaciones guardadas
   useEffect(() => { setAnotaciones(getAnotaciones(cita)) }, [cita])
   useEffect(() => { guardarAnotaciones(cita, anotaciones) }, [anotaciones, cita])
 
-  // Capturar selección de texto
   const handleSelection = () => {
     const sel = window.getSelection()
     if (!sel || sel.isCollapsed || !contentRef.current) return
-    
     const text = sel.toString().trim()
     if (text.length >= 1) {
       try {
@@ -49,7 +46,6 @@ export default function AnnotationReader({ texto, cita }: Props) {
     }
   }
 
-  // Renderizar el HTML con citas y marcas resaltadas
   const buildHtml = useCallback((): string => {
     const lineas = texto.split('\n')
     const bloques: string[] = []
@@ -75,15 +71,13 @@ export default function AnnotationReader({ texto, cita }: Props) {
       html = html.replace(
         new RegExp(escaped, 'g'),
         `<mark id="hl-${an.id}" data-id="${an.id}" data-color="${an.hex}" ` +
-        `class="cursor-pointer font-medium rounded px-1 transition-all" ` +
-        `style="background:${an.hex}40; color:#fff; border-bottom: 2px solid ${an.hex};">` +
+        `style="background:${an.hex}40; color:#fff; border-bottom: 2px solid ${an.hex}; border-radius:3px; padding:1px 3px; cursor:pointer">` +
         `${an.fragmento}${notaIndicator}</mark>`
       )
     })
     return html
   }, [texto, anotaciones])
 
-  // Aplicar resaltado
   const aplicarResaltado = (hexColor: string) => {
     if (!toolbar?.text) return
     const id = 'an_' + Date.now()
@@ -102,7 +96,6 @@ export default function AnnotationReader({ texto, cita }: Props) {
     setTimeout(() => setSaveMsg(''), 2000)
   }
 
-  // Abrir modal para añadir/editar nota
   const abrirModalNota = () => {
     if (!toolbar) return
     let id = toolbar.id
@@ -133,7 +126,6 @@ export default function AnnotationReader({ texto, cita }: Props) {
     window.getSelection()?.removeAllRanges()
   }
 
-  // Guardar nota
   const guardarNota = () => {
     if (!modal) return
     setAnotaciones(prev => prev.map(a => a.id === modal.id ? { ...a, nota: modal.nota } : a))
@@ -142,14 +134,12 @@ export default function AnnotationReader({ texto, cita }: Props) {
     setTimeout(() => setSaveMsg(''), 2500)
   }
 
-  // Eliminar anotación
   const eliminarAnotacion = (id: string) => {
     setAnotaciones(prev => prev.filter(a => a.id !== id))
-    setSaveMsg('Anotación eliminada')
+    setSaveMsg('Eliminado')
     setTimeout(() => setSaveMsg(''), 2000)
   }
 
-  // Click en texto existente
   const handleClickContenido = (e: React.MouseEvent) => {
     const el = (e.target as HTMLElement).closest('[data-id]') as HTMLElement | null
     if (el && el.dataset.id) {
@@ -171,8 +161,8 @@ export default function AnnotationReader({ texto, cita }: Props) {
 
   return (
     <div className="relative">
-      <p className="text-xs mb-3 flex items-center gap-1.5 text-amber-200/70">
-        <PenLine size={13} /> Selecciona cualquier palabra o frase para resaltar y añadir notas.
+      <p className="text-xs mb-3 flex items-center gap-1" style={{ color: 'var(--text-dim)' }}>
+        <PenLine size={12} /> Selecciona cualquier fragmento para resaltar, anotar y compartir
       </p>
 
       {/* Contenido interactivo */}
@@ -185,11 +175,17 @@ export default function AnnotationReader({ texto, cita }: Props) {
         dangerouslySetInnerHTML={{ __html: buildHtml() }}
       />
 
-      {/* ── TOOLBAR FLOTANTE DE RESALTADO Y NOTAS ── */}
+      {/* Toolbar Flotante */}
       {toolbar && (
         <div
-          className="fixed z-[99999] flex items-center gap-2 p-2 rounded-2xl bg-[#0f131f]/95 border border-amber-400/50 shadow-[0_8px_30px_rgba(0,0,0,0.8)] backdrop-blur-xl -translate-x-1/2 -translate-y-full animate-fadeIn"
-          style={{ left: Math.max(160, Math.min(toolbar.x, typeof window !== 'undefined' ? window.innerWidth - 160 : 500)), top: Math.max(70, toolbar.y) }}
+          className="annotation-toolbar"
+          style={{
+            position: 'fixed',
+            left: Math.max(150, Math.min(toolbar.x, typeof window !== 'undefined' ? window.innerWidth - 150 : 500)),
+            top: Math.max(60, toolbar.y),
+            transform: 'translate(-50%, -100%)',
+            zIndex: 99999,
+          }}
         >
           {/* Selector de colores */}
           <div className="flex items-center gap-1.5 px-1">
@@ -198,18 +194,22 @@ export default function AnnotationReader({ texto, cita }: Props) {
                 key={c.hex}
                 title={c.name}
                 onClick={() => { setSelectedColor(c.hex); aplicarResaltado(c.hex) }}
-                className="w-5 h-5 rounded-full cursor-pointer transition-transform hover:scale-125 border border-white/40"
-                style={{ backgroundColor: c.hex }}
+                style={{
+                  width: 20, height: 20, borderRadius: '50%',
+                  backgroundColor: c.hex, border: '2px solid rgba(255,255,255,0.4)',
+                  cursor: 'pointer', flexShrink: 0
+                }}
               />
             ))}
           </div>
 
-          <div className="w-[1px] h-5 bg-white/20" />
+          <div style={{ width: 1, height: 18, background: 'var(--navy-border)' }} />
 
-          {/* Botón Añadir Nota */}
+          {/* Botón Nota */}
           <button
             onClick={abrirModalNota}
-            className="flex items-center gap-1 px-2.5 py-1 rounded-xl text-xs font-semibold bg-amber-500/20 text-amber-300 border border-amber-400/40 hover:bg-amber-500/30 cursor-pointer"
+            className="tab-btn"
+            style={{ padding: '4px 8px', fontSize: 11 }}
           >
             <StickyNote size={13} /> Nota
           </button>
@@ -219,112 +219,114 @@ export default function AnnotationReader({ texto, cita }: Props) {
             onClick={() => {
               navigator.clipboard.writeText(`"${toolbar.text}" — ${cita}`)
               setToolbar(null)
-              setSaveMsg('Texto copiado')
+              setSaveMsg('Copiado')
               setTimeout(() => setSaveMsg(''), 2000)
             }}
-            className="p-1.5 rounded-xl text-slate-300 hover:text-white hover:bg-white/10 cursor-pointer"
+            className="tab-btn"
+            style={{ padding: '4px 8px', fontSize: 11 }}
             title="Copiar"
           >
-            <Copy size={14} />
+            <Copy size={13} />
           </button>
 
-          {/* Si es una anotación existente, opción de borrar */}
           {toolbar.id && (
             <button
               onClick={() => { eliminarAnotacion(toolbar.id!); setToolbar(null) }}
-              className="p-1.5 rounded-xl text-red-400 hover:bg-red-950/60 cursor-pointer"
-              title="Quitar resaltado"
+              className="tab-btn"
+              style={{ padding: '4px 8px', fontSize: 11, background: '#7f1d1d33', color: '#ef4444' }}
+              title="Borrar"
             >
-              <Trash2 size={14} />
+              <Trash2 size={13} />
             </button>
           )}
 
-          {/* Cerrar */}
           <button
             onClick={() => setToolbar(null)}
-            className="p-1 rounded-xl text-slate-400 hover:text-white"
+            style={{ color: 'var(--text-dim)', background: 'none', border: 'none', cursor: 'pointer', padding: '2px 4px' }}
           >
-            <X size={14} />
+            <X size={13} />
           </button>
         </div>
       )}
 
-      {/* ── BARRA INFERIOR DE NOTAS ── */}
-      <div className="flex items-center gap-3 mt-6 pt-4 border-t border-white/10 flex-wrap">
+      {/* Botón de Notas inferior */}
+      <div className="flex items-center gap-3 mt-4 pt-3 flex-wrap" style={{ borderTop: '1px solid var(--navy-border)' }}>
         <button 
-          className="btn-glass text-xs py-1.5 px-3.5 flex items-center gap-1.5"
+          className="btn-secondary" 
+          style={{ fontSize: 11, padding: '5px 12px' }}
           onClick={() => setShowNotes(v => !v)}
         >
-          <StickyNote size={14} className="text-amber-300" />
-          <span>Notas ({notasConTexto.length})</span>
+          <StickyNote size={13} /> Notas ({notasConTexto.length})
         </button>
 
-        {saveMsg && (
-          <span className="text-xs text-emerald-400 font-medium animate-fadeIn">
-            ✓ {saveMsg}
-          </span>
-        )}
+        {saveMsg && <span style={{ color: 'var(--green)', fontSize: 11 }}>✓ {saveMsg}</span>}
 
         {anotaciones.length > 0 && (
-          <span className="text-xs text-slate-400 ml-auto">
-            {anotaciones.length} elemento{anotaciones.length !== 1 ? 's' : ''} resaltado{anotaciones.length !== 1 ? 's' : ''}
+          <span style={{ color: 'var(--text-dim)', fontSize: 11, marginLeft: 'auto' }}>
+            {anotaciones.length} resaltado{anotaciones.length !== 1 ? 's' : ''}
           </span>
         )}
       </div>
 
-      {/* ── PANEL EXPANDIBLE DE NOTAS ── */}
+      {/* Panel desplegable de Notas */}
       {showNotes && (
-        <div className="mt-4 p-4 rounded-2xl bg-black/40 border border-amber-500/20 space-y-3">
-          <div className="flex items-center justify-between mb-2">
-            <h4 className="text-sm font-bold text-amber-300 flex items-center gap-2">
-              <StickyNote size={15} /> Tus Notas y Apuntes
+        <div className="mt-3 p-4 rounded-xl" style={{ background: 'var(--navy-card)', border: '1px solid var(--navy-border)' }}>
+          <div className="flex items-center justify-between mb-3">
+            <h4 style={{ color: 'var(--gold)', fontSize: 13, fontWeight: 600 }}>
+              Notas guardadas
             </h4>
             <button
               onClick={() => {
                 const id = 'an_' + Date.now()
                 setModal({ id, preview: 'Nota general sobre el pasaje', nota: '' })
               }}
-              className="text-xs text-amber-300 hover:text-amber-200 flex items-center gap-1 bg-amber-500/10 px-2.5 py-1 rounded-lg border border-amber-500/30"
+              className="tab-btn"
+              style={{ fontSize: 10, padding: '3px 8px' }}
             >
-              <Plus size={12} /> Nueva nota manual
+              <Plus size={11} /> Nueva nota
             </button>
           </div>
 
           {notasConTexto.length === 0 ? (
-            <p className="text-xs text-slate-400 italic">
-              No tienes notas aún. Selecciona cualquier palabra o frase del estudio para agregarle una nota.
+            <p style={{ color: 'var(--text-dim)', fontSize: 12, fontStyle: 'italic' }}>
+              Sin notas aún. Selecciona texto y toca el ícono de nota para agregar una.
             </p>
           ) : (
-            <div className="space-y-2.5">
+            <div className="space-y-2">
               {notasConTexto.map(an => (
                 <div 
                   key={an.id} 
-                  className="p-3 rounded-xl bg-slate-900/60 border border-white/10 flex items-start justify-between gap-3"
-                  style={{ borderLeft: `4px solid ${an.hex}` }}
+                  style={{
+                    borderLeft: `3px solid ${an.hex}`,
+                    background: 'var(--navy-mid)',
+                    borderRadius: '0 8px 8px 0',
+                    padding: '8px 12px',
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    justifyContent: 'space-between',
+                    gap: 8,
+                  }}
                 >
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs text-slate-400 italic">
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <p style={{ color: 'var(--text-dim)', fontSize: 11, fontStyle: 'italic' }}>
                       &ldquo;{an.fragmento}&rdquo;
                     </p>
-                    <p className="text-sm text-slate-100 mt-1 font-medium whitespace-pre-wrap">
+                    <p style={{ color: 'var(--text-primary)', fontSize: 13, marginTop: 3 }}>
                       {an.nota}
                     </p>
-                    <p className="text-[10px] text-slate-500 mt-1">
-                      {new Date(an.fecha).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
-                    </p>
                   </div>
-                  <div className="flex items-center gap-1 shrink-0">
+                  <div className="flex items-center gap-1">
                     <button
                       onClick={() => setModal({ id: an.id, preview: an.fragmento, nota: an.nota || '' })}
-                      className="p-1.5 text-slate-400 hover:text-amber-300 hover:bg-white/5 rounded-lg"
-                      title="Editar nota"
+                      style={{ color: 'var(--text-dim)', background: 'none', border: 'none', cursor: 'pointer', padding: 3 }}
+                      title="Editar"
                     >
                       <Edit3 size={13} />
                     </button>
                     <button
                       onClick={() => eliminarAnotacion(an.id)}
-                      className="p-1.5 text-slate-400 hover:text-red-400 hover:bg-red-950/40 rounded-lg"
-                      title="Borrar nota"
+                      style={{ color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer', padding: 3 }}
+                      title="Borrar"
                     >
                       <Trash2 size={13} />
                     </button>
@@ -336,41 +338,42 @@ export default function AnnotationReader({ texto, cita }: Props) {
         </div>
       )}
 
-      {/* ── MODAL PARA ESCRIBIR / EDITAR NOTA ── */}
+      {/* Modal para escribir nota */}
       {modal && (
         <div 
-          className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[99999] flex items-center justify-center p-4"
+          style={{
+            position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)',
+            zIndex: 99999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16,
+          }}
           onClick={e => { if (e.target === e.currentTarget) setModal(null) }}
         >
-          <div className="bg-[#101420] border border-amber-500/40 rounded-2xl p-6 w-full max-w-md shadow-2xl animate-slideUp">
-            <h3 className="flex items-center gap-2 text-base font-bold text-amber-300 mb-2">
-              <StickyNote size={16} /> Nota de Estudio
+          <div style={{
+            background: 'var(--navy-card)', border: '1px solid var(--gold-dim)',
+            borderRadius: 14, padding: 20, width: '100%', maxWidth: 380, animation: 'slideUp 0.2s ease-out',
+          }}>
+            <h3 style={{ color: 'var(--gold)', fontSize: 14, fontWeight: 600, marginBottom: 8 }}>
+              📝 Nota de Estudio
             </h3>
-            
-            <p className="text-xs text-slate-400 italic mb-3 bg-black/30 p-2.5 rounded-xl border border-white/5">
+            <p style={{ color: 'var(--text-dim)', fontSize: 12, fontStyle: 'italic', marginBottom: 10 }}>
               &ldquo;{modal.preview}&rdquo;
             </p>
-
             <textarea
               autoFocus
               value={modal.nota}
               onChange={e => setModal({ ...modal, nota: e.target.value })}
-              placeholder="Escribe tu reflexión, apunte o explicación teológica aquí..."
-              className="w-full bg-slate-950/80 text-slate-100 border border-amber-500/30 rounded-xl p-3 text-sm min-h-[120px] focus:outline-none focus:border-amber-400"
+              placeholder="Escribe tu nota aquí..."
+              style={{
+                width: '100%', background: 'var(--navy-mid)', color: 'var(--text-primary)',
+                border: '1px solid var(--navy-border)', borderRadius: 8, padding: 10,
+                fontSize: 13, minHeight: 90, outline: 'none',
+              }}
             />
-
-            <div className="flex gap-2.5 mt-4 justify-end">
-              <button 
-                className="btn-glass text-xs"
-                onClick={() => setModal(null)}
-              >
+            <div className="flex gap-2 mt-3 justify-end">
+              <button className="btn-secondary" style={{ fontSize: 12, padding: '6px 12px' }} onClick={() => setModal(null)}>
                 Cancelar
               </button>
-              <button 
-                className="btn-gold text-xs px-4"
-                onClick={guardarNota}
-              >
-                Guardar Nota
+              <button className="btn-primary" style={{ fontSize: 12, padding: '6px 14px' }} onClick={guardarNota}>
+                Guardar
               </button>
             </div>
           </div>
