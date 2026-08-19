@@ -21,7 +21,7 @@
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
 
-/* ── Fondo Oscuro con Resplandor Dorado Central (Idéntico a la imagen) ── */
+/* ── Fondo Oscuro con Resplandor Dorado Central ── */
 body {
   background-color: #05070a;
   background-image: 
@@ -39,7 +39,7 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* ── Scrollbar Dorado Brillante ── */
+/* ── Scrollbar Dorado ── */
 ::-webkit-scrollbar { width: 8px; height: 8px; }
 ::-webkit-scrollbar-track { background: rgba(5, 7, 12, 0.85); }
 ::-webkit-scrollbar-thumb { 
@@ -53,23 +53,22 @@ body {
 }
 * { scrollbar-width: thin; scrollbar-color: #fed25c rgba(5, 7, 12, 0.85); }
 
-/* ── Enlaces Bíblicos ── */
 .bible-link { color: #fed25c !important; text-decoration: underline; font-weight: 600; }
 .bible-link:hover { color: #fff5c2 !important; text-decoration: none; }
 
-/* ── Títulos con Resplandor Dorado Radiante ── */
-.section-title {
+/* ── TÍTULOS Y CABECERA (EL RESPLANDOR DORADO RADIANTE EXACTO) ── */
+.section-title, .header-brand-title {
   color: #fff0b3 !important;
-  font-family: 'Crimson Pro', serif;
-  font-size: 1.45rem;
-  font-weight: 700;
-  display: flex;
+  font-family: 'Crimson Pro', serif !important;
+  font-size: 1.45rem !important;
+  font-weight: 700 !important;
+  display: inline-flex;
   align-items: center;
   gap: 8px;
-  text-shadow: 0 0 16px rgba(255, 212, 104, 0.85), 0 0 32px rgba(245, 168, 29, 0.45);
+  text-shadow: 0 0 16px rgba(255, 212, 104, 0.85), 0 0 32px rgba(245, 168, 29, 0.45) !important;
 }
 
-/* ── Formato de Texto Bíblico y Exégesis ── */
+/* ── Formato de Texto Bíblico ── */
 .prose-biblical { font-family: 'Crimson Pro', serif; font-size: 1.15rem; line-height: 1.9; color: var(--text-primary); }
 .prose-biblical p { margin-bottom: 1em; }
 .prose-biblical ul { padding-left: 1.5em; margin-bottom: 1em; }
@@ -81,7 +80,7 @@ body {
   border-radius: 0 10px 10px 0; margin: 1.2em 0; padding: 0.5em 0.8em 0.5em 1.2em;
 }
 
-/* ── Tarjetas Redondeadas con Borde Dorado ── */
+/* ── Tarjetas con Borde Dorado ── */
 .card {
   position: relative;
   background: rgba(14, 18, 30, 0.55) !important;
@@ -120,7 +119,7 @@ body {
   color: rgba(180, 195, 220, 0.65) !important; 
 }
 
-/* ── BOTONES DORADOS BRILLANTES CON RESPLANDOR (ESTUDIAR / COMPARAR / GENERAR) ── */
+/* ── BOTONES DORADOS BRILLANTES CON EL RESPLANDOR DORADO RADIANTE SIEMPRE ACTIVO ── */
 .btn-gold, .btn-primary {
   background: linear-gradient(180deg, #fff5c2 0%, #fed25c 45%, #f3a81d 100%) !important;
   color: #140b00 !important;
@@ -135,7 +134,7 @@ body {
   align-items: center !important;
   justify-content: center !important;
   gap: 8px !important;
-  box-shadow: 0 0 24px rgba(254, 212, 104, 0.7), 0 4px 14px rgba(243, 168, 29, 0.5), inset 0 1px 2px #ffffff !important;
+  box-shadow: 0 0 24px rgba(254, 212, 104, 0.85), 0 4px 14px rgba(243, 168, 29, 0.6), inset 0 1px 2px #ffffff !important;
   text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5) !important;
   white-space: nowrap !important;
 }
@@ -145,13 +144,14 @@ body {
   transform: translateY(-2px) !important;
 }
 .btn-gold:active, .btn-primary:active { transform: translateY(0) !important; }
+
+/* Mantiene el brillo dorado radiante en todo momento */
 .btn-gold:disabled, .btn-primary:disabled { 
-  background: linear-gradient(180deg, #9a7d38 0%, #70551c 100%) !important;
-  color: #1c1404 !important;
-  opacity: 0.75 !important;
-  cursor: not-allowed !important; 
-  transform: none !important; 
-  box-shadow: none !important; 
+  background: linear-gradient(180deg, #fff5c2 0%, #fed25c 45%, #f3a81d 100%) !important;
+  color: #140b00 !important;
+  box-shadow: 0 0 20px rgba(254, 212, 104, 0.7), 0 4px 12px rgba(243, 168, 29, 0.4) !important;
+  opacity: 0.9 !important;
+  cursor: pointer !important;
 }
 
 /* ── Botones Cristal Secundarios (Biblioteca / Config) ── */
@@ -210,7 +210,7 @@ body {
   box-shadow: 0 0 14px rgba(192, 132, 252, 0.5) !important;
 }
 
-/* ── Panel de Pestañas (Exégesis, Contexto, etc.) ── */
+/* ── Panel de Pestañas ── */
 .tab-panel {
   background: rgba(14, 18, 30, 0.7) !important;
   border: 1px solid rgba(255, 215, 80, 0.3) !important;
@@ -223,11 +223,9 @@ body {
   animation: fadeIn 0.3s ease-out;
 }
 
-/* ── Tablas para Chat ── */
 table { border-collapse: collapse; width: 100%; }
 th, td { border: 1px solid rgba(255, 255, 255, 0.12); }
 
-/* ── Barra Flotante de Anotaciones ── */
 .annotation-toolbar {
   position: fixed;
   background: #0f131f;
