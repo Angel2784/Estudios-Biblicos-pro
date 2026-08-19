@@ -1,73 +1,59 @@
 'use client'
 import { useState, useEffect } from 'react'
-import { X, Trash2, Check } from 'lucide-react'
+import { X } from 'lucide-react'
 
 interface Props {
   isOpen: boolean
   onClose: () => void
-  apiKey: string
-  onSaveApiKey: (key: string) => void
-  onRemoveApiKey: () => void
   restantes: number | null
   esAdmin: boolean
   esPremium: boolean
 }
 
-type FontSize = '1.15rem' | '1.35rem' | '1.55rem'
+type FontSize = '1.15rem' | '1.45rem' | '1.8rem'
 
 export default function SettingsModal({
   isOpen,
   onClose,
-  apiKey,
-  onSaveApiKey,
-  onRemoveApiKey,
   restantes,
   esAdmin,
   esPremium,
 }: Props) {
-  const [inputKey, setInputKey] = useState(apiKey)
-  const [keyGuardada, setKeyGuardada] = useState(false)
   const [fontSize, setFontSize] = useState<FontSize>('1.15rem')
   const [mensajeDatos, setMensajeDatos] = useState('')
 
-  // Cargar tamaño de fuente guardado
+  // Cargar tamaño guardado al abrir
   useEffect(() => {
     const saved = localStorage.getItem('ebp_fontSize') as FontSize | null
     if (saved) {
       setFontSize(saved)
       document.documentElement.style.setProperty('--biblical-font-size', saved)
+      document.body.style.setProperty('--biblical-font-size', saved)
     }
-  }, [])
+  }, [isOpen])
 
   if (!isOpen) return null
 
-  // Cambiar tamaño de letra en vivo
+  // Cambiar tamaño de letra en tiempo real
   const handleCambiarFuente = (tamano: FontSize) => {
     setFontSize(tamano)
     localStorage.setItem('ebp_fontSize', tamano)
     document.documentElement.style.setProperty('--biblical-font-size', tamano)
+    document.body.style.setProperty('--biblical-font-size', tamano)
   }
 
-  // Guardar API Key
-  const handleGuardarKey = () => {
-    if (!inputKey.trim()) return
-    onSaveApiKey(inputKey.trim())
-    setKeyGuardada(true)
-    setTimeout(() => setKeyGuardada(false), 2000)
-  }
-
-  // Vaciar historial de estudios
+  // Vaciar historial
   const handleBorrarHistorial = () => {
     if (window.confirm('¿Seguro que deseas vaciar todo tu historial de estudios guardados?')) {
       localStorage.removeItem('ebp_estudios')
       localStorage.removeItem('ebp_comparados')
       localStorage.removeItem('ebp_sermones')
-      setMensajeDatos('Historial de estudios eliminado con éxito')
+      setMensajeDatos('Historial eliminado con éxito')
       setTimeout(() => setMensajeDatos(''), 3000)
     }
   }
 
-  // Limpiar notas y resaltados
+  // Limpiar notas locales
   const handleBorrarNotas = () => {
     if (window.confirm('¿Seguro que deseas borrar todas las notas y resaltados guardados?')) {
       Object.keys(localStorage).forEach(key => {
@@ -91,7 +77,7 @@ export default function SettingsModal({
       {/* Ventana Modal Translúcida */}
       <div 
         className="card" 
-        style={{ position: 'relative', width: '100%', maxWidth: 480, maxHeight: '90vh', overflowY: 'auto', zIndex: 1001, animation: 'slideUp 0.25s ease-out' }}
+        style={{ position: 'relative', width: '100%', maxWidth: 460, maxHeight: '90vh', overflowY: 'auto', zIndex: 1001, animation: 'slideUp 0.25s ease-out' }}
       >
         {/* Cabecera */}
         <div className="flex items-center justify-between pb-4 border-b border-amber-500/20 mb-5">
@@ -106,14 +92,14 @@ export default function SettingsModal({
           <div className="flex items-center justify-between mb-2">
             <span className="text-xs text-slate-400">Tipo de Cuenta:</span>
             <span className="pill text-xs px-3 py-0.5 text-amber-300 font-semibold">
-              {esAdmin ? 'Administrador' : esPremium ? 'Premium Ilimitado' : apiKey ? 'Ilimitado con API Key' : 'Estándar Gratis'}
+              {esAdmin ? 'Administrador' : esPremium ? 'Premium Ilimitado' : 'Estándar Gratis'}
             </span>
           </div>
 
           <div className="flex items-center justify-between mt-2 pt-2 border-t border-slate-700/40 text-xs">
             <span className="text-slate-400">Consultas disponibles hoy:</span>
             <span className="text-amber-300 font-bold">
-              {esAdmin || esPremium || apiKey ? 'Ilimitadas' : (restantes ?? 0)}
+              {esAdmin || esPremium ? 'Ilimitadas' : (restantes ?? 0)}
             </span>
           </div>
         </div>
@@ -133,50 +119,22 @@ export default function SettingsModal({
             </button>
             <button
               type="button"
-              onClick={() => handleCambiarFuente('1.35rem')}
-              className={`pill text-center py-2 ${fontSize === '1.35rem' ? 'pill-active-blue' : ''}`}
+              onClick={() => handleCambiarFuente('1.45rem')}
+              className={`pill text-center py-2 ${fontSize === '1.45rem' ? 'pill-active-blue' : ''}`}
             >
               Grande (A+)
             </button>
             <button
               type="button"
-              onClick={() => handleCambiarFuente('1.55rem')}
-              className={`pill text-center py-2 ${fontSize === '1.55rem' ? 'pill-active-blue' : ''}`}
+              onClick={() => handleCambiarFuente('1.8rem')}
+              className={`pill text-center py-2 ${fontSize === '1.8rem' ? 'pill-active-blue' : ''}`}
             >
               Extra (A++)
             </button>
           </div>
         </div>
 
-        {/* ── 3. API KEY PROPIA (USO ILIMITADO) ── */}
-        <div className="mb-6 pt-4 border-t border-slate-700/40">
-          <h3 className="text-amber-200 text-sm font-semibold mb-1">API Key Propia (Google Gemini)</h3>
-          <p className="text-xs text-slate-400 mb-3">Opcional para consultas ilimitadas con tu propia clave gratuita.</p>
-          
-          <div className="flex gap-2">
-            <input 
-              type="password"
-              className="input-field flex-1 text-xs"
-              placeholder="Pega tu clave AIzaSy..."
-              value={inputKey}
-              onChange={e => setInputKey(e.target.value)}
-            />
-            <button onClick={handleGuardarKey} className="btn-secondary text-xs px-3">
-              {keyGuardada ? <Check size={14} className="text-green-400" /> : 'Guardar'}
-            </button>
-            {apiKey && (
-              <button 
-                onClick={() => { setInputKey(''); onRemoveApiKey() }}
-                className="btn-glass p-2 text-red-400 hover:text-red-300"
-                title="Eliminar clave"
-              >
-                <Trash2 size={14} />
-              </button>
-            )}
-          </div>
-        </div>
-
-        {/* ── 4. GESTIÓN DE DATOS LOCALES ── */}
+        {/* ── 3. GESTIÓN DE DATOS LOCALES ── */}
         <div className="pt-4 border-t border-slate-700/40">
           <h3 className="text-amber-200 text-sm font-semibold mb-2">Gestión de Datos y Almacenamiento</h3>
           <div className="flex gap-2 flex-col sm:flex-row">
@@ -184,13 +142,13 @@ export default function SettingsModal({
               onClick={handleBorrarHistorial}
               className="btn-glass text-xs py-2 px-3 justify-center text-slate-300 hover:text-red-300 flex-1"
             >
-              Vaciar historial de estudios
+              Vaciar historial
             </button>
             <button 
               onClick={handleBorrarNotas}
               className="btn-glass text-xs py-2 px-3 justify-center text-slate-300 hover:text-red-300 flex-1"
             >
-              Limpiar notas locales
+              Limpiar notas
             </button>
           </div>
 
