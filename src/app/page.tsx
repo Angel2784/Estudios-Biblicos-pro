@@ -1,7 +1,7 @@
 'use client'
 import { useState, useEffect, useRef } from 'react'
 import { Library, Settings, Flame, Search, X, BookMarked, Key } from 'lucide-react'
-import { UserButton, useUser, SignInButton } from '@clerk/nextjs'
+import { UserButton } from '@clerk/nextjs'
 import ApiKeySetup from '@/components/ApiKeySetup'
 import StudySection from '@/components/StudySection'
 import ComparativeSection from '@/components/ComparativeSection'
@@ -14,8 +14,8 @@ interface StudyResult  { id: string; cita: string; texto: string }
 interface CompResult   { id: string; cita1: string; cita2: string; texto: string }
 interface SermonResult { id: string; cita: string; texto: string; estilo: EstiloSermon }
 
-const EJEMPLOS        = ['Juan 3:16', 'Salmos 23:1-6', 'Romanos 8:28', 'Filipenses 4:13']
-const COMP_EJEMPLOS   = [['Juan 3:16', 'Romanos 5:8'], ['Salmos 23', 'Juan 10:11'], ['Gálatas 2:20', 'Filipenses 1:21']]
+const EJEMPLOS       = ['Juan 3:16', 'Salmos 23:1-6', 'Romanos 8:28', 'Filipenses 4:13']
+const COMP_EJEMPLOS  = [['Juan 3:16', 'Romanos 5:8'], ['Salmos 23', 'Juan 10:11'], ['Gálatas 2:20', 'Filipenses 1:21']]
 const SERMON_EJEMPLOS = ['Juan 3:16', 'Mateo 5:1-12', 'Salmos 23', 'Romanos 8:28']
 
 let _uid = 0
@@ -26,7 +26,6 @@ function reorder<T>(arr: T[], from: number, to: number): T[] {
 }
 
 export default function HomePage() {
-  const { isSignedIn } = useUser()
   const [apiKey, setApiKeyState]     = useState<string>('')
   const [loading, setLoading]        = useState(true)
   const [showApiKeySetup, setShowApiKeySetup] = useState(false)
@@ -112,87 +111,78 @@ export default function HomePage() {
     setShowLibrary(false)
   }
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center bg-transparent"><div className="text-4xl text-amber-300" style={{ animation: 'spin 1s linear infinite' }}>⟳</div></div>
+  if (loading) return <div className="min-h-screen flex items-center justify-center"><div className="text-4xl" style={{ animation: 'spin 1s linear infinite' }}>⟳</div></div>
+
   if (showApiKeySetup) return <ApiKeySetup onSave={handleSaveKey} />
 
   const sinLimite = esAdmin || esPremium || !!apiKey
 
   return (
-    /* NOTA: Fondo transparente para dejar ver la biblioteca y runas de fondo */
-    <div className="min-h-screen bg-transparent">
+    <div className="min-h-screen" style={{ background: 'var(--navy)' }}>
 
-      {/* ── BARRA DE NAVEGACIÓN SUPERIOR ── */}
-      <nav className="sticky top-0 z-50 bg-[#080b12]/80 backdrop-blur-xl border-b border-amber-500/20">
+      <nav style={{ background: 'var(--navy-card)', borderBottom: '1px solid var(--navy-border)', position: 'sticky', top: 0, zIndex: 100 }}>
         <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <span className="text-2xl drop-shadow-[0_0_12px_rgba(255,193,7,0.7)]">📜</span>
-            <h1 className="font-bold text-lg tracking-wide" style={{ color: '#ffe57f', fontFamily: 'Crimson Pro, serif', textShadow: '0 0 12px rgba(255,193,7,0.6)' }}>
-              Estudio Bíblico Pro
-            </h1>
+            <div className="brand-glow-wrap">
+              <div className="brand-glow"></div>
+              <span className="text-2xl" style={{ position: 'relative', zIndex: 1 }}>📜</span>
+            </div>
+            <div>
+              <h1 className="font-bold text-base leading-tight" style={{ color: 'var(--gold)', fontFamily: 'Crimson Pro, serif' }}>Estudio Bíblico Pro</h1>
+              <p className="text-xs hidden sm:block" style={{ color: 'var(--text-dim)' }}>Exégesis académica</p>
+            </div>
           </div>
-
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2">
             {!sinLimite && restantes !== null && (
-              <span className="pill text-xs px-3 py-1">
+              <span className="text-xs px-2 py-1 rounded-full" style={{ background: 'var(--navy-border)', color: 'var(--gold)' }}>
                 {restantes > 0 ? `${restantes} consultas gratis hoy` : 'Límite alcanzado'}
               </span>
             )}
-            {esAdmin && <span className="pill text-xs px-3 py-1 text-amber-300 border-amber-400/50 shadow-[0_0_10px_rgba(255,193,7,0.3)]">👑 Admin</span>}
-            {esPremium && <span className="pill text-xs px-3 py-1 text-amber-300 border-amber-400/50 shadow-[0_0_10px_rgba(255,193,7,0.3)]">⭐ Premium</span>}
-            
-            <button className="btn-glass" onClick={() => setShowLibrary(!showLibrary)}>
-              <Library size={15} /><span className="hidden sm:inline text-xs">Biblioteca</span>
+            {esAdmin && <span className="text-xs px-2 py-1 rounded-full" style={{ background: 'var(--navy-border)', color: 'var(--gold)' }}>👑 Admin</span>}
+            {esPremium && <span className="text-xs px-2 py-1 rounded-full" style={{ background: 'var(--navy-border)', color: 'var(--gold)' }}>⭐ Premium</span>}
+            <button className="btn-secondary" style={{ padding: '7px 10px' }} onClick={() => setShowLibrary(!showLibrary)}>
+              <Library size={16} /><span className="hidden sm:inline text-xs">Biblioteca</span>
             </button>
-            <button className="btn-glass p-2" onClick={() => setShowSettings(!showSettings)}>
-              <Settings size={15} />
+            <button className="btn-secondary" style={{ padding: '7px 10px' }} onClick={() => setShowSettings(!showSettings)}>
+              <Settings size={16} />
             </button>
-
-            {isSignedIn ? (
-              <UserButton afterSignOutUrl="/sign-in" />
-            ) : (
-              <SignInButton mode="modal">
-                <button className="btn-gold text-xs px-4 py-2">
-                  Iniciar sesión
-                </button>
-              </SignInButton>
-            )}
+            <UserButton afterSignOutUrl="/sign-in" />
           </div>
         </div>
       </nav>
 
-      {/* ── MODAL DE AJUSTES / API KEY ── */}
       {showSettings && (
         <div className="max-w-4xl mx-auto px-4 py-4">
           <div className="card flex items-center justify-between gap-4 flex-wrap" style={{ animation: 'slideUp 0.3s ease-out' }}>
             {apiKey ? (
               <>
                 <div>
-                  <p className="text-sm font-semibold text-amber-300">🔑 Usando tu propia API Key</p>
-                  <p className="text-xs mt-1 text-slate-400">{apiKey.substring(0, 8)}{'•'.repeat(20)} · Uso ilimitado</p>
+                  <p className="text-sm font-semibold" style={{ color: 'var(--gold)' }}>🔑 Usando tu propia API Key</p>
+                  <p className="text-xs mt-1" style={{ color: 'var(--text-dim)' }}>{apiKey.substring(0, 8)}{'•'.repeat(20)} · Uso ilimitado</p>
                 </div>
-                <button className="btn-glass text-xs" onClick={handleRemoveKey}>
+                <button className="btn-secondary" style={{ fontSize: 12 }} onClick={handleRemoveKey}>
                   <X size={13} /> Quitar API Key
                 </button>
               </>
             ) : esPremium ? (
               <div>
-                <p className="text-sm font-semibold text-amber-300">⭐ Cuenta Premium activa</p>
-                <p className="text-xs mt-1 text-amber-200">Uso ilimitado</p>
+                <p className="text-sm font-semibold" style={{ color: 'var(--gold)' }}>⭐ Cuenta Premium activa</p>
+                <p className="text-xs mt-1" style={{ color: 'var(--gold)' }}>Uso ilimitado</p>
               </div>
             ) : esAdmin ? (
               <>
                 <div>
-                  <p className="text-sm font-semibold text-amber-300">👑 Cuenta admin</p>
-                  <p className="text-xs mt-1 text-slate-300">Conecta tu propia API Key para uso ilimitado.</p>
+                  <p className="text-sm font-semibold" style={{ color: 'var(--gold)' }}>👑 Cuenta admin</p>
+                  <p className="text-xs mt-1" style={{ color: 'var(--gold)' }}>Conecta tu propia API Key para uso ilimitado.</p>
                 </div>
-                <button className="btn-glass text-xs" onClick={() => setShowApiKeySetup(true)}>
+                <button className="btn-secondary" style={{ fontSize: 12 }} onClick={() => setShowApiKeySetup(true)}>
                   <Key size={13} /> Conectar mi API Key
                 </button>
               </>
             ) : (
               <div>
-                <p className="text-sm font-semibold text-amber-300">✨ Usando el servicio gratuito</p>
-                <p className="text-xs mt-1 text-slate-300">
+                <p className="text-sm font-semibold" style={{ color: 'var(--gold)' }}>✨ Usando el servicio gratuito</p>
+                <p className="text-xs mt-1" style={{ color: 'var(--gold)' }}>
                   {restantes !== null ? `Te quedan ${restantes} consultas gratis hoy. ` : ''}
                   Hazte premium: {PRECIO_MENSUAL} o {PRECIO_ANUAL}.
                 </p>
@@ -202,72 +192,26 @@ export default function HomePage() {
         </div>
       )}
 
-      {/* ── CONTENIDO PRINCIPAL ── */}
-      <main className="max-w-4xl mx-auto px-4 py-8 space-y-10">
+      <main className="max-w-4xl mx-auto px-4 py-6 space-y-8">
 
-        {/* ── BANNER SUPERIOR: SERVICIO GRATUITO ── */}
-        {!sinLimite && (
-          <div className="banner-card flex items-center gap-4">
-            <div className="shrink-0 w-12 h-12 rounded-xl bg-amber-400/20 border border-amber-300/40 flex items-center justify-center text-2xl backdrop-blur-md shadow-[0_0_15px_rgba(255,193,7,0.3)]">
-              📜
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-3 flex-wrap">
-                <span className="font-semibold text-sm text-white">Servicio gratuito</span>
-                <span className="text-xs text-amber-300 font-medium">
-                  {restantes !== null ? `Quedan ${restantes} consultas.` : 'Servicio activo.'}
-                </span>
-              </div>
-              <p className="text-xs text-slate-300 mt-0.5">
-                Mejora a Premium: <strong className="text-amber-200">{PRECIO_MENSUAL}</strong> o <strong className="text-amber-200">{PRECIO_ANUAL}</strong> (ahorra 2 meses).
-              </p>
-            </div>
-          </div>
-        )}
-
-        {/* ── 1. ESTUDIO BÍBLICO ── */}
+        {/* 1. Estudio Bíblico */}
         <section>
-          <h2 className="section-title mb-3">📖 Estudio Bíblico</h2>
+          <h2 className="font-bold text-lg mb-4" style={{ fontFamily: 'Crimson Pro, serif', color: 'var(--gold)' }}>📖 Estudio Bíblico</h2>
           <div className="card">
-            <div className="flex gap-3 flex-col sm:flex-row items-center">
-              <input 
-                className="input-gold flex-1" 
-                placeholder="Referencia bíblica (ej: Juan 3:16)"
-                value={citaInput} 
-                onChange={e => setCitaInput(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && handleStudy()} 
-                disabled={estudiando} 
-              />
-              <button 
-                className="btn-gold w-full sm:w-auto" 
-                onClick={handleStudy} 
-                disabled={estudiando || !citaInput.trim()}
-              >
-                {estudiando ? (
-                  <><span style={{ display: 'inline-block', animation: 'spin 1s linear infinite' }}>⟳</span> Analizando...</>
-                ) : (
-                  <><Flame size={16} /> Estudiar</>
-                )}
+            <div className="flex gap-3 flex-col sm:flex-row">
+              <input className="input-field flex-1" placeholder="Referencia bíblica (ej: Juan 3:16)"
+                value={citaInput} onChange={e => setCitaInput(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && handleStudy()} disabled={estudiando} />
+              <button className="btn-primary whitespace-nowrap" onClick={handleStudy} disabled={estudiando || !citaInput.trim()}>
+                {estudiando ? <><span style={{ display: 'inline-block', animation: 'spin 1s linear infinite' }}>⟳</span> Analizando...</> : <><Flame size={16} /> Estudiar</>}
               </button>
             </div>
-            
-            {/* Píldoras rápidas */}
-            <div className="flex gap-2.5 mt-4 flex-wrap">
-              {EJEMPLOS.map((ej, index) => (
-                <button 
-                  key={ej} 
-                  className={`pill ${index === 0 ? 'pill-active-blue' : ''}`} 
-                  onClick={() => setCitaInput(ej)}
-                >
-                  {ej}
-                </button>
-              ))}
+            <div className="flex gap-2 mt-3 flex-wrap">
+              {EJEMPLOS.map(ej => <button key={ej} className="tab-btn" style={{ fontSize: 11 }} onClick={() => setCitaInput(ej)}>{ej}</button>)}
             </div>
-
-            {errorExeg && <div className="mt-3 p-3 rounded-xl text-xs bg-red-950/40 text-red-400 border border-red-800/60">⚠️ {errorExeg}</div>}
-            {estudiando && <div className="mt-4 space-y-3">{[90,70,80].map((w,i) => <div key={i} className="shimmer rounded-lg" style={{ height:16, width:`${w}%` }} />)}<p className="text-xs text-amber-200/90">✨ Generando exégesis académica...</p></div>}
+            {errorExeg && <div className="mt-3 p-3 rounded-lg text-xs" style={{ background: '#7f1d1d33', color: '#ef4444', border: '1px solid #7f1d1d' }}>⚠️ {errorExeg}</div>}
+            {estudiando && <div className="mt-4 space-y-3">{[90,70,80].map((w,i) => <div key={i} className="shimmer rounded-lg" style={{ height:16, width:`${w}%` }} />)}<p className="text-xs" style={{ color: 'var(--text-dim)' }}>✨ Generando exégesis académica...</p></div>}
           </div>
-
           {estudios.map((e, i) => (
             <div key={e.id} draggable onDragStart={() => { dragEstudio.current = i }} onDragOver={ev => ev.preventDefault()} onDrop={() => { if (dragEstudio.current !== null) { setEstudios(p => reorder(p, dragEstudio.current!, i)); dragEstudio.current = null } }} style={{ cursor: 'grab' }}>
               <StudySection cita={e.cita} texto={e.texto} apiKey={apiKey} onClear={() => setEstudios(prev => prev.filter(x => x.id !== e.id))} />
@@ -275,57 +219,26 @@ export default function HomePage() {
           ))}
         </section>
 
-        {/* ── 2. ESTUDIO COMPARADO ── */}
+        {/* 2. Estudio Comparado */}
         <section>
-          <h2 className="section-title mb-3">⚖️ Estudio Comparado</h2>
+          <div className="flex items-center gap-2 mb-4">
+            <h2 className="font-bold text-lg" style={{ fontFamily: 'Crimson Pro, serif', color: 'var(--gold)' }}>⚖️ Estudio Comparado</h2>           
+          </div>
           <div className="card">
-            <p className="text-sm mb-4 text-slate-300">Compara dos pasajes con análisis teológico profundo</p>
-            <div className="flex gap-3 flex-col sm:flex-row items-center">
-              <input 
-                className="input-subtle flex-1" 
-                placeholder="Pasaje A (ej: Juan 3:16)" 
-                value={cita1} 
-                onChange={e => setCita1(e.target.value)} 
-                disabled={comparando} 
-              />
-              <input 
-                className="input-subtle flex-1" 
-                placeholder="Pasaje B (ej: Romanos 5:8)" 
-                value={cita2} 
-                onChange={e => setCita2(e.target.value)} 
-                disabled={comparando} 
-                onKeyDown={e => e.key === 'Enter' && handleCompare()} 
-              />
-              <button 
-                className="btn-gold w-full sm:w-auto" 
-                onClick={handleCompare} 
-                disabled={comparando || !cita1.trim() || !cita2.trim()}
-              >
-                {comparando ? (
-                  <><span style={{ display: 'inline-block', animation: 'spin 1s linear infinite' }}>⟳</span> Comparando...</>
-                ) : (
-                  <><Search size={15} /> Comparar</>
-                )}
+            <p className="text-sm mb-4" style={{ color: 'var(--text-secondary)' }}>Compara dos pasajes con análisis teológico profundo</p>
+            <div className="flex gap-3 flex-col sm:flex-row">
+              <input className="input-field flex-1" placeholder="Pasaje A (ej: Juan 3:16)" value={cita1} onChange={e => setCita1(e.target.value)} disabled={comparando} />
+              <input className="input-field flex-1" placeholder="Pasaje B (ej: Romanos 5:8)" value={cita2} onChange={e => setCita2(e.target.value)} disabled={comparando} onKeyDown={e => e.key === 'Enter' && handleCompare()} />
+              <button className="btn-primary whitespace-nowrap" onClick={handleCompare} disabled={comparando || !cita1.trim() || !cita2.trim()}>
+                {comparando ? <><span style={{ display: 'inline-block', animation: 'spin 1s linear infinite' }}>⟳</span> Comparando...</> : <><Search size={15} /> Comparar</>}
               </button>
             </div>
-            
-            {/* Píldoras rápidas */}
-            <div className="flex gap-2.5 mt-4 flex-wrap">
-              {COMP_EJEMPLOS.map(([c1,c2]) => (
-                <button 
-                  key={`${c1}-${c2}`} 
-                  className="pill" 
-                  onClick={() => { setCita1(c1); setCita2(c2) }}
-                >
-                  {c1} vs {c2}
-                </button>
-              ))}
+            <div className="flex gap-2 mt-3 flex-wrap">
+              {COMP_EJEMPLOS.map(([c1,c2]) => <button key={`${c1}-${c2}`} className="tab-btn" style={{ fontSize: 11 }} onClick={() => { setCita1(c1); setCita2(c2) }}>{c1} vs {c2}</button>)}
             </div>
-
-            {errorComp && <div className="mt-3 p-3 rounded-xl text-xs bg-red-950/40 text-red-400 border border-red-800/60">⚠️ {errorComp}</div>}
-            {comparando && <div className="mt-4 space-y-3">{[85,65,75].map((w,i) => <div key={i} className="shimmer rounded-lg" style={{ height:16, width:`${w}%` }} />)}<p className="text-xs text-amber-200/90">🔍 Generando análisis comparativo...</p></div>}
+            {errorComp && <div className="mt-3 p-3 rounded-lg text-xs" style={{ background: '#7f1d1d33', color: '#ef4444', border: '1px solid #7f1d1d' }}>⚠️ {errorComp}</div>}
+            {comparando && <div className="mt-4 space-y-3">{[85,65,75].map((w,i) => <div key={i} className="shimmer rounded-lg" style={{ height:16, width:`${w}%` }} />)}<p className="text-xs" style={{ color: 'var(--text-dim)' }}>🔍 Generando análisis comparativo...</p></div>}
           </div>
-
           {comparados.map((c, i) => (
             <div key={c.id} draggable onDragStart={() => { dragComparado.current = i }} onDragOver={ev => ev.preventDefault()} onDrop={() => { if (dragComparado.current !== null) { setComparados(p => reorder(p, dragComparado.current!, i)); dragComparado.current = null } }} style={{ cursor: 'grab' }}>
               <ComparativeSection cita1={c.cita1} cita2={c.cita2} texto={c.texto} apiKey={apiKey} onRemove={() => setComparados(prev => prev.filter(x => x.id !== c.id))} />
@@ -333,64 +246,39 @@ export default function HomePage() {
           ))}
         </section>
 
-        {/* ── 3. SERMÓN / DEVOCIONAL ── */}
+        {/* 3. Sermón / Devocional */}
         <section>
-          <h2 className="section-title mb-3">📝 Sermón / Devocional</h2>
+          <div className="flex items-center gap-2 mb-4">
+            <h2 className="font-bold text-lg" style={{ fontFamily: 'Crimson Pro, serif', color: 'var(--gold)' }}>📝 Sermón / Devocional</h2>            
+          </div>
           <div className="card">
-            <p className="text-sm mb-4 text-slate-300">Genera un sermón expositivo, devocional basado en un pasaje</p>
+            <p className="text-sm mb-4" style={{ color: 'var(--text-secondary)' }}>Genera un sermón expositivo, devocional basado en un pasaje</p>
 
-            {/* Selector Expositivo vs Devocional */}
-            <div className="flex gap-2.5 mb-4 flex-wrap">
+            <div className="flex gap-2 mb-3 flex-wrap">
               {([['expositivo','📖 Sermón expositivo'],['devocional','🌅 Devocional breve']] as [EstiloSermon,string][]).map(([val,label]) => (
-                <button 
-                  key={val} 
-                  onClick={() => setEstiloSermon(val)}
-                  className={`pill ${estiloSermon === val ? 'pill-active-purple' : ''}`}
-                >
+                <button key={val} onClick={() => setEstiloSermon(val)}
+                  className="tab-btn"
+                  style={{ fontSize: 12, outline: estiloSermon === val ? '2px solid #a78bfa' : 'none', color: estiloSermon === val ? '#a78bfa' : undefined }}>
                   {label}
                 </button>
               ))}
             </div>
 
-            <div className="flex gap-3 flex-col sm:flex-row items-center">
-              <input 
-                className="input-subtle flex-1" 
-                placeholder="Pasaje bíblico (ej: Juan 3:16)"
-                value={citaSermon} 
-                onChange={e => setCitaSermon(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && handleSermon()} 
-                disabled={generando} 
-              />
-              <button 
-                className="btn-gold w-full sm:w-auto" 
-                onClick={handleSermon} 
-                disabled={generando || !citaSermon.trim()}
-              >
-                {generando ? (
-                  <><span style={{ display: 'inline-block', animation: 'spin 1s linear infinite' }}>⟳</span> Generando...</>
-                ) : (
-                  <><BookMarked size={16} /> Generar</>
-                )}
+            <div className="flex gap-3 flex-col sm:flex-row">
+              <input className="input-field flex-1" placeholder="Pasaje bíblico (ej: Juan 3:16)"
+                value={citaSermon} onChange={e => setCitaSermon(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && handleSermon()} disabled={generando} />
+              <button className="btn-primary whitespace-nowrap" onClick={handleSermon} disabled={generando || !citaSermon.trim()}
+                style={{ background: generando ? undefined : 'linear-gradient(135deg, #7c3aed, #a78bfa)' }}>
+                {generando ? <><span style={{ display: 'inline-block', animation: 'spin 1s linear infinite' }}>⟳</span> Generando...</> : <><BookMarked size={16} /> Generar</>}
               </button>
             </div>
-
-            {/* Píldoras rápidas */}
-            <div className="flex gap-2.5 mt-4 flex-wrap">
-              {SERMON_EJEMPLOS.map(ej => (
-                <button 
-                  key={ej} 
-                  className="pill" 
-                  onClick={() => setCitaSermon(ej)}
-                >
-                  {ej}
-                </button>
-              ))}
+            <div className="flex gap-2 mt-3 flex-wrap">
+              {SERMON_EJEMPLOS.map(ej => <button key={ej} className="tab-btn" style={{ fontSize: 11 }} onClick={() => setCitaSermon(ej)}>{ej}</button>)}
             </div>
-
-            {errorSermon && <div className="mt-3 p-3 rounded-xl text-xs bg-red-950/40 text-red-400 border border-red-800/60">⚠️ {errorSermon}</div>}
-            {generando && <div className="mt-4 space-y-3">{[85,65,75].map((w,i) => <div key={i} className="shimmer rounded-lg" style={{ height:16, width:`${w}%` }} />)}<p className="text-xs text-amber-200/90">✍️ Preparando el mensaje...</p></div>}
+            {errorSermon && <div className="mt-3 p-3 rounded-lg text-xs" style={{ background: '#7f1d1d33', color: '#ef4444', border: '1px solid #7f1d1d' }}>⚠️ {errorSermon}</div>}
+            {generando && <div className="mt-4 space-y-3">{[85,65,75].map((w,i) => <div key={i} className="shimmer rounded-lg" style={{ height:16, width:`${w}%` }} />)}<p className="text-xs" style={{ color: 'var(--text-dim)' }}>✍️ Preparando el mensaje...</p></div>}
           </div>
-
           {sermones.map((s, i) => (
             <div key={s.id} draggable onDragStart={() => { dragSermon.current = i }} onDragOver={ev => ev.preventDefault()} onDrop={() => { if (dragSermon.current !== null) { setSermones(p => reorder(p, dragSermon.current!, i)); dragSermon.current = null } }} style={{ cursor: 'grab' }}>
               <SermonSection cita={s.cita} texto={s.texto} estilo={s.estilo} onRemove={() => setSermones(prev => prev.filter(x => x.id !== s.id))} />
@@ -400,17 +288,15 @@ export default function HomePage() {
 
       </main>
 
-      {/* Sidebar de Biblioteca */}
       {showLibrary && (
         <>
-          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(6px)', zIndex: 999 }} onClick={() => setShowLibrary(false)} />
+          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 999 }} onClick={() => setShowLibrary(false)} />
           <LibrarySidebar onSelectEstudio={handleSelectEstudio} onSelectComparado={handleSelectComparado} onClose={() => setShowLibrary(false)} />
         </>
       )}
 
-      {/* Footer */}
-      <footer className="text-center py-8 mt-12 border-t border-amber-500/20 text-slate-400 text-xs">
-        <p className="text-amber-200/80 font-medium">📜 Estudio Bíblico Pro</p>
+      <footer className="text-center py-8 mt-8" style={{ borderTop: '1px solid var(--navy-border)', color: 'var(--text-dim)', fontSize: 12 }}>
+        <p>📜 Estudio Bíblico Pro</p>
         <p className="mt-1">Powered by Google Gemini</p>
       </footer>
 
