@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { supabase } from '@/lib/supabase' // Si usas alias de Next.js, o usa '../../lib/supabase'
+import { supabase } from '../../../../lib/supabase' // Si usas alias de Next.js, o usa '../../lib/supabase'
 
 export default function Page() {
   const [email, setEmail] = useState('')
