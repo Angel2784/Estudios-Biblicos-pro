@@ -112,20 +112,21 @@ export default function HomePage() {
     setShowLibrary(false)
   }
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center"><div className="text-4xl" style={{ animation: 'spin 1s linear infinite' }}>⟳</div></div>
+  if (loading) return <div className="min-h-screen flex items-center justify-center bg-transparent"><div className="text-4xl text-amber-300" style={{ animation: 'spin 1s linear infinite' }}>⟳</div></div>
   if (showApiKeySetup) return <ApiKeySetup onSave={handleSaveKey} />
 
   const sinLimite = esAdmin || esPremium || !!apiKey
 
   return (
-    <div className="min-h-screen">
+    /* NOTA: Fondo transparente para dejar ver la biblioteca y runas de fondo */
+    <div className="min-h-screen bg-transparent">
 
       {/* ── BARRA DE NAVEGACIÓN SUPERIOR ── */}
-      <nav className="sticky top-0 z-50 bg-[#0c0e15]/75 backdrop-blur-xl border-b border-white/10">
+      <nav className="sticky top-0 z-50 bg-[#080b12]/80 backdrop-blur-xl border-b border-amber-500/20">
         <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <span className="text-2xl drop-shadow-[0_2px_8px_rgba(240,168,48,0.4)]">📜</span>
-            <h1 className="font-bold text-base tracking-wide" style={{ color: '#fcd271', fontFamily: 'Crimson Pro, serif' }}>
+            <span className="text-2xl drop-shadow-[0_0_12px_rgba(255,193,7,0.7)]">📜</span>
+            <h1 className="font-bold text-lg tracking-wide" style={{ color: '#ffe57f', fontFamily: 'Crimson Pro, serif', textShadow: '0 0 12px rgba(255,193,7,0.6)' }}>
               Estudio Bíblico Pro
             </h1>
           </div>
@@ -136,8 +137,8 @@ export default function HomePage() {
                 {restantes > 0 ? `${restantes} consultas gratis hoy` : 'Límite alcanzado'}
               </span>
             )}
-            {esAdmin && <span className="pill text-xs px-3 py-1 text-amber-300 border-amber-400/40">👑 Admin</span>}
-            {esPremium && <span className="pill text-xs px-3 py-1 text-amber-300 border-amber-400/40">⭐ Premium</span>}
+            {esAdmin && <span className="pill text-xs px-3 py-1 text-amber-300 border-amber-400/50 shadow-[0_0_10px_rgba(255,193,7,0.3)]">👑 Admin</span>}
+            {esPremium && <span className="pill text-xs px-3 py-1 text-amber-300 border-amber-400/50 shadow-[0_0_10px_rgba(255,193,7,0.3)]">⭐ Premium</span>}
             
             <button className="btn-glass" onClick={() => setShowLibrary(!showLibrary)}>
               <Library size={15} /><span className="hidden sm:inline text-xs">Biblioteca</span>
@@ -202,12 +203,12 @@ export default function HomePage() {
       )}
 
       {/* ── CONTENIDO PRINCIPAL ── */}
-      <main className="max-w-4xl mx-auto px-4 py-6 space-y-8">
+      <main className="max-w-4xl mx-auto px-4 py-8 space-y-10">
 
-        {/* ── BANNER SUPERIOR: SERVICIO GRATUITO (Idéntico a la imagen) ── */}
+        {/* ── BANNER SUPERIOR: SERVICIO GRATUITO ── */}
         {!sinLimite && (
           <div className="banner-card flex items-center gap-4">
-            <div className="shrink-0 w-12 h-12 rounded-xl bg-amber-400/15 border border-amber-300/30 flex items-center justify-center text-2xl backdrop-blur-md shadow-inner">
+            <div className="shrink-0 w-12 h-12 rounded-xl bg-amber-400/20 border border-amber-300/40 flex items-center justify-center text-2xl backdrop-blur-md shadow-[0_0_15px_rgba(255,193,7,0.3)]">
               📜
             </div>
             <div className="flex-1 min-w-0">
@@ -250,7 +251,7 @@ export default function HomePage() {
               </button>
             </div>
             
-            {/* Píldoras rápidas con borde luminoso en la primera */}
+            {/* Píldoras rápidas */}
             <div className="flex gap-2.5 mt-4 flex-wrap">
               {EJEMPLOS.map((ej, index) => (
                 <button 
@@ -264,7 +265,7 @@ export default function HomePage() {
             </div>
 
             {errorExeg && <div className="mt-3 p-3 rounded-xl text-xs bg-red-950/40 text-red-400 border border-red-800/60">⚠️ {errorExeg}</div>}
-            {estudiando && <div className="mt-4 space-y-3">{[90,70,80].map((w,i) => <div key={i} className="shimmer rounded-lg" style={{ height:16, width:`${w}%` }} />)}<p className="text-xs text-amber-200/70">✨ Generando exégesis académica...</p></div>}
+            {estudiando && <div className="mt-4 space-y-3">{[90,70,80].map((w,i) => <div key={i} className="shimmer rounded-lg" style={{ height:16, width:`${w}%` }} />)}<p className="text-xs text-amber-200/90">✨ Generando exégesis académica...</p></div>}
           </div>
 
           {estudios.map((e, i) => (
@@ -278,7 +279,7 @@ export default function HomePage() {
         <section>
           <h2 className="section-title mb-3">⚖️ Estudio Comparado</h2>
           <div className="card">
-            <p className="text-sm mb-4 text-slate-300/80">Compara dos pasajes con análisis teológico profundo</p>
+            <p className="text-sm mb-4 text-slate-300">Compara dos pasajes con análisis teológico profundo</p>
             <div className="flex gap-3 flex-col sm:flex-row items-center">
               <input 
                 className="input-subtle flex-1" 
@@ -322,7 +323,7 @@ export default function HomePage() {
             </div>
 
             {errorComp && <div className="mt-3 p-3 rounded-xl text-xs bg-red-950/40 text-red-400 border border-red-800/60">⚠️ {errorComp}</div>}
-            {comparando && <div className="mt-4 space-y-3">{[85,65,75].map((w,i) => <div key={i} className="shimmer rounded-lg" style={{ height:16, width:`${w}%` }} />)}<p className="text-xs text-amber-200/70">🔍 Generando análisis comparativo...</p></div>}
+            {comparando && <div className="mt-4 space-y-3">{[85,65,75].map((w,i) => <div key={i} className="shimmer rounded-lg" style={{ height:16, width:`${w}%` }} />)}<p className="text-xs text-amber-200/90">🔍 Generando análisis comparativo...</p></div>}
           </div>
 
           {comparados.map((c, i) => (
@@ -336,9 +337,9 @@ export default function HomePage() {
         <section>
           <h2 className="section-title mb-3">📝 Sermón / Devocional</h2>
           <div className="card">
-            <p className="text-sm mb-4 text-slate-300/80">Genera un sermón expositivo, devocional basado en un pasaje</p>
+            <p className="text-sm mb-4 text-slate-300">Genera un sermón expositivo, devocional basado en un pasaje</p>
 
-            {/* Selector Expositivo vs Devocional con estilo píldora */}
+            {/* Selector Expositivo vs Devocional */}
             <div className="flex gap-2.5 mb-4 flex-wrap">
               {([['expositivo','📖 Sermón expositivo'],['devocional','🌅 Devocional breve']] as [EstiloSermon,string][]).map(([val,label]) => (
                 <button 
@@ -387,7 +388,7 @@ export default function HomePage() {
             </div>
 
             {errorSermon && <div className="mt-3 p-3 rounded-xl text-xs bg-red-950/40 text-red-400 border border-red-800/60">⚠️ {errorSermon}</div>}
-            {generando && <div className="mt-4 space-y-3">{[85,65,75].map((w,i) => <div key={i} className="shimmer rounded-lg" style={{ height:16, width:`${w}%` }} />)}<p className="text-xs text-amber-200/70">✍️ Preparando el mensaje...</p></div>}
+            {generando && <div className="mt-4 space-y-3">{[85,65,75].map((w,i) => <div key={i} className="shimmer rounded-lg" style={{ height:16, width:`${w}%` }} />)}<p className="text-xs text-amber-200/90">✍️ Preparando el mensaje...</p></div>}
           </div>
 
           {sermones.map((s, i) => (
@@ -402,14 +403,14 @@ export default function HomePage() {
       {/* Sidebar de Biblioteca */}
       {showLibrary && (
         <>
-          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)', zIndex: 999 }} onClick={() => setShowLibrary(false)} />
+          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(6px)', zIndex: 999 }} onClick={() => setShowLibrary(false)} />
           <LibrarySidebar onSelectEstudio={handleSelectEstudio} onSelectComparado={handleSelectComparado} onClose={() => setShowLibrary(false)} />
         </>
       )}
 
       {/* Footer */}
-      <footer className="text-center py-8 mt-12 border-t border-white/10 text-slate-500 text-xs">
-        <p>📜 Estudio Bíblico Pro</p>
+      <footer className="text-center py-8 mt-12 border-t border-amber-500/20 text-slate-400 text-xs">
+        <p className="text-amber-200/80 font-medium">📜 Estudio Bíblico Pro</p>
         <p className="mt-1">Powered by Google Gemini</p>
       </footer>
 
