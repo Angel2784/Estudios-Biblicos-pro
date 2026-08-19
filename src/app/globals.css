@@ -56,7 +56,7 @@ body {
 .bible-link { color: #fed25c !important; text-decoration: underline; font-weight: 600; }
 .bible-link:hover { color: #fff5c2 !important; text-decoration: none; }
 
-/* ── TÍTULOS Y CABECERA (EL RESPLANDOR DORADO RADIANTE EXACTO) ── */
+/* ── Títulos y Cabecera con Resplandor Dorado Radiante ── */
 .section-title, .header-brand-title {
   color: #fff0b3 !important;
   font-family: 'Crimson Pro', serif !important;
@@ -119,39 +119,40 @@ body {
   color: rgba(180, 195, 220, 0.65) !important; 
 }
 
-/* ── BOTONES DORADOS BRILLANTES CON EL RESPLANDOR DORADO RADIANTE SIEMPRE ACTIVO ── */
+/* ── BOTONES: ESTADO NORMAL (MÁS OSCURO / BRONCE ELEGANTE) ── */
 .btn-gold, .btn-primary {
-  background: linear-gradient(180deg, #fff5c2 0%, #fed25c 45%, #f3a81d 100%) !important;
-  color: #140b00 !important;
-  border: 1px solid rgba(255, 255, 255, 0.9) !important;
+  background: linear-gradient(180deg, #c29334 0%, #a2721f 50%, #80540e 100%) !important;
+  color: #1a1102 !important;
+  border: 1px solid rgba(255, 215, 80, 0.3) !important;
   border-radius: 14px !important;
   padding: 13px 26px !important;
   font-weight: 700 !important;
   font-size: 14px !important;
   cursor: pointer !important;
-  transition: all 0.2s ease !important;
+  transition: all 0.25s ease !important;
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
   gap: 8px !important;
-  box-shadow: 0 0 24px rgba(254, 212, 104, 0.85), 0 4px 14px rgba(243, 168, 29, 0.6), inset 0 1px 2px #ffffff !important;
-  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5) !important;
   white-space: nowrap !important;
 }
-.btn-gold:hover, .btn-primary:hover {
-  background: linear-gradient(180deg, #ffffff 0%, #ffe082 45%, #ffb300 100%) !important;
-  box-shadow: 0 0 35px rgba(255, 220, 100, 0.95), 0 6px 18px rgba(243, 168, 29, 0.7), inset 0 1px 2px #ffffff !important;
-  transform: translateY(-2px) !important;
-}
-.btn-gold:active, .btn-primary:active { transform: translateY(0) !important; }
 
-/* Mantiene el brillo dorado radiante en todo momento */
-.btn-gold:disabled, .btn-primary:disabled { 
+/* ── BOTONES: AL DAR CLICK / HOVER / ACTIVAR (SE ENCIENDE RADIANTE) ── */
+.btn-gold:hover, .btn-primary:hover,
+.btn-gold:focus, .btn-primary:focus,
+.btn-gold:active, .btn-primary:active,
+.btn-gold.active, .btn-primary.active {
   background: linear-gradient(180deg, #fff5c2 0%, #fed25c 45%, #f3a81d 100%) !important;
   color: #140b00 !important;
-  box-shadow: 0 0 20px rgba(254, 212, 104, 0.7), 0 4px 12px rgba(243, 168, 29, 0.4) !important;
-  opacity: 0.9 !important;
-  cursor: pointer !important;
+  border: 1px solid rgba(255, 255, 255, 0.95) !important;
+  box-shadow: 0 0 28px rgba(254, 212, 104, 0.95), 0 4px 16px rgba(243, 168, 29, 0.65), inset 0 1px 2px #ffffff !important;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5) !important;
+  transform: translateY(-2px) scale(1.02) !important;
+}
+
+.btn-gold:active, .btn-primary:active {
+  transform: translateY(0) scale(0.98) !important;
 }
 
 /* ── Botones Cristal Secundarios (Biblioteca / Config) ── */
