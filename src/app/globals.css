@@ -1,22 +1,23 @@
-@import url('https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400;0,600;0,700;1,500;1,600&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400;0,600;0,700;1,500&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --navy: #06070a;
-  --navy-card: rgba(16, 20, 32, 0.6);
-  --navy-border: rgba(255, 255, 255, 0.12);
-  --gold: #f5b738;
-  --gold-light: #fde38c;
-  --gold-dim: rgba(245, 183, 56, 0.25);
-  --gold-border: rgba(245, 185, 75, 0.85);
+  --navy: #0a0d14;
+  --navy-card: #151321;
+  --navy-mid: #171429;
+  --navy-border: #2a2440;
+  --navy-hover: #1c1830;
+  --gold: #f0a830;
+  --gold-light: #ffc966;
+  --gold-dim: #f0a83033;
   --ember: #c76b3f;
   --parchment: #f0e6d2;
-  --text-primary: #ffffff;
+  --text-primary: #e2e8f0;
   --text-secondary: #94a3b8;
-  --text-dim: #64748b;
+  --text-dim: #8b8599;
   --green: #4ade80;
   --red: #ef4444;
 }
@@ -24,284 +25,176 @@
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
 
-/* ── Fondo con Imagen de Biblioteca Mística y Luces Cálidas ── */
 body {
-  background-color: #06070a;
-  background-image: 
-    linear-gradient(180deg, rgba(6, 8, 14, 0.5) 0%, rgba(6, 8, 14, 0.75) 100%),
-    url('/bg.jpg');
-  background-size: cover;
-  background-position: center top;
-  background-attachment: fixed;
-  background-repeat: no-repeat;
+  background: var(--navy);
   color: var(--text-primary);
   font-family: 'Inter', system-ui, sans-serif;
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
 }
 
-/* ── Scrollbar Dorado Brillante ── */
-::-webkit-scrollbar { width: 8px; height: 8px; }
-::-webkit-scrollbar-track { background: rgba(5, 7, 12, 0.85); }
-::-webkit-scrollbar-thumb { 
-  background: linear-gradient(180deg, #fde38c 0%, #e8a838 50%, #cf8b24 100%);
-  border-radius: 10px;
-  box-shadow: 0 0 10px rgba(232, 168, 56, 0.6);
-}
-::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(180deg, #fff2a8 0%, #ffd54f 50%, #ffa000 100%);
-  box-shadow: 0 0 16px rgba(255, 213, 79, 0.9);
-}
-* { scrollbar-width: thin; scrollbar-color: #e8a838 rgba(5, 7, 12, 0.85); }
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--navy-border); border-radius: 10px; }
+::-webkit-scrollbar-thumb { background: var(--gold); border-radius: 10px; }
+* { scrollbar-width: thin; scrollbar-color: var(--gold) var(--navy-border); }
 
-/* ── Enlaces Bíblicos ── */
-.bible-link { 
-  color: #fed25c !important; 
-  text-decoration: underline; 
-  font-weight: 600; 
-  transition: color 0.2s; 
-}
-.bible-link:hover { 
-  color: #fff5c2 !important; 
-  text-decoration: none; 
-}
+.bible-link { color: var(--gold) !important; text-decoration: underline; font-weight: 600; transition: color 0.2s; }
+.bible-link:hover { color: var(--gold-light) !important; text-decoration: none; }
 
-/* ── Resplandor del Logo ── */
+/* ── Resplandor de vela en header ── */
 .brand-glow-wrap { position: relative; display: inline-flex; }
 .brand-glow {
   position: absolute; left: -10px; top: -10px; width: 60px; height: 60px;
-  background: radial-gradient(circle, rgba(255,193,7,0.45) 0%, rgba(255,193,7,0) 70%);
-  filter: blur(6px); pointer-events: none; z-index: 0;
+  background: radial-gradient(circle, rgba(240,168,48,0.4) 0%, rgba(240,168,48,0) 70%);
+  filter: blur(4px); pointer-events: none; z-index: 0;
 }
 
-/* ── Título de Sección ── */
 .section-title {
-  color: #fce7a1 !important;
+  color: var(--gold-light);
   font-family: 'Crimson Pro', serif;
-  font-size: 1.4rem;
-  font-weight: 700;
+  font-size: 1.3rem;
+  font-weight: 600;
   display: flex;
   align-items: center;
-  gap: 8px;
-  text-shadow: 0 2px 12px rgba(245, 180, 60, 0.5);
+  gap: 10px;
 }
 
-/* ── Formato de Texto Bíblico y Exégesis ── */
-.prose-biblical { 
-  font-family: 'Crimson Pro', serif; 
-  font-size: 1.15rem; 
-  line-height: 1.9; 
-  color: var(--text-primary); 
-}
+.prose-biblical { font-family: 'Crimson Pro', serif; font-size: 1.1rem; line-height: 1.9; color: var(--text-primary); }
 .prose-biblical p { margin-bottom: 1em; }
 .prose-biblical ul { padding-left: 1.5em; margin-bottom: 1em; }
 .prose-biblical li { margin-bottom: 0.4em; }
-.prose-biblical strong { color: #fde38c; font-weight: 600; }
+.prose-biblical strong { color: var(--gold); font-weight: 600; }
 .prose-biblical blockquote {
-  font-family: 'Crimson Pro', serif; 
-  font-style: italic; 
-  font-size: 1.15em; 
-  line-height: 1.7;
-  color: var(--parchment); 
-  border-left: 3px solid var(--gold); 
-  background: rgba(245, 183, 56, 0.06);
-  border-radius: 0 10px 10px 0;
-  margin: 1.2em 0; 
-  padding: 0.5em 0.8em 0.5em 1.2em;
+  font-family: 'Crimson Pro', serif; font-style: italic; font-size: 1.15em; line-height: 1.7;
+  color: var(--parchment); border-left: 2px solid var(--ember); margin: 1.2em 0; padding: 0.2em 0 0.2em 1em;
 }
 
-/* ── Tarjetas Cristal Translúcido (Glassmorphism) ── */
-.card {
-  position: relative;
-  background: rgba(16, 20, 32, 0.48) !important;
-  backdrop-filter: blur(16px) !important;
-  -webkit-backdrop-filter: blur(16px) !important;
-  border: 1px solid rgba(255, 255, 255, 0.14) !important;
-  border-radius: 22px !important;
-  padding: 24px !important;
-  box-shadow: 0 12px 35px 0 rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.12) !important;
-  transition: all 0.25s ease;
-}
-.card:hover {
-  border-color: rgba(255, 215, 80, 0.35) !important;
-  box-shadow: 0 14px 40px 0 rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+.hl-yellow { background: #fbbf24; color: #1a1a2e; border-radius: 3px; padding: 1px 2px; }
+.hl-green  { background: #86efac; color: #1a1a2e; border-radius: 3px; padding: 1px 2px; }
+.hl-blue   { background: #93c5fd; color: #1a1a2e; border-radius: 3px; padding: 1px 2px; }
+.hl-pink   { background: #f9a8d4; color: #1a1a2e; border-radius: 3px; padding: 1px 2px; }
+.hl-orange { background: #fdba74; color: #1a1a2e; border-radius: 3px; padding: 1px 2px; }
+
+.shimmer {
+  background: linear-gradient(90deg, var(--navy-card) 25%, var(--navy-hover) 50%, var(--navy-card) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
 }
 
-/* ── Banner Superior ── */
-.banner-card {
-  background: rgba(18, 22, 36, 0.52) !important;
-  backdrop-filter: blur(16px) !important;
-  -webkit-backdrop-filter: blur(16px) !important;
-  border: 1px solid rgba(255, 255, 255, 0.14) !important;
-  border-radius: 18px !important;
-  padding: 16px 20px !important;
-  box-shadow: 0 8px 30px rgba(0,0,0,0.45) !important;
-}
-
-/* ── Inputs con Borde Dorado Fino ── */
-.input-gold, .input-field {
-  width: 100%;
-  background: rgba(8, 10, 16, 0.6) !important;
-  border: 1.5px solid rgba(245, 185, 75, 0.85) !important;
-  border-radius: 14px !important;
-  padding: 13px 18px !important;
-  color: #ffffff !important;
+.tab-bar { display: flex; gap: 4px; flex-wrap: wrap; padding: 10px; background: var(--navy-card); border-radius: 12px; }
+.tab-btn {
+  padding: 6px 12px !important; border-radius: 20px !important;
+  border: 1px solid rgba(240,168,48,0.3) !important; background: rgba(240,168,48,0.1) !important;
+  color: var(--gold-light) !important; font-size: 11px !important; font-weight: 500 !important;
+  cursor: pointer !important; transition: all 0.2s !important; white-space: nowrap !important;
   font-family: 'Inter', sans-serif !important;
-  font-size: 14px !important;
-  outline: none !important;
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.4) !important;
-  transition: all 0.2s ease !important;
 }
-.input-gold:focus, .input-field:focus {
-  border-color: #fde38c !important;
-  box-shadow: 0 0 14px rgba(245, 185, 75, 0.45), inset 0 2px 4px rgba(0, 0, 0, 0.4) !important;
-}
-.input-gold::placeholder, .input-field::placeholder { 
-  color: rgba(160, 175, 200, 0.65) !important; 
-}
+.tab-btn:hover { background: rgba(240,168,48,0.18) !important; border-color: var(--gold) !important; }
+.tab-btn.active { background: var(--gold) !important; color: #1a1220 !important; border-color: var(--gold) !important; font-weight: 700 !important; }
 
-.input-subtle {
-  width: 100%;
-  background: rgba(8, 10, 16, 0.6) !important;
-  border: 1px solid rgba(255, 255, 255, 0.15) !important;
-  border-radius: 14px !important;
-  padding: 13px 18px !important;
-  color: #ffffff !important;
-  font-family: 'Inter', sans-serif !important;
-  font-size: 14px !important;
-  outline: none !important;
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.4) !important;
-  transition: all 0.2s ease !important;
-}
-.input-subtle:focus {
-  border-color: rgba(245, 185, 75, 0.75) !important;
-  box-shadow: 0 0 10px rgba(245, 185, 75, 0.3) !important;
-}
-.input-subtle::placeholder { 
-  color: rgba(160, 175, 200, 0.65) !important; 
-}
-
-/* ── BOTONES DORADO MIEL (ESTUDIAR / COMPARAR / GENERAR) ── */
-.btn-gold, .btn-primary {
-  background: linear-gradient(180deg, #fde38c 0%, #e8a838 50%, #cf8b24 100%) !important;
-  color: #1a1002 !important;
-  border: none !important;
-  border-radius: 13px !important;
-  padding: 13px 24px !important;
-  font-weight: 600 !important;
-  font-size: 14px !important;
-  cursor: pointer !important;
-  transition: all 0.2s ease !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  gap: 8px !important;
-  box-shadow: 0 4px 16px rgba(232, 168, 56, 0.4) !important;
-  white-space: nowrap !important;
-}
-.btn-gold:hover, .btn-primary:hover {
-  background: linear-gradient(180deg, #ffebaa 0%, #f0b548 50%, #dc972f 100%) !important;
-  box-shadow: 0 6px 20px rgba(232, 168, 56, 0.6) !important;
-  transform: translateY(-1px) !important;
-}
-.btn-gold:active, .btn-primary:active { transform: translateY(0) !important; }
-.btn-gold:disabled, .btn-primary:disabled { 
-  background: linear-gradient(180deg, #d8bc6e 0%, #b88628 100%) !important;
-  color: #2a1f0d !important;
-  opacity: 0.8 !important;
-  cursor: not-allowed !important; 
-  transform: none !important; 
-  box-shadow: none !important; 
-}
-
-/* ── Botones Cristal Secundarios (Biblioteca / Config) ── */
-.btn-glass, .btn-secondary {
-  background: rgba(25, 33, 50, 0.55) !important;
-  backdrop-filter: blur(8px) !important;
-  -webkit-backdrop-filter: blur(8px) !important;
-  color: #e2e8f0 !important;
-  border: 1px solid rgba(255, 255, 255, 0.14) !important;
-  border-radius: 12px !important;
-  padding: 8px 14px !important;
-  font-weight: 500 !important;
-  font-size: 13px !important;
-  cursor: pointer !important;
-  transition: all 0.2s ease !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  gap: 6px !important;
-}
-.btn-glass:hover, .btn-secondary:hover {
-  background: rgba(45, 60, 90, 0.75) !important;
-  border-color: rgba(245, 185, 75, 0.5) !important;
-  color: #ffffff !important;
-}
-
-/* ── Píldoras / Chips ── */
-.pill, .tab-btn {
-  padding: 5px 15px !important;
-  border-radius: 9999px !important;
-  border: 1px solid rgba(255, 255, 255, 0.14) !important;
-  background: rgba(22, 30, 46, 0.55) !important;
-  backdrop-filter: blur(8px) !important;
-  -webkit-backdrop-filter: blur(8px) !important;
-  color: #cbd5e1 !important;
-  font-size: 11.5px !important;
-  font-weight: 500 !important;
-  cursor: pointer !important;
-  transition: all 0.2s ease !important;
-}
-.pill:hover, .tab-btn:hover {
-  background: rgba(38, 50, 78, 0.75) !important;
-  border-color: rgba(245, 185, 75, 0.4) !important;
-  color: #ffffff !important;
-}
-.pill-active-blue, .tab-btn.active {
-  background: rgba(20, 45, 75, 0.8) !important;
-  color: #bae6fd !important;
-  border: 1.5px solid rgba(56, 189, 248, 0.8) !important;
-  box-shadow: 0 0 12px rgba(56, 189, 248, 0.35) !important;
-}
-.pill-active-purple {
-  background: rgba(45, 25, 75, 0.8) !important;
-  color: #f3e8ff !important;
-  border: 1.5px solid rgba(192, 132, 252, 0.8) !important;
-  box-shadow: 0 0 12px rgba(192, 132, 252, 0.35) !important;
-}
-
-/* ── Panel de Pestañas (Exégesis, Contexto, etc.) ── */
 .tab-panel {
-  background: rgba(14, 18, 30, 0.55) !important;
-  border: 1px solid rgba(255, 255, 255, 0.12) !important;
-  border-radius: 18px !important;
-  margin-top: 12px;
-  padding: 24px 28px;
-  max-height: 70vh;
-  overflow-y: auto;
-  overflow-x: hidden;
+  background: var(--navy-mid); border: 1px solid var(--navy-border); border-radius: 15px;
+  margin-top: 10px; padding: 28px 32px; max-height: 70vh; overflow-y: auto; overflow-x: hidden;
   animation: fadeIn 0.3s ease-out;
 }
 
 @media (max-width: 768px) {
   .tab-panel { padding: 16px 14px; max-height: 65vh; }
+  .tab-btn { font-size: 10px !important; padding: 5px 10px !important; }
 }
 
-/* ── Tablas de Markdown en Chat ── */
-table {
-  border-collapse: collapse;
+/* ── Tarjetas Originales con esquina pergamino ── */
+.card {
+  position: relative;
+  background: rgba(21, 19, 33, 0.55);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--navy-border);
+  border-radius: 4px 16px 4px 16px;
+  padding: 24px;
+  transition: border-color 0.2s;
+}
+.card::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  border-radius: 4px 4px 0 0;
+  background: linear-gradient(90deg, transparent, var(--ember), var(--gold), var(--ember), transparent);
+  opacity: 0.7;
+}
+.card:hover { border-color: rgba(240,168,48,0.4); }
+
+.input-field {
   width: 100%;
+  background: rgba(13, 11, 23, 0.6);
+  border: 1px solid var(--navy-border);
+  border-radius: 10px;
+  padding: 13px 16px;
+  color: var(--parchment);
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  outline: none;
 }
-th, td {
-  border: 1px solid rgba(255, 255, 255, 0.1);
+.input-field:focus { border-color: var(--gold); box-shadow: 0 0 0 3px var(--gold-dim); }
+.input-field::placeholder { color: var(--text-dim); }
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--gold-light), var(--gold)) !important;
+  color: #1a1220 !important;
+  border: none !important;
+  border-radius: 10px !important;
+  padding: 13px 22px !important;
+  font-weight: 700 !important;
+  font-size: 14px !important;
+  cursor: pointer !important;
+  transition: all 0.2s !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  font-family: 'Inter', sans-serif !important;
+}
+.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 18px rgba(240,168,48,0.4); }
+.btn-primary:active { transform: translateY(0); }
+.btn-primary:disabled { opacity: 0.5 !important; cursor: not-allowed !important; transform: none !important; }
+
+.btn-secondary {
+  background: rgba(21, 19, 33, 0.6) !important;
+  color: var(--text-dim) !important;
+  border: 1px solid var(--navy-border) !important;
+  border-radius: 9px !important;
+  padding: 10px 20px !important;
+  font-weight: 500 !important;
+  font-size: 13px !important;
+  cursor: pointer !important;
+  transition: all 0.2s !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  font-family: 'Inter', sans-serif !important;
+}
+.btn-secondary:hover { background: var(--gold) !important; color: #1a1220 !important; border-color: var(--gold) !important; }
+
+.annotation-toolbar {
+  position: fixed; background: var(--navy-card); border: 1px solid var(--navy-border);
+  border-radius: 14px; padding: 10px 12px; z-index: 9999;
+  box-shadow: 0 12px 32px rgba(0,0,0,0.6);
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap; max-width: 340px;
+  animation: fadeIn 0.15s ease-out;
 }
 
-/* ── Animaciones ── */
-.shimmer {
-  background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.03) 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
+.map-container { width: 100%; border-radius: 12px; overflow: hidden; border: 1px solid var(--navy-border); margin-top: 16px; }
+.map-container iframe { display: block; width: 100%; height: 380px; border: none; }
+
+.pwa-banner {
+  background: linear-gradient(135deg, var(--navy-card), var(--navy-mid));
+  border: 1px solid var(--gold-dim); border-radius: 12px; padding: 12px 16px;
+  display: flex; align-items: center; gap: 12px;
 }
 
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-@keyframes slideUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
-@keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+/* ── Tablas para el Chat ── */
+table { border-collapse: collapse; width: 100%; }
+th, td { border: 1px solid var(--navy-border); }
+
+@keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
+@keyframes slideUp { from { opacity: 0; transform: translateY(16px) } to { opacity: 1; transform: translateY(0) } }
+@keyframes shimmer { 0% { background-position: -200% 0 } 100% { background-position: 200% 0 } }
